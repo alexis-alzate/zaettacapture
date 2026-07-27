@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ZaettaCaptureNative
@@ -368,8 +369,12 @@ namespace ZaettaCaptureNative
         public const uint MOD_CONTROL = 0x0002;
         public const uint MOD_SHIFT = 0x0004;
         private readonly Action action;
+        private readonly SynchronizationContext syncContext;
+        private readonly KeyboardShortcutHook keyboardHook;
         private int currentId = 100;
         private bool registered;
+        private Keys activeKey;
+        private uint activeModifiers;
 
         [DllImport("user32.dll")]
         private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -380,14 +385,35 @@ namespace ZaettaCaptureNative
         public HotKeyWindow(Action action)
         {
             this.action = action;
+            this.syncContext = SynchronizationContext.Current;
+            this.keyboardHook = new KeyboardShortcutHook(TriggerAction);
             CreateHandle(new CreateParams());
         }
 
         public bool Register(Keys key, uint modifiers)
         {
+            keyboardHook.Clear();
             if (registered)
+            {
                 UnregisterHotKey(Handle, currentId);
+                registered = false;
+            }
+
+            activeKey = key;
+            activeModifiers = modifiers;
+
+            if (key == Keys.PrintScreen && modifiers == 0)
+            {
+                keyboardHook.SetShortcut(key, modifiers);
+                return true;
+            }
+
             registered = RegisterHotKey(Handle, currentId, modifiers, (uint)key);
+            if (!registered && key == Keys.PrintScreen)
+            {
+                keyboardHook.SetShortcut(key, modifiers);
+                return true;
+            }
             return registered;
         }
 
@@ -395,17 +421,135 @@ namespace ZaettaCaptureNative
         {
             if (m.Msg == WM_HOTKEY)
             {
-                action();
+                TriggerAction();
                 return;
             }
             base.WndProc(ref m);
         }
 
+        private void TriggerAction()
+        {
+            if (syncContext != null)
+                syncContext.Post(delegate { action(); }, null);
+            else
+                action();
+        }
+
         public void Dispose()
         {
+            keyboardHook.Dispose();
             if (registered)
                 UnregisterHotKey(Handle, currentId);
             DestroyHandle();
+        }
+    }
+
+    internal sealed class KeyboardShortcutHook : IDisposable
+    {
+        private const int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYDOWN = 0x0100;
+        private const int WM_SYSKEYDOWN = 0x0104;
+        private const int HC_ACTION = 0;
+
+        private readonly Action action;
+        private readonly LowLevelKeyboardProc proc;
+        private IntPtr hookId;
+        private Keys key;
+        private uint modifiers;
+        private bool enabled;
+        private DateTime lastTrigger = DateTime.MinValue;
+
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(Keys vKey);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        public KeyboardShortcutHook(Action action)
+        {
+            this.action = action;
+            proc = HookCallback;
+        }
+
+        public void SetShortcut(Keys key, uint modifiers)
+        {
+            this.key = key;
+            this.modifiers = modifiers;
+            enabled = true;
+            EnsureHook();
+        }
+
+        public void Clear()
+        {
+            enabled = false;
+        }
+
+        private void EnsureHook()
+        {
+            if (hookId != IntPtr.Zero)
+                return;
+            hookId = SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(null), 0);
+        }
+
+        private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (enabled && nCode == HC_ACTION && (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN))
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+                Keys pressed = (Keys)vkCode;
+                if (pressed == key && ModifiersMatch())
+                {
+                    DateTime now = DateTime.Now;
+                    if ((now - lastTrigger).TotalMilliseconds > 350)
+                    {
+                        lastTrigger = now;
+                        action();
+                    }
+                    return (IntPtr)1;
+                }
+            }
+            return CallNextHookEx(hookId, nCode, wParam, lParam);
+        }
+
+        private bool ModifiersMatch()
+        {
+            bool ctrl = IsPressed(Keys.ControlKey) || IsPressed(Keys.LControlKey) || IsPressed(Keys.RControlKey);
+            bool shift = IsPressed(Keys.ShiftKey) || IsPressed(Keys.LShiftKey) || IsPressed(Keys.RShiftKey);
+            bool alt = IsPressed(Keys.Menu) || IsPressed(Keys.LMenu) || IsPressed(Keys.RMenu);
+
+            if (((modifiers & HotKeyWindow.MOD_CONTROL) == HotKeyWindow.MOD_CONTROL) != ctrl)
+                return false;
+            if (((modifiers & HotKeyWindow.MOD_SHIFT) == HotKeyWindow.MOD_SHIFT) != shift)
+                return false;
+            if (((modifiers & HotKeyWindow.MOD_ALT) == HotKeyWindow.MOD_ALT) != alt)
+                return false;
+            return true;
+        }
+
+        private static bool IsPressed(Keys key)
+        {
+            return (GetAsyncKeyState(key) & 0x8000) != 0;
+        }
+
+        public void Dispose()
+        {
+            if (hookId != IntPtr.Zero)
+            {
+                UnhookWindowsHookEx(hookId);
+                hookId = IntPtr.Zero;
+            }
         }
     }
 
