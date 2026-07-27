@@ -55,9 +55,11 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Cierre automatico despues de copiar.
 - Cancelar seleccion al hacer clic fuera o con `Esc`.
 - Guardar imagen localmente.
+- Hook nativo para `Impr Pant`, consumiendo la tecla para evitar que Windows o teclados pequenos ejecuten zoom u otra accion del sistema.
 - Herramienta de texto.
 - Herramienta para mover elementos.
 - Herramientas de dibujo.
+- Flechas con cabeza agrandada mediante `AdjustableArrowCap` para que se vean mas claras en evidencias.
 - Ajuste de color para figuras y trazos.
 - Icono y marca visual Zaetta.
 - Ventana "Acerca de" con desarrollador, version y descripcion.
@@ -91,6 +93,7 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - El selector de captura no debe cambiar de color segun el color de dibujo.
 - El selector debe verse como una seleccion limpia y profesional: borde punteado, fondo atenuado y manejadores discretos.
 - El color elegido solo aplica a flechas, texto, marcos, lineas, lapiz y resaltador.
+- Las flechas deben tener cabeza visible y profesional. Actualmente se usa `AdjustableArrowCap(5.8f, 7.2f, true)`.
 - Al copiar, no debe abrir ventana de guardar.
 - Al copiar, no debe quedar ninguna ventana flotante activa.
 - Al hacer clic derecho sobre la captura, debe copiar sin abrir el menu contextual de Windows.
@@ -115,6 +118,8 @@ Atajos deseados:
 
 Pendiente importante: dejar un panel simple para cambiar el atajo sin tocar codigo.
 
+Nota actual: `Print Screen` se maneja con un hook de bajo nivel cuando no tiene modificadores. Esto se hizo porque en pantallas pequenas o portatiles algunos equipos ejecutaban zoom en vez de abrir la captura. El hook consume la tecla y lanza Zaetta, evitando que el evento continue hacia Windows u otra app.
+
 ## 8. Arquitectura actual
 
 ### Version nativa
@@ -132,6 +137,8 @@ Contiene:
 - Copia al portapapeles.
 - Guardado de imagen.
 - Ventana Acerca de.
+- `KeyboardShortcutHook`, usado para capturar `Impr Pant` con mayor control que `RegisterHotKey`.
+- `DrawingStyle.ConfigureLineCap`, helper que centraliza el estilo de lineas/flechas.
 
 `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
 
@@ -204,7 +211,7 @@ Prioridad alta:
 - Mejorar completamente el movimiento de elementos dibujados para que no se queden pegados.
 - Permitir redimensionar flechas, rectangulos y textos con manejadores.
 - Implementar configuracion persistente de atajos.
-- Confirmar que `Print Screen` y `Supr` se puedan capturar de forma estable.
+- Confirmar en varios equipos que `Print Screen` y `Supr` se puedan capturar de forma estable.
 - Asegurar que copiar por boton, clic derecho y `Ctrl + C` compartan exactamente la misma logica.
 - Validar que al copiar/cancelar no quede ningun overlay activo.
 
@@ -269,3 +276,21 @@ Si hay que corregir funcionalidad de captura, hacerlo primero en la version nati
 Si hay que corregir el instalador, tocar solo `InstallerZaettaFinal.cs`.
 
 Si hay que cambiar branding/icono, revisar `ZAETTA_CAPTURE/zaetta_icon.ico`.
+
+## 16. Ultimos cambios registrados
+
+### 2026-07-27
+
+- Se agrego `CONTEXTO_ZAETTA_CAPTURE.md` para que cualquier agente o desarrollador pueda retomar el proyecto sin mezclarlo con PlayOps Suite.
+- Se corrigio `README.md` para apuntar a este archivo de contexto.
+- Se cambio la captura de `Impr Pant` para usar un hook nativo de teclado cuando no hay modificadores.
+- Se corrigio el caso donde en equipos pequenos `Impr Pant` podia activar zoom en vez de Zaetta Capture.
+- Se recompilo la aplicacion nativa y el instalador final.
+- Se aumento el tamano de la cabeza de las flechas usando `AdjustableArrowCap`.
+- Se subieron estos cambios a GitHub.
+
+Commits relevantes:
+
+- `afc10cf` - Agregar contexto de trabajo de Zaetta Capture.
+- `74dac16` - Corregir captura con Impr Pant en pantallas pequenas.
+- `39806c4` - Agrandar cabeza de flechas.
