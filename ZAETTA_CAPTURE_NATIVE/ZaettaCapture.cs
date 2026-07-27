@@ -1022,12 +1022,16 @@ namespace ZaettaCaptureNative
             bool leftPressed = leftButtonDown || (Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left;
             if (!drawing || !leftPressed)
             {
-                if (!drawing && selectedOp != null && CanResizeStroke(selectedOp))
+                if (!drawing)
                 {
-                    AdjustOpWidth(selectedOp, e.Delta > 0 ? 1 : -1);
-                    drawWidth = Math.Max(2, Math.Min(12, selectedOp.Width));
-                    Invalidate();
-                    return;
+                    DrawOp hoveredOp = HitTestOp(e.Location);
+                    if (hoveredOp != null)
+                    {
+                        AdjustOpByWheel(hoveredOp, e.Delta > 0 ? 1 : -1);
+                        selectedOp = hoveredOp;
+                        Invalidate();
+                        return;
+                    }
                 }
 
                 base.OnMouseWheel(e);
@@ -1573,11 +1577,9 @@ namespace ZaettaCaptureNative
             if (op == null)
                 return false;
             return op.Tool == Tool.Arrow
-                || op.Tool == Tool.Rect
                 || op.Tool == Tool.Line
                 || op.Tool == Tool.Pencil
-                || op.Tool == Tool.Highlight
-                || op.Tool == Tool.Pixelate;
+                || op.Tool == Tool.Highlight;
         }
 
         private static void AdjustOpWidth(DrawOp op, int delta)
@@ -1585,6 +1587,81 @@ namespace ZaettaCaptureNative
             if (op == null)
                 return;
             op.Width = Math.Max(2, Math.Min(12, op.Width + delta));
+        }
+
+        private void AdjustOpByWheel(DrawOp op, int delta)
+        {
+            if (op == null)
+                return;
+
+            if (op.Tool == Tool.Text)
+            {
+                op.Width = Math.Max(10, Math.Min(54, op.Width + (delta * 2)));
+                return;
+            }
+
+            if (op.Tool == Tool.Number)
+            {
+                op.Width = Math.Max(18, Math.Min(90, op.Width + (delta * 4)));
+                return;
+            }
+
+            if (op.Tool == Tool.Rect || op.Tool == Tool.Pixelate)
+            {
+                ScaleBoxOp(op, delta > 0 ? 1.08f : 0.92f);
+                return;
+            }
+
+            if (CanResizeStroke(op))
+            {
+                AdjustOpWidth(op, delta);
+                drawWidth = Math.Max(2, Math.Min(12, op.Width));
+            }
+        }
+
+        private void ScaleBoxOp(DrawOp op, float factor)
+        {
+            Rectangle box = Normalize(op.A, op.B);
+            if (box.Width <= 0 || box.Height <= 0)
+                return;
+
+            float cx = box.Left + box.Width / 2f;
+            float cy = box.Top + box.Height / 2f;
+            int newWidth = Math.Max(10, (int)Math.Round(box.Width * factor));
+            int newHeight = Math.Max(10, (int)Math.Round(box.Height * factor));
+            int left = (int)Math.Round(cx - newWidth / 2f);
+            int top = (int)Math.Round(cy - newHeight / 2f);
+            int right = left + newWidth;
+            int bottom = top + newHeight;
+
+            if (left < selection.Left)
+            {
+                right += selection.Left - left;
+                left = selection.Left;
+            }
+            if (top < selection.Top)
+            {
+                bottom += selection.Top - top;
+                top = selection.Top;
+            }
+            if (right > selection.Right)
+            {
+                left -= right - selection.Right;
+                right = selection.Right;
+            }
+            if (bottom > selection.Bottom)
+            {
+                top -= bottom - selection.Bottom;
+                bottom = selection.Bottom;
+            }
+
+            left = Math.Max(selection.Left, left);
+            top = Math.Max(selection.Top, top);
+            right = Math.Min(selection.Right, Math.Max(left + 10, right));
+            bottom = Math.Min(selection.Bottom, Math.Max(top + 10, bottom));
+
+            op.A = new Point(left, top);
+            op.B = new Point(right, bottom);
         }
 
         private void DrawOpOnOverlay(Graphics g, DrawOp op)
@@ -1607,7 +1684,7 @@ namespace ZaettaCaptureNative
                 }
                 else if (op.Tool == Tool.Text)
                 {
-                    using (Font font = new Font("Segoe UI", 16, FontStyle.Bold))
+                    using (Font font = new Font("Segoe UI", Math.Max(10, op.Width), FontStyle.Bold))
                     using (SolidBrush brush = new SolidBrush(op.Color))
                         g.DrawString(op.Text ?? "", font, brush, op.A);
                 }
@@ -1810,14 +1887,16 @@ namespace ZaettaCaptureNative
         private Rectangle GetOpBounds(DrawOp op)
         {
             using (Graphics g = CreateGraphics())
-            using (Font font = new Font("Segoe UI", 16, FontStyle.Bold))
             {
                 if (op.Tool == Tool.Text)
                 {
                     if (string.IsNullOrWhiteSpace(op.Text))
                         return new Rectangle(op.A.X, op.A.Y, 1, 1);
+                    using (Font font = new Font("Segoe UI", Math.Max(10, op.Width), FontStyle.Bold))
+                    {
                     SizeF size = g.MeasureString(op.Text, font);
                     return new Rectangle(op.A.X, op.A.Y, Math.Max(1, (int)Math.Ceiling(size.Width)), Math.Max(1, (int)Math.Ceiling(size.Height)));
+                    }
                 }
             }
 
@@ -1880,7 +1959,7 @@ namespace ZaettaCaptureNative
 
         private bool CanResizeOp(DrawOp op)
         {
-            return op != null && (op.Tool == Tool.Arrow || op.Tool == Tool.Line || op.Tool == Tool.Rect);
+            return op != null && (op.Tool == Tool.Arrow || op.Tool == Tool.Line || op.Tool == Tool.Rect || op.Tool == Tool.Pixelate);
         }
 
         private int HitTestResizeHandle(DrawOp op, Point point)
@@ -2052,7 +2131,7 @@ namespace ZaettaCaptureNative
 
         private void DrawSelectedOpHandles(Graphics g)
         {
-            if (!CanResizeOp(selectedOp))
+            if (selectedOp == null)
                 return;
 
             Rectangle bounds = GetOpBounds(selectedOp);
@@ -2062,6 +2141,9 @@ namespace ZaettaCaptureNative
                 outline.DashPattern = new float[] { 3, 3 };
                 g.DrawRectangle(outline, bounds);
             }
+
+            if (!CanResizeOp(selectedOp))
+                return;
 
             Rectangle[] handles = GetResizeHandleRects(selectedOp);
             using (SolidBrush fill = new SolidBrush(Color.FromArgb(248, 248, 248)))
