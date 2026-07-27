@@ -64,6 +64,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Herramientas de dibujo.
 - Flechas con cabeza agrandada mediante `AdjustableArrowCap` para que se vean mas claras en evidencias.
 - Ajuste de color para figuras y trazos.
+- Ajuste rapido de grosor mientras se dibuja: clic izquierdo sostenido + rueda del mouse arriba/abajo.
 - Icono y marca visual Zaetta.
 - Ventana "Acerca de" con desarrollador, version y descripcion.
 - Instalador `.exe` con barra de progreso.

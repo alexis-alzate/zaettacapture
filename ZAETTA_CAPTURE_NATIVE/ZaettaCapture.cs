@@ -1035,6 +1035,7 @@ namespace ZaettaCaptureNative
 
         protected override void OnMouseDown(MouseEventArgs e)
         {
+            Focus();
             if (e.Button == MouseButtons.Right && HasSelection())
             {
                 BeginRightCopy();
@@ -1117,6 +1118,21 @@ namespace ZaettaCaptureNative
                 op.Points.Add(ClampToSelection(e.Location));
                 ops.Add(op);
             }
+            Invalidate();
+        }
+
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            if (!drawing || e.Button != MouseButtons.Left)
+            {
+                base.OnMouseWheel(e);
+                return;
+            }
+
+            AdjustDrawWidth(e.Delta > 0 ? 1 : -1);
+            if ((tool == Tool.Pencil || tool == Tool.Highlight) && ops.Count > 0)
+                ops[ops.Count - 1].Width = drawWidth;
+
             Invalidate();
         }
 
@@ -1632,12 +1648,17 @@ namespace ZaettaCaptureNative
 
         private void Thinner()
         {
-            drawWidth = Math.Max(2, drawWidth - 1);
+            AdjustDrawWidth(-1);
         }
 
         private void Thicker()
         {
-            drawWidth = Math.Min(12, drawWidth + 1);
+            AdjustDrawWidth(1);
+        }
+
+        private void AdjustDrawWidth(int delta)
+        {
+            drawWidth = Math.Max(2, Math.Min(12, drawWidth + delta));
         }
 
         private void DrawOpOnOverlay(Graphics g, DrawOp op)
