@@ -1,0 +1,13 @@
+*.exe
+*.zip
+*.log
+*.pyc
+__pycache__/
+build/
+dist/
+bin/
+obj/
+.vs/
+*.spec
+*.user
+*.suo
