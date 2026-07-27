@@ -1812,7 +1812,15 @@ namespace ZaettaCaptureNative
         {
             if (ops.Count == 0)
                 return;
+            DrawOp removed = ops[ops.Count - 1];
             ops.RemoveAt(ops.Count - 1);
+            if (selectedOp == removed)
+                selectedOp = null;
+            if (movingOp == removed)
+                movingOp = null;
+            if (resizingOp == removed)
+                resizingOp = null;
+            resizeHandleIndex = -1;
             Invalidate();
         }
 
