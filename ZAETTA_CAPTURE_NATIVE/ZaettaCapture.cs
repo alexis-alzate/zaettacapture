@@ -904,6 +904,7 @@ namespace ZaettaCaptureNative
         private int selectionResizeHandleIndex = -1;
         private Point moveOffset;
         private bool pendingRightCopy;
+        private bool leftButtonDown;
         private readonly ToolTip tips = new ToolTip();
         private static readonly Color SelectionStroke = Color.FromArgb(245, 245, 245);
         private static readonly Color SelectionShadow = Color.FromArgb(72, 24, 24, 24);
@@ -1036,6 +1037,8 @@ namespace ZaettaCaptureNative
         protected override void OnMouseDown(MouseEventArgs e)
         {
             Focus();
+            if (e.Button == MouseButtons.Left)
+                leftButtonDown = true;
             if (e.Button == MouseButtons.Right && HasSelection())
             {
                 BeginRightCopy();
@@ -1123,7 +1126,8 @@ namespace ZaettaCaptureNative
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            if (!drawing || e.Button != MouseButtons.Left)
+            bool leftPressed = leftButtonDown || (Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left;
+            if (!drawing || !leftPressed)
             {
                 base.OnMouseWheel(e);
                 return;
@@ -1189,6 +1193,8 @@ namespace ZaettaCaptureNative
 
         protected override void OnMouseUp(MouseEventArgs e)
         {
+            if (e.Button == MouseButtons.Left)
+                leftButtonDown = false;
             if (e.Button == MouseButtons.Right && pendingRightCopy)
             {
                 FinishRightCopy();
