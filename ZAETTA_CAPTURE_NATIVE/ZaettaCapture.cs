@@ -131,11 +131,12 @@ namespace ZaettaCaptureNative
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            e.Graphics.PixelOffsetMode = PixelOffsetMode.Half;
+            e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
             using (SolidBrush bg = new SolidBrush(Color.FromArgb(3, 8, 13)))
                 e.Graphics.FillRectangle(bg, ClientRectangle);
 
-            Rectangle rect = new Rectangle(1, 1, Math.Max(1, Width - 3), Math.Max(1, Height - 3));
+            RectangleF rect = new RectangleF(0.5f, 0.5f, Math.Max(1f, Width - 1f), Math.Max(1f, Height - 1f));
             Color fillColor = hovering ? HoverFill : Fill;
             using (SolidBrush brush = new SolidBrush(hovering ? HoverFill : Fill))
             {
@@ -168,11 +169,9 @@ namespace ZaettaCaptureNative
             );
         }
 
-        private static GraphicsPath Rounded(Rectangle rect, int radius)
+        private static GraphicsPath Rounded(RectangleF rect, int radius)
         {
-            int d = radius * 2;
-            rect.Width -= 1;
-            rect.Height -= 1;
+            float d = Math.Max(2f, Math.Min(radius * 2f, Math.Min(rect.Width, rect.Height)));
             GraphicsPath path = new GraphicsPath();
             path.AddArc(rect.Left, rect.Top, d, d, 180, 90);
             path.AddArc(rect.Right - d, rect.Top, d, d, 270, 90);
@@ -185,9 +184,10 @@ namespace ZaettaCaptureNative
         private static void DrawIcon(Graphics g, string key, Rectangle bounds, Color color)
         {
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            int cx = bounds.Left + bounds.Width / 2;
-            int cy = bounds.Top + bounds.Height / 2;
-            Rectangle r = new Rectangle(cx - 7, cy - 7, 14, 14);
+            g.PixelOffsetMode = PixelOffsetMode.Half;
+            float cx = bounds.Left + bounds.Width / 2f;
+            float cy = bounds.Top + bounds.Height / 2f;
+            RectangleF r = new RectangleF(cx - 6.5f, cy - 6.5f, 13f, 13f);
             using (Pen pen = new Pen(color, 1.8f))
             using (SolidBrush brush = new SolidBrush(color))
             {
@@ -199,10 +199,10 @@ namespace ZaettaCaptureNative
                 {
                     g.DrawLine(pen, cx, cy - 7, cx, cy + 7);
                     g.DrawLine(pen, cx - 7, cy, cx + 7, cy);
-                    g.FillPolygon(brush, new[] { new Point(cx, cy - 10), new Point(cx - 3, cy - 6), new Point(cx + 3, cy - 6) });
-                    g.FillPolygon(brush, new[] { new Point(cx, cy + 10), new Point(cx - 3, cy + 6), new Point(cx + 3, cy + 6) });
-                    g.FillPolygon(brush, new[] { new Point(cx - 10, cy), new Point(cx - 6, cy - 3), new Point(cx - 6, cy + 3) });
-                    g.FillPolygon(brush, new[] { new Point(cx + 10, cy), new Point(cx + 6, cy - 3), new Point(cx + 6, cy + 3) });
+                    g.FillPolygon(brush, new[] { new PointF(cx, cy - 10), new PointF(cx - 3, cy - 6), new PointF(cx + 3, cy - 6) });
+                    g.FillPolygon(brush, new[] { new PointF(cx, cy + 10), new PointF(cx - 3, cy + 6), new PointF(cx + 3, cy + 6) });
+                    g.FillPolygon(brush, new[] { new PointF(cx - 10, cy), new PointF(cx - 6, cy - 3), new PointF(cx - 6, cy + 3) });
+                    g.FillPolygon(brush, new[] { new PointF(cx + 10, cy), new PointF(cx + 6, cy - 3), new PointF(cx + 6, cy + 3) });
                 }
                 else if (key == "arrow")
                 {
@@ -214,7 +214,7 @@ namespace ZaettaCaptureNative
                 }
                 else if (key == "rect")
                 {
-                    g.DrawRectangle(pen, r);
+                    g.DrawRectangle(pen, r.X, r.Y, r.Width, r.Height);
                 }
                 else if (key == "text")
                 {

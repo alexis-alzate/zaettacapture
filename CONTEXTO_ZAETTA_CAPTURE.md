@@ -301,6 +301,7 @@ Si hay que cambiar branding/icono, revisar `ZAETTA_CAPTURE/zaetta_icon.ico`.
 - Se aumento el tamano de la cabeza de las flechas usando `AdjustableArrowCap`.
 - Se cambio la captura para cubrir el escritorio virtual completo y permitir seleccionar cualquier monitor conectado.
 - Se corrigio el bug de overlays/capturas infinitas que oscurecian progresivamente la pantalla al dispararse varias capturas seguidas.
+- Se pulio el render de botones e iconos compactos con coordenadas `RectangleF`, `PixelOffsetMode.Half` y centrado real para evitar fondos descuadrados o bordes asimetricos.
 - Se subieron estos cambios a GitHub.
 
 Commits relevantes:
