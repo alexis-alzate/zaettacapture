@@ -131,22 +131,24 @@ namespace ZaettaCaptureNative
         protected override void OnPaint(PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
             using (SolidBrush bg = new SolidBrush(Color.FromArgb(3, 8, 13)))
                 e.Graphics.FillRectangle(bg, ClientRectangle);
 
-            Rectangle rect = new Rectangle(0, 0, Width - 1, Height - 1);
+            Rectangle rect = new Rectangle(1, 1, Math.Max(1, Width - 3), Math.Max(1, Height - 3));
             Color fillColor = hovering ? HoverFill : Fill;
             using (SolidBrush brush = new SolidBrush(hovering ? HoverFill : Fill))
             {
                 using (GraphicsPath path = Rounded(rect, Radius))
                 {
-                if (!OutlineOnly)
-                    e.Graphics.FillPath(brush, path);
-                else
-                    using (Pen pen = new Pen(fillColor, 1))
-                        e.Graphics.DrawPath(pen, path);
-                using (Pen edge = new Pen(hovering ? Color.FromArgb(92, 150, 238, 255) : Color.FromArgb(42, 190, 220, 230), 1))
-                    e.Graphics.DrawPath(edge, path);
+                    if (!OutlineOnly)
+                        e.Graphics.FillPath(brush, path);
+                    else
+                        using (Pen pen = new Pen(fillColor, 1))
+                            e.Graphics.DrawPath(pen, path);
+
+                    using (Pen edge = new Pen(hovering ? Color.FromArgb(92, 150, 238, 255) : Color.FromArgb(42, 190, 220, 230), 1))
+                        e.Graphics.DrawPath(edge, path);
                 }
             }
 
@@ -287,9 +289,7 @@ namespace ZaettaCaptureNative
 
         private static GraphicsPath Rounded(Rectangle rect, int radius)
         {
-            int d = radius * 2;
-            rect.Width -= 1;
-            rect.Height -= 1;
+            int d = Math.Max(2, Math.Min(radius * 2, Math.Min(rect.Width, rect.Height)));
             GraphicsPath path = new GraphicsPath();
             path.AddArc(rect.Left, rect.Top, d, d, 180, 90);
             path.AddArc(rect.Right - d, rect.Top, d, d, 270, 90);
@@ -304,7 +304,7 @@ namespace ZaettaCaptureNative
             g.SmoothingMode = SmoothingMode.AntiAlias;
             int cx = bounds.Left + bounds.Width / 2;
             int cy = bounds.Top + bounds.Height / 2;
-            Rectangle r = new Rectangle(cx - 7, cy - 7, 14, 14);
+            RectangleF r = new RectangleF(cx - 6.5f, cy - 6.5f, 13f, 13f);
             using (Pen pen = new Pen(color, 1.8f))
             using (SolidBrush brush = new SolidBrush(color))
             {
@@ -331,7 +331,7 @@ namespace ZaettaCaptureNative
                 }
                 else if (key == "rect")
                 {
-                    g.DrawRectangle(pen, r);
+                    g.DrawRectangle(pen, r.X, r.Y, r.Width, r.Height);
                 }
                 else if (key == "text")
                 {
