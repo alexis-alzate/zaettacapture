@@ -6,7 +6,7 @@ Capturador de pantalla interno tipo Lightshot, desarrollado para uso operativo.
 
 - `ZAETTA_CAPTURE_NATIVE/`: version nativa en C# WinForms.
 - `ZAETTA_CAPTURE/`: recursos e iconos.
-- `CONTEXTO_TRABAJO/`: contexto del proyecto para retomar desarrollo.
+- `CONTEXTO_ZAETTA_CAPTURE.md`: contexto completo para retomar desarrollo.
 
 ## Compilar app
 
