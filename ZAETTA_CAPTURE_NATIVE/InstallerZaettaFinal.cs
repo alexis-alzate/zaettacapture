@@ -356,10 +356,7 @@ namespace ZaettaCaptureInstaller
             }
             catch
             {
-                string cmdPath = Path.Combine(desktop, AppName + ".cmd");
-                File.WriteAllText(cmdPath, "@echo off\r\nstart \"\" \"" + appPath + "\"\r\n");
-                string startCmdPath = Path.Combine(programs, AppName + ".cmd");
-                File.WriteAllText(startCmdPath, "@echo off\r\nstart \"\" \"" + appPath + "\"\r\n");
+                throw new InvalidOperationException("No se pudo crear el acceso directo de Windows.");
             }
         }
 

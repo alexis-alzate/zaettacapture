@@ -59,7 +59,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Cierre automatico despues de copiar.
 - Cancelar seleccion al hacer clic fuera o con `Esc`.
 - Guardar imagen localmente.
-- Hook nativo para `Impr Pant`, consumiendo la tecla para evitar que Windows o teclados pequenos ejecuten zoom u otra accion del sistema.
+- Atajos globales con `RegisterHotKey`. Se retiro el hook global de bajo nivel para reducir falsos positivos de antivirus/Teams.
 - Bloqueo de capturas simultaneas para evitar overlays infinitos o capturas cada vez mas oscuras.
 - Herramienta de texto.
 - Herramienta para mover elementos.
@@ -128,9 +128,7 @@ Atajos deseados:
 
 Pendiente importante: dejar un panel simple para cambiar el atajo sin tocar codigo.
 
-Nota actual: `Print Screen` se maneja con un hook de bajo nivel cuando no tiene modificadores. Esto se hizo porque en pantallas pequenas o portatiles algunos equipos ejecutaban zoom en vez de abrir la captura. El hook consume la tecla y lanza Zaetta, evitando que el evento continue hacia Windows u otra app.
-
-El hook debe disparar una sola captura por pulsacion. Actualmente marca `shortcutDown` en `KeyDown` y lo libera en `KeyUp`, evitando auto-repeticiones cuando la tecla queda sostenida.
+Nota actual: `Print Screen` se maneja con `RegisterHotKey`, no con hook global de bajo nivel. Esto reduce alertas de seguridad al compartir el instalador por canales corporativos.
 
 ## 8. Arquitectura actual
 
@@ -149,7 +147,7 @@ Contiene:
 - Copia al portapapeles.
 - Guardado de imagen.
 - Ventana Acerca de.
-- `KeyboardShortcutHook`, usado para capturar `Impr Pant` con mayor control que `RegisterHotKey`.
+- Atajos globales mediante `RegisterHotKey`.
 - `DrawingStyle.ConfigureLineCap`, helper que centraliza el estilo de lineas/flechas.
 - `StartCapture`, actualmente captura `SystemInformation.VirtualScreen` para permitir seleccion libre en cualquier pantalla.
 - `TrayContext.captureActive`, bandera que impide abrir mas de una captura al mismo tiempo.
@@ -297,8 +295,8 @@ Si hay que cambiar branding/icono, revisar `ZAETTA_CAPTURE/zaetta_icon.ico`.
 
 - Se agrego `CONTEXTO_ZAETTA_CAPTURE.md` para que cualquier agente o desarrollador pueda retomar el proyecto sin mezclarlo con PlayOps Suite.
 - Se corrigio `README.md` para apuntar a este archivo de contexto.
-- Se cambio la captura de `Impr Pant` para usar un hook nativo de teclado cuando no hay modificadores.
-- Se corrigio el caso donde en equipos pequenos `Impr Pant` podia activar zoom en vez de Zaetta Capture.
+- Se retiro el hook nativo de teclado para reducir falsos positivos de antivirus/Teams.
+- `Impr Pant` queda gestionado por `RegisterHotKey`; si algun equipo intercepta esa tecla, se recomienda configurar un atajo alternativo desde la app.
 - Se recompilo la aplicacion nativa y el instalador final.
 - Se aumento el tamano de la cabeza de las flechas usando `AdjustableArrowCap`.
 - Se cambio la captura para cubrir el escritorio virtual completo y permitir seleccionar cualquier monitor conectado.
