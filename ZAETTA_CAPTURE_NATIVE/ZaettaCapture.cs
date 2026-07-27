@@ -95,6 +95,7 @@ namespace ZaettaCaptureNative
         public Color TextFill { get; set; }
         public int Radius { get; set; }
         public bool OutlineOnly { get; set; }
+        public string IconKey { get; set; }
         private bool hovering;
 
         public ZaettaButton(string text, bool primary)
@@ -103,7 +104,7 @@ namespace ZaettaCaptureNative
             Fill = primary ? Ui.Accent : Color.FromArgb(12, 23, 31);
             HoverFill = primary ? Ui.Accent2 : Color.FromArgb(20, 38, 49);
             TextFill = Color.White;
-            Radius = 2;
+            Radius = 4;
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderSize = 0;
             BackColor = Color.FromArgb(3, 8, 13);
@@ -129,18 +130,32 @@ namespace ZaettaCaptureNative
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            e.Graphics.SmoothingMode = SmoothingMode.None;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             using (SolidBrush bg = new SolidBrush(Color.FromArgb(3, 8, 13)))
                 e.Graphics.FillRectangle(bg, ClientRectangle);
+
             Rectangle rect = new Rectangle(0, 0, Width - 1, Height - 1);
+            Color fillColor = hovering ? HoverFill : Fill;
             using (SolidBrush brush = new SolidBrush(hovering ? HoverFill : Fill))
             {
+                using (GraphicsPath path = Rounded(rect, Radius))
+                {
                 if (!OutlineOnly)
-                    e.Graphics.FillRectangle(brush, rect);
+                    e.Graphics.FillPath(brush, path);
                 else
-                    using (Pen pen = new Pen(hovering ? HoverFill : Fill, 1))
-                        e.Graphics.DrawRectangle(pen, rect);
+                    using (Pen pen = new Pen(fillColor, 1))
+                        e.Graphics.DrawPath(pen, path);
+                using (Pen edge = new Pen(hovering ? Color.FromArgb(92, 150, 238, 255) : Color.FromArgb(42, 190, 220, 230), 1))
+                    e.Graphics.DrawPath(edge, path);
+                }
             }
+
+            if (!string.IsNullOrEmpty(IconKey))
+            {
+                DrawIcon(e.Graphics, IconKey, ClientRectangle, TextFill);
+                return;
+            }
+
             TextRenderer.DrawText(
                 e.Graphics,
                 Text,
@@ -163,6 +178,67 @@ namespace ZaettaCaptureNative
             path.AddArc(rect.Left, rect.Bottom - d, d, d, 90, 90);
             path.CloseFigure();
             return path;
+        }
+
+        private static void DrawIcon(Graphics g, string key, Rectangle bounds, Color color)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int cx = bounds.Left + bounds.Width / 2;
+            int cy = bounds.Top + bounds.Height / 2;
+            Rectangle r = new Rectangle(cx - 7, cy - 7, 14, 14);
+            using (Pen pen = new Pen(color, 1.8f))
+            using (SolidBrush brush = new SolidBrush(color))
+            {
+                pen.StartCap = LineCap.Round;
+                pen.EndCap = LineCap.Round;
+                pen.LineJoin = LineJoin.Round;
+
+                if (key == "move")
+                {
+                    g.DrawLine(pen, cx, cy - 7, cx, cy + 7);
+                    g.DrawLine(pen, cx - 7, cy, cx + 7, cy);
+                    g.FillPolygon(brush, new[] { new Point(cx, cy - 10), new Point(cx - 3, cy - 6), new Point(cx + 3, cy - 6) });
+                    g.FillPolygon(brush, new[] { new Point(cx, cy + 10), new Point(cx - 3, cy + 6), new Point(cx + 3, cy + 6) });
+                    g.FillPolygon(brush, new[] { new Point(cx - 10, cy), new Point(cx - 6, cy - 3), new Point(cx - 6, cy + 3) });
+                    g.FillPolygon(brush, new[] { new Point(cx + 10, cy), new Point(cx + 6, cy - 3), new Point(cx + 6, cy + 3) });
+                }
+                else if (key == "arrow")
+                {
+                    using (AdjustableArrowCap cap = new AdjustableArrowCap(4.8f, 6.2f, true))
+                    {
+                        pen.CustomEndCap = cap;
+                        g.DrawLine(pen, cx - 7, cy + 5, cx + 7, cy - 5);
+                    }
+                }
+                else if (key == "rect")
+                {
+                    g.DrawRectangle(pen, r);
+                }
+                else if (key == "text")
+                {
+                    using (Font font = new Font("Segoe UI", 11, FontStyle.Bold))
+                        TextRenderer.DrawText(g, "T", font, bounds, color, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
+                else if (key == "pixel")
+                {
+                    int s = 4;
+                    g.FillRectangle(brush, cx - 7, cy - 6, s, s);
+                    g.FillRectangle(brush, cx - 1, cy - 6, s, s);
+                    g.FillRectangle(brush, cx + 5, cy - 6, s, s);
+                    g.FillRectangle(brush, cx - 7, cy, s, s);
+                    g.FillRectangle(brush, cx - 1, cy, s, s);
+                    g.FillRectangle(brush, cx + 5, cy, s, s);
+                    g.FillRectangle(brush, cx - 7, cy + 6, s, s);
+                    g.FillRectangle(brush, cx - 1, cy + 6, s, s);
+                    g.FillRectangle(brush, cx + 5, cy + 6, s, s);
+                }
+                else if (key == "more")
+                {
+                    g.FillEllipse(brush, cx - 7, cy - 2, 4, 4);
+                    g.FillEllipse(brush, cx - 2, cy - 2, 4, 4);
+                    g.FillEllipse(brush, cx + 3, cy - 2, 4, 4);
+                }
+            }
         }
     }
 
@@ -221,6 +297,67 @@ namespace ZaettaCaptureNative
             path.AddArc(rect.Left, rect.Bottom - d, d, d, 90, 90);
             path.CloseFigure();
             return path;
+        }
+
+        private static void DrawIcon(Graphics g, string key, Rectangle bounds, Color color)
+        {
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int cx = bounds.Left + bounds.Width / 2;
+            int cy = bounds.Top + bounds.Height / 2;
+            Rectangle r = new Rectangle(cx - 7, cy - 7, 14, 14);
+            using (Pen pen = new Pen(color, 1.8f))
+            using (SolidBrush brush = new SolidBrush(color))
+            {
+                pen.StartCap = LineCap.Round;
+                pen.EndCap = LineCap.Round;
+                pen.LineJoin = LineJoin.Round;
+
+                if (key == "move")
+                {
+                    g.DrawLine(pen, cx, cy - 7, cx, cy + 7);
+                    g.DrawLine(pen, cx - 7, cy, cx + 7, cy);
+                    g.FillPolygon(brush, new[] { new Point(cx, cy - 10), new Point(cx - 3, cy - 6), new Point(cx + 3, cy - 6) });
+                    g.FillPolygon(brush, new[] { new Point(cx, cy + 10), new Point(cx - 3, cy + 6), new Point(cx + 3, cy + 6) });
+                    g.FillPolygon(brush, new[] { new Point(cx - 10, cy), new Point(cx - 6, cy - 3), new Point(cx - 6, cy + 3) });
+                    g.FillPolygon(brush, new[] { new Point(cx + 10, cy), new Point(cx + 6, cy - 3), new Point(cx + 6, cy + 3) });
+                }
+                else if (key == "arrow")
+                {
+                    using (AdjustableArrowCap cap = new AdjustableArrowCap(4.8f, 6.2f, true))
+                    {
+                        pen.CustomEndCap = cap;
+                        g.DrawLine(pen, cx - 7, cy + 5, cx + 7, cy - 5);
+                    }
+                }
+                else if (key == "rect")
+                {
+                    g.DrawRectangle(pen, r);
+                }
+                else if (key == "text")
+                {
+                    using (Font font = new Font("Segoe UI", 11, FontStyle.Bold))
+                        TextRenderer.DrawText(g, "T", font, bounds, color, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                }
+                else if (key == "pixel")
+                {
+                    int s = 4;
+                    g.FillRectangle(brush, cx - 7, cy - 6, s, s);
+                    g.FillRectangle(brush, cx - 1, cy - 6, s, s);
+                    g.FillRectangle(brush, cx + 5, cy - 6, s, s);
+                    g.FillRectangle(brush, cx - 7, cy, s, s);
+                    g.FillRectangle(brush, cx - 1, cy, s, s);
+                    g.FillRectangle(brush, cx + 5, cy, s, s);
+                    g.FillRectangle(brush, cx - 7, cy + 6, s, s);
+                    g.FillRectangle(brush, cx - 1, cy + 6, s, s);
+                    g.FillRectangle(brush, cx + 5, cy + 6, s, s);
+                }
+                else if (key == "more")
+                {
+                    g.FillEllipse(brush, cx - 7, cy - 2, 4, 4);
+                    g.FillEllipse(brush, cx - 2, cy - 2, 4, 4);
+                    g.FillEllipse(brush, cx + 3, cy - 2, 4, 4);
+                }
+            }
         }
     }
 
@@ -1196,6 +1333,29 @@ namespace ZaettaCaptureNative
             button.Top = y;
             button.Width = width;
             button.Height = 26;
+            button.Radius = width <= 34 ? 5 : 6;
+
+            string iconKey = IconKeyForButton(text);
+            if (!string.IsNullOrEmpty(iconKey))
+            {
+                button.IconKey = iconKey;
+                button.Text = string.Empty;
+                button.TextFill = primary ? Color.FromArgb(4, 11, 16) : Color.FromArgb(220, 240, 246);
+            }
+
+            if (primary && parent == sideToolbar)
+            {
+                button.Fill = Ui.Accent;
+                button.HoverFill = Ui.Accent2;
+                button.TextFill = Color.FromArgb(4, 11, 16);
+            }
+            else if (parent == sideToolbar)
+            {
+                button.Fill = Color.FromArgb(8, 20, 27);
+                button.HoverFill = Color.FromArgb(18, 42, 52);
+                button.TextFill = Color.FromArgb(225, 242, 246);
+            }
+
             button.Click += click;
             tips.SetToolTip(button, tooltip);
             button.MouseDown += delegate(object sender, MouseEventArgs e)
@@ -1210,6 +1370,23 @@ namespace ZaettaCaptureNative
             };
             parent.Controls.Add(button);
             return button;
+        }
+
+        private static string IconKeyForButton(string text)
+        {
+            if (text == "P")
+                return "move";
+            if (text == "->")
+                return "arrow";
+            if (text == "[]")
+                return "rect";
+            if (text == "T")
+                return "text";
+            if (text == "Px")
+                return "pixel";
+            if (text == "...")
+                return "more";
+            return string.Empty;
         }
 
         private static void ConfigureTips(ToolTip tooltip)

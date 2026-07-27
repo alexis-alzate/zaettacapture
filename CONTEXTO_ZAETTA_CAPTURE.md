@@ -49,6 +49,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Barra compacta de herramientas.
 - Herramientas visibles principales.
 - Menu de mas herramientas con tres puntos.
+- Botones compactos con iconos dibujados para herramientas principales, estilo oscuro/minimal y estados hover/activo mas pulidos.
 - Tooltips descriptivos en botones.
 - Copiar con boton.
 - Copiar con clic derecho sobre la captura.
