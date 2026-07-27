@@ -57,6 +57,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Cancelar seleccion al hacer clic fuera o con `Esc`.
 - Guardar imagen localmente.
 - Hook nativo para `Impr Pant`, consumiendo la tecla para evitar que Windows o teclados pequenos ejecuten zoom u otra accion del sistema.
+- Bloqueo de capturas simultaneas para evitar overlays infinitos o capturas cada vez mas oscuras.
 - Herramienta de texto.
 - Herramienta para mover elementos.
 - Herramientas de dibujo.
@@ -102,6 +103,7 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - El programa debe sentirse inmediato; la seleccion no puede tener lag perceptible.
 - El instalador debe sobreescribir versiones anteriores y evitar que queden varias copias con nombres distintos.
 - Al activar captura, el usuario debe poder seleccionar cualquier monitor conectado, incluso si el mouse estaba inicialmente en otro monitor. Por eso `StartCapture` debe usar el escritorio virtual completo.
+- No se deben abrir multiples overlays al mantener presionado `Impr Pant` o al disparar varias veces el atajo. `TrayContext.captureActive` bloquea una nueva captura hasta que el overlay actual cierre.
 
 ## 7. Atajos actuales y deseados
 
@@ -121,6 +123,8 @@ Atajos deseados:
 Pendiente importante: dejar un panel simple para cambiar el atajo sin tocar codigo.
 
 Nota actual: `Print Screen` se maneja con un hook de bajo nivel cuando no tiene modificadores. Esto se hizo porque en pantallas pequenas o portatiles algunos equipos ejecutaban zoom en vez de abrir la captura. El hook consume la tecla y lanza Zaetta, evitando que el evento continue hacia Windows u otra app.
+
+El hook debe disparar una sola captura por pulsacion. Actualmente marca `shortcutDown` en `KeyDown` y lo libera en `KeyUp`, evitando auto-repeticiones cuando la tecla queda sostenida.
 
 ## 8. Arquitectura actual
 
@@ -142,6 +146,7 @@ Contiene:
 - `KeyboardShortcutHook`, usado para capturar `Impr Pant` con mayor control que `RegisterHotKey`.
 - `DrawingStyle.ConfigureLineCap`, helper que centraliza el estilo de lineas/flechas.
 - `StartCapture`, actualmente captura `SystemInformation.VirtualScreen` para permitir seleccion libre en cualquier pantalla.
+- `TrayContext.captureActive`, bandera que impide abrir mas de una captura al mismo tiempo.
 
 `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
 
@@ -291,6 +296,7 @@ Si hay que cambiar branding/icono, revisar `ZAETTA_CAPTURE/zaetta_icon.ico`.
 - Se recompilo la aplicacion nativa y el instalador final.
 - Se aumento el tamano de la cabeza de las flechas usando `AdjustableArrowCap`.
 - Se cambio la captura para cubrir el escritorio virtual completo y permitir seleccionar cualquier monitor conectado.
+- Se corrigio el bug de overlays/capturas infinitas que oscurecian progresivamente la pantalla al dispararse varias capturas seguidas.
 - Se subieron estos cambios a GitHub.
 
 Commits relevantes:

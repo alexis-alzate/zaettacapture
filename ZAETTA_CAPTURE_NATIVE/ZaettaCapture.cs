@@ -262,6 +262,7 @@ namespace ZaettaCaptureNative
         private ToolStripMenuItem ctrlShiftSItem;
         private ToolStripMenuItem ctrlAltSItem;
         private ToolStripMenuItem customHotkeyItem;
+        private bool captureActive;
 
         public TrayContext()
         {
@@ -344,15 +345,28 @@ namespace ZaettaCaptureNative
 
         private void StartCapture()
         {
-            Rectangle bounds = SystemInformation.VirtualScreen;
-            Bitmap screenshot = new Bitmap(bounds.Width, bounds.Height);
-            using (Graphics g = Graphics.FromImage(screenshot))
-            {
-                g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size, CopyPixelOperation.SourceCopy);
-            }
+            if (captureActive)
+                return;
 
-            var overlay = new CaptureOverlay(bounds, screenshot);
-            overlay.Show();
+            captureActive = true;
+            try
+            {
+                Rectangle bounds = SystemInformation.VirtualScreen;
+                Bitmap screenshot = new Bitmap(bounds.Width, bounds.Height);
+                using (Graphics g = Graphics.FromImage(screenshot))
+                {
+                    g.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size, CopyPixelOperation.SourceCopy);
+                }
+
+                var overlay = new CaptureOverlay(bounds, screenshot);
+                overlay.FormClosed += delegate { captureActive = false; };
+                overlay.Show();
+            }
+            catch (Exception ex)
+            {
+                captureActive = false;
+                MessageBox.Show("No se pudo iniciar la captura.\n\n" + ex.Message, "Zaetta Capture", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void ShowAbout()
@@ -460,7 +474,9 @@ namespace ZaettaCaptureNative
     {
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
+        private const int WM_KEYUP = 0x0101;
         private const int WM_SYSKEYDOWN = 0x0104;
+        private const int WM_SYSKEYUP = 0x0105;
         private const int HC_ACTION = 0;
 
         private readonly Action action;
@@ -469,6 +485,7 @@ namespace ZaettaCaptureNative
         private Keys key;
         private uint modifiers;
         private bool enabled;
+        private bool shortcutDown;
         private DateTime lastTrigger = DateTime.MinValue;
 
         private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
@@ -517,12 +534,24 @@ namespace ZaettaCaptureNative
 
         private IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (enabled && nCode == HC_ACTION && (wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN))
+            if (enabled && nCode == HC_ACTION)
             {
                 int vkCode = Marshal.ReadInt32(lParam);
                 Keys pressed = (Keys)vkCode;
-                if (pressed == key && ModifiersMatch())
+                bool isDown = wParam == (IntPtr)WM_KEYDOWN || wParam == (IntPtr)WM_SYSKEYDOWN;
+                bool isUp = wParam == (IntPtr)WM_KEYUP || wParam == (IntPtr)WM_SYSKEYUP;
+
+                if (pressed == key && isUp)
                 {
+                    shortcutDown = false;
+                    return (IntPtr)1;
+                }
+
+                if (pressed == key && isDown && ModifiersMatch())
+                {
+                    if (shortcutDown)
+                        return (IntPtr)1;
+                    shortcutDown = true;
                     DateTime now = DateTime.Now;
                     if ((now - lastTrigger).TotalMilliseconds > 350)
                     {
