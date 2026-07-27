@@ -43,6 +43,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Menu de opciones desde el icono de bandeja.
 - Captura de pantalla con seleccion de area.
 - Soporte para multiples pantallas.
+- Captura sobre todo el escritorio virtual de Windows usando `SystemInformation.VirtualScreen`, no solo la pantalla donde esta el mouse.
 - Selector visual tipo Lightshot, con borde punteado y fondo atenuado.
 - Editor inmediato sobre la seleccion.
 - Barra compacta de herramientas.
@@ -100,6 +101,7 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - Si el usuario cancela, debe cerrar todo y devolver el control normal del mouse.
 - El programa debe sentirse inmediato; la seleccion no puede tener lag perceptible.
 - El instalador debe sobreescribir versiones anteriores y evitar que queden varias copias con nombres distintos.
+- Al activar captura, el usuario debe poder seleccionar cualquier monitor conectado, incluso si el mouse estaba inicialmente en otro monitor. Por eso `StartCapture` debe usar el escritorio virtual completo.
 
 ## 7. Atajos actuales y deseados
 
@@ -139,6 +141,7 @@ Contiene:
 - Ventana Acerca de.
 - `KeyboardShortcutHook`, usado para capturar `Impr Pant` con mayor control que `RegisterHotKey`.
 - `DrawingStyle.ConfigureLineCap`, helper que centraliza el estilo de lineas/flechas.
+- `StartCapture`, actualmente captura `SystemInformation.VirtualScreen` para permitir seleccion libre en cualquier pantalla.
 
 `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
 
@@ -287,6 +290,7 @@ Si hay que cambiar branding/icono, revisar `ZAETTA_CAPTURE/zaetta_icon.ico`.
 - Se corrigio el caso donde en equipos pequenos `Impr Pant` podia activar zoom en vez de Zaetta Capture.
 - Se recompilo la aplicacion nativa y el instalador final.
 - Se aumento el tamano de la cabeza de las flechas usando `AdjustableArrowCap`.
+- Se cambio la captura para cubrir el escritorio virtual completo y permitir seleccionar cualquier monitor conectado.
 - Se subieron estos cambios a GitHub.
 
 Commits relevantes:

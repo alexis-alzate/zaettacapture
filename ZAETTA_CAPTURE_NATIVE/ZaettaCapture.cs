@@ -344,7 +344,7 @@ namespace ZaettaCaptureNative
 
         private void StartCapture()
         {
-            Rectangle bounds = Screen.FromPoint(Cursor.Position).Bounds;
+            Rectangle bounds = SystemInformation.VirtualScreen;
             Bitmap screenshot = new Bitmap(bounds.Width, bounds.Height);
             using (Graphics g = Graphics.FromImage(screenshot))
             {
