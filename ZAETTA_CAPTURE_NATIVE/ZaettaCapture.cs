@@ -1027,7 +1027,11 @@ namespace ZaettaCaptureNative
                     DrawOp hoveredOp = HitTestOp(e.Location);
                     if (hoveredOp != null)
                     {
-                        AdjustOpByWheel(hoveredOp, e.Delta > 0 ? 1 : -1);
+                        int delta = e.Delta > 0 ? 1 : -1;
+                        if ((ModifierKeys & Keys.Control) == Keys.Control)
+                            AdjustOpStrokeByWheel(hoveredOp, delta);
+                        else
+                            AdjustOpByWheel(hoveredOp, delta);
                         selectedOp = hoveredOp;
                         Invalidate();
                         return;
@@ -1577,6 +1581,7 @@ namespace ZaettaCaptureNative
             if (op == null)
                 return false;
             return op.Tool == Tool.Arrow
+                || op.Tool == Tool.Rect
                 || op.Tool == Tool.Line
                 || op.Tool == Tool.Pencil
                 || op.Tool == Tool.Highlight;
@@ -1612,11 +1617,19 @@ namespace ZaettaCaptureNative
                 return;
             }
 
-            if (CanResizeStroke(op))
-            {
-                AdjustOpWidth(op, delta);
-                drawWidth = Math.Max(2, Math.Min(12, op.Width));
-            }
+            if (op.Tool == Tool.Arrow || op.Tool == Tool.Line)
+                ScaleTwoPointOp(op, delta > 0 ? 1.08f : 0.92f);
+            else if (op.Tool == Tool.Pencil || op.Tool == Tool.Highlight)
+                ScalePointListOp(op, delta > 0 ? 1.08f : 0.92f);
+        }
+
+        private void AdjustOpStrokeByWheel(DrawOp op, int delta)
+        {
+            if (!CanResizeStroke(op))
+                return;
+
+            AdjustOpWidth(op, delta);
+            drawWidth = Math.Max(2, Math.Min(12, op.Width));
         }
 
         private void ScaleBoxOp(DrawOp op, float factor)
@@ -1662,6 +1675,36 @@ namespace ZaettaCaptureNative
 
             op.A = new Point(left, top);
             op.B = new Point(right, bottom);
+        }
+
+        private void ScaleTwoPointOp(DrawOp op, float factor)
+        {
+            float cx = (op.A.X + op.B.X) / 2f;
+            float cy = (op.A.Y + op.B.Y) / 2f;
+            op.A = ClampToSelection(ScalePoint(op.A, cx, cy, factor));
+            op.B = ClampToSelection(ScalePoint(op.B, cx, cy, factor));
+        }
+
+        private void ScalePointListOp(DrawOp op, float factor)
+        {
+            if (op.Points == null || op.Points.Count == 0)
+                return;
+
+            Rectangle bounds = GetOpBounds(op);
+            float cx = bounds.Left + bounds.Width / 2f;
+            float cy = bounds.Top + bounds.Height / 2f;
+            for (int i = 0; i < op.Points.Count; i++)
+                op.Points[i] = ClampToSelection(ScalePoint(op.Points[i], cx, cy, factor));
+            op.A = op.Points[0];
+            op.B = op.Points[op.Points.Count - 1];
+        }
+
+        private static Point ScalePoint(Point point, float cx, float cy, float factor)
+        {
+            return new Point(
+                (int)Math.Round(cx + ((point.X - cx) * factor)),
+                (int)Math.Round(cy + ((point.Y - cy) * factor))
+            );
         }
 
         private void DrawOpOnOverlay(Graphics g, DrawOp op)
