@@ -44,6 +44,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Captura de pantalla con seleccion de area.
 - Soporte para multiples pantallas.
 - Captura sobre todo el escritorio virtual de Windows usando `SystemInformation.VirtualScreen`, no solo la pantalla donde esta el mouse.
+- Proceso marcado como DPI-aware al iniciar para evitar recortes desplazados o a medias en equipos con multiples monitores y escalas distintas.
 - Selector visual tipo Lightshot, con borde punteado y fondo atenuado.
 - Editor inmediato sobre la seleccion.
 - Barra compacta de herramientas.
@@ -107,6 +108,7 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - El programa debe sentirse inmediato; la seleccion no puede tener lag perceptible.
 - El instalador debe sobreescribir versiones anteriores y evitar que queden varias copias con nombres distintos.
 - Al activar captura, el usuario debe poder seleccionar cualquier monitor conectado, incluso si el mouse estaba inicialmente en otro monitor. Por eso `StartCapture` debe usar el escritorio virtual completo.
+- En equipos con monitores a 125%, 150% o escalas mixtas, la app debe activar DPI awareness antes de crear ventanas; de lo contrario Windows puede virtualizar coordenadas y copiar una zona incorrecta.
 - No se deben abrir multiples overlays al mantener presionado `Impr Pant` o al disparar varias veces el atajo. `TrayContext.captureActive` bloquea una nueva captura hasta que el overlay actual cierre.
 
 ## 7. Atajos actuales y deseados
