@@ -33,6 +33,18 @@ namespace ZaettaCaptureNative
         }
     }
 
+    internal static class DrawingStyle
+    {
+        public static void ConfigureLineCap(Pen pen, Tool tool)
+        {
+            pen.StartCap = LineCap.Round;
+            if (tool == Tool.Arrow)
+                pen.CustomEndCap = new AdjustableArrowCap(5.8f, 7.2f, true);
+            else
+                pen.EndCap = LineCap.Round;
+        }
+    }
+
     internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
     {
         private readonly Color bg = Color.FromArgb(7, 16, 25);
@@ -1336,8 +1348,7 @@ namespace ZaettaCaptureNative
             {
                 g.SmoothingMode = SmoothingMode.AntiAlias;
                 g.Clear(Color.Transparent);
-                pen.StartCap = LineCap.Round;
-                pen.EndCap = selected == Tool.Arrow ? LineCap.ArrowAnchor : LineCap.Round;
+                DrawingStyle.ConfigureLineCap(pen, selected);
 
                 if (selected == Tool.Move)
                 {
@@ -1429,8 +1440,7 @@ namespace ZaettaCaptureNative
             int width = op.Tool == Tool.Highlight ? Math.Max(10, op.Width * 4) : op.Width;
             using (Pen pen = new Pen(opColor, width))
             {
-                pen.StartCap = LineCap.Round;
-                pen.EndCap = op.Tool == Tool.Arrow ? LineCap.ArrowAnchor : LineCap.Round;
+                DrawingStyle.ConfigureLineCap(pen, op.Tool);
                 if (op.Tool == Tool.Arrow)
                     g.DrawLine(pen, op.A, op.B);
                 else if (op.Tool == Tool.Line)
@@ -2364,8 +2374,7 @@ namespace ZaettaCaptureNative
             Point b = ToScreenPoint(op.B, imageRect);
             using (Pen pen = new Pen(op.Color, op.Width))
             {
-                pen.StartCap = LineCap.Round;
-                pen.EndCap = op.Tool == Tool.Arrow ? LineCap.ArrowAnchor : LineCap.Round;
+                DrawingStyle.ConfigureLineCap(pen, op.Tool);
                 if (op.Tool == Tool.Arrow)
                     g.DrawLine(pen, a, b);
                 else if (op.Tool == Tool.Rect)
@@ -2422,8 +2431,7 @@ namespace ZaettaCaptureNative
         {
             using (Pen pen = new Pen(op.Color, op.Width))
             {
-                pen.StartCap = LineCap.Round;
-                pen.EndCap = op.Tool == Tool.Arrow ? LineCap.ArrowAnchor : LineCap.Round;
+                DrawingStyle.ConfigureLineCap(pen, op.Tool);
                 if (op.Tool == Tool.Arrow)
                     g.DrawLine(pen, op.A, op.B);
                 else if (op.Tool == Tool.Rect)
