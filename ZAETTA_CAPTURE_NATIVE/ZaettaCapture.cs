@@ -1129,6 +1129,14 @@ namespace ZaettaCaptureNative
             bool leftPressed = leftButtonDown || (Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left;
             if (!drawing || !leftPressed)
             {
+                if (!drawing && selectedOp != null && CanResizeStroke(selectedOp))
+                {
+                    AdjustOpWidth(selectedOp, e.Delta > 0 ? 1 : -1);
+                    drawWidth = Math.Max(2, Math.Min(12, selectedOp.Width));
+                    Invalidate();
+                    return;
+                }
+
                 base.OnMouseWheel(e);
                 return;
             }
@@ -1665,6 +1673,25 @@ namespace ZaettaCaptureNative
         private void AdjustDrawWidth(int delta)
         {
             drawWidth = Math.Max(2, Math.Min(12, drawWidth + delta));
+        }
+
+        private static bool CanResizeStroke(DrawOp op)
+        {
+            if (op == null)
+                return false;
+            return op.Tool == Tool.Arrow
+                || op.Tool == Tool.Rect
+                || op.Tool == Tool.Line
+                || op.Tool == Tool.Pencil
+                || op.Tool == Tool.Highlight
+                || op.Tool == Tool.Pixelate;
+        }
+
+        private static void AdjustOpWidth(DrawOp op, int delta)
+        {
+            if (op == null)
+                return;
+            op.Width = Math.Max(2, Math.Min(12, op.Width + delta));
         }
 
         private void DrawOpOnOverlay(Graphics g, DrawOp op)

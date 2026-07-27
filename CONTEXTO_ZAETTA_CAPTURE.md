@@ -66,6 +66,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Flechas con cabeza agrandada mediante `AdjustableArrowCap` para que se vean mas claras en evidencias.
 - Ajuste de color para figuras y trazos.
 - Ajuste rapido de grosor mientras se dibuja: clic izquierdo sostenido + rueda del mouse arriba/abajo. Se valida con `Control.MouseButtons` y bandera interna porque `MouseWheel` puede llegar con `e.Button = None`.
+- Ajuste posterior de grosor: al seleccionar una anotacion ya creada, la rueda del mouse permite adelgazar o engrosar flechas, marcos, lineas, lapiz, resaltador y pixelado.
 - Icono y marca visual Zaetta.
 - Ventana "Acerca de" con desarrollador, version y descripcion.
 - Instalador `.exe` con barra de progreso.
