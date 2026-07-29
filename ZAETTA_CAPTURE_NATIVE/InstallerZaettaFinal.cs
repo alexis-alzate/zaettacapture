@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.IO;
 using Microsoft.Win32;
 using System.Reflection;
@@ -37,10 +38,12 @@ namespace ZaettaCaptureInstaller
         private readonly Label status;
         private readonly FlatButton installButton;
         private readonly Label detail;
+        private readonly Image backgroundGlow;
         private bool completed;
 
         private const string AppName = "Zaetta Capture";
         private const string ResourceName = "ZaettaApp";
+        private const string LogoResourceName = "ZaettaLogo";
         private const string Publisher = "Victor Alexis Alzate Cortes";
         private const string Version = "1.0";
 
@@ -60,29 +63,29 @@ namespace ZaettaCaptureInstaller
             ClientSize = new Size(560, 330);
             BackColor = Color.FromArgb(7, 14, 21);
             Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
-
-            Label z = new Label();
-            z.Text = "Z";
-            z.ForeColor = Color.FromArgb(32, 196, 244);
-            z.BackColor = BackColor;
-            z.Font = new Font("Segoe UI", 38, FontStyle.Bold);
-            z.SetBounds(34, 34, 58, 62);
-            Controls.Add(z);
+            backgroundGlow = LoadLogoGlowImage(260);
 
             Label title = new Label();
-            title.Text = "Zaetta Capture";
+            title.Text = "aetta Capture";
             title.ForeColor = Color.White;
             title.BackColor = BackColor;
             title.Font = new Font("Segoe UI", 25, FontStyle.Bold);
-            title.SetBounds(102, 45, 410, 42);
+            title.SetBounds(138, 52, 374, 42);
             Controls.Add(title);
+
+            PictureBox titleLogo = new PictureBox();
+            titleLogo.BackColor = BackColor;
+            titleLogo.Image = LoadLogoMarkImage(64);
+            titleLogo.SizeMode = PictureBoxSizeMode.Zoom;
+            titleLogo.SetBounds(72, 44, 64, 64);
+            Controls.Add(titleLogo);
 
             Label subtitle = new Label();
             subtitle.Text = "Instalador local, rapido y limpio.";
             subtitle.ForeColor = Color.FromArgb(165, 184, 199);
             subtitle.BackColor = BackColor;
             subtitle.Font = new Font("Segoe UI", 10, FontStyle.Regular);
-            subtitle.SetBounds(106, 94, 370, 24);
+            subtitle.SetBounds(140, 99, 360, 24);
             Controls.Add(subtitle);
 
             Panel card = new Panel();
@@ -111,7 +114,7 @@ namespace ZaettaCaptureInstaller
             card.Controls.Add(progress);
 
             installButton = new FlatButton("Instalar", true);
-            installButton.SetBounds(382, 268, 150, 36);
+            installButton.SetBounds(370, 268, 150, 36);
             installButton.Click += delegate
             {
                 if (completed)
@@ -120,6 +123,69 @@ namespace ZaettaCaptureInstaller
                     Install();
             };
             Controls.Add(installButton);
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            base.OnPaintBackground(e);
+            if (backgroundGlow == null)
+                return;
+
+            using (ImageAttributes opacity = new ImageAttributes())
+            {
+                ColorMatrix matrix = new ColorMatrix();
+                matrix.Matrix33 = 0.07f;
+                opacity.SetColorMatrix(matrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                Rectangle glowRect = new Rectangle(336, -54, 250, 250);
+                e.Graphics.DrawImage(backgroundGlow, glowRect, 0, 0, backgroundGlow.Width, backgroundGlow.Height, GraphicsUnit.Pixel, opacity);
+            }
+        }
+
+        private static Image LoadLogoMarkImage(int size)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(LogoResourceName))
+            {
+                if (stream == null)
+                    return Icon.ExtractAssociatedIcon(Application.ExecutablePath).ToBitmap();
+                using (Image image = Image.FromStream(stream))
+                    return BuildLogoMark(image, size);
+            }
+        }
+
+        private static Image LoadLogoGlowImage(int size)
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(LogoResourceName))
+            {
+                if (stream == null)
+                    return Icon.ExtractAssociatedIcon(Application.ExecutablePath).ToBitmap();
+                using (Image image = Image.FromStream(stream))
+                    return BuildLogoMark(image, size);
+            }
+        }
+
+        private static Bitmap BuildLogoMark(Image source, int size)
+        {
+            Bitmap result = new Bitmap(size, size);
+            using (Graphics g = Graphics.FromImage(result))
+            {
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.Clear(Color.Transparent);
+
+                float cropSize = Math.Min(source.Width, source.Height) * 0.64f;
+                RectangleF sourceRect = new RectangleF(
+                    source.Width * 0.18f,
+                    source.Height * 0.16f,
+                    cropSize,
+                    cropSize
+                );
+                RectangleF targetRect = new RectangleF(0, 0, size, size);
+                g.DrawImage(source, targetRect, sourceRect, GraphicsUnit.Pixel);
+            }
+            return result;
         }
 
         private void Install()
@@ -467,7 +533,7 @@ namespace ZaettaCaptureInstaller
             {
                 Rectangle fill = new Rectangle(0, 0, fillWidth, Height - 1);
                 using (GraphicsPath fillPath = Round(fill, Height / 2))
-                using (LinearGradientBrush brush = new LinearGradientBrush(fill, Color.FromArgb(32, 196, 244), Color.FromArgb(0, 255, 210), 0f))
+                using (LinearGradientBrush brush = new LinearGradientBrush(fill, Color.FromArgb(255, 219, 91), Color.FromArgb(198, 137, 25), 0f))
                     e.Graphics.FillPath(brush, fillPath);
             }
         }
@@ -521,12 +587,13 @@ namespace ZaettaCaptureInstaller
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             Color fill = primary
-                ? (hover ? Color.FromArgb(32, 196, 244) : Color.FromArgb(21, 173, 216))
+                ? (hover ? Color.FromArgb(255, 219, 91) : Color.FromArgb(214, 151, 31))
                 : Color.FromArgb(20, 36, 48);
             using (GraphicsPath path = Round(new Rectangle(0, 0, Width - 1, Height - 1), 6))
             using (SolidBrush brush = new SolidBrush(fill))
                 e.Graphics.FillPath(brush, path);
-            TextRenderer.DrawText(e.Graphics, Text, Font, ClientRectangle, ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            Color textColor = primary ? Color.FromArgb(12, 12, 10) : ForeColor;
+            TextRenderer.DrawText(e.Graphics, Text, Font, ClientRectangle, textColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
 
         private static GraphicsPath Round(Rectangle rect, int radius)

@@ -67,8 +67,9 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Flechas con cabeza agrandada mediante `AdjustableArrowCap` para que se vean mas claras en evidencias.
 - Ajuste de color para figuras y trazos.
 - Ajuste rapido de grosor mientras se dibuja: clic izquierdo sostenido + rueda del mouse arriba/abajo. Se valida con `Control.MouseButtons` y bandera interna porque `MouseWheel` puede llegar con `e.Button = None`.
-- Ajuste posterior de grosor: al seleccionar una anotacion ya creada, la rueda del mouse permite adelgazar o engrosar flechas, marcos, lineas, lapiz, resaltador y pixelado.
-- Icono y marca visual Zaetta.
+- Ajuste posterior: al pasar el mouse sobre una anotacion ya creada, la rueda permite cambiar tamano o grosor segun la herramienta; en pixelado ajusta la intensidad del mosaico.
+- Pixelado real por mosaico, con intensidad ajustable por operacion.
+- Icono y marca visual Zaetta con el logo oficial.
 - Ventana "Acerca de" con desarrollador, version y descripcion.
 - Instalador `.exe` con barra de progreso.
 - Acceso directo en escritorio.
@@ -229,7 +230,7 @@ Prioridad alta:
 
 Prioridad media:
 
-- Mejorar pixelado para que sea real y no solo un rectangulo visual.
+- Evaluar presets visuales para pixelado suave/medio/fuerte si el equipo los necesita.
 - Agregar menu compacto con iconos y descripcion.
 - Guardar ultima carpeta usada.
 - Agregar historial local de ultimas capturas guardadas.
@@ -287,7 +288,7 @@ Si hay que corregir funcionalidad de captura, hacerlo primero en la version nati
 
 Si hay que corregir el instalador, tocar solo `InstallerZaettaFinal.cs`.
 
-Si hay que cambiar branding/icono, revisar `ZAETTA_CAPTURE/zaetta_icon.ico`.
+Si hay que cambiar branding/icono, el logo fuente oficial esta en `ZAETTA_CAPTURE/logo_oficial.png` y el icono que se embebe en los ejecutables es `ZAETTA_CAPTURE/zaetta_icon.ico`. Para regenerar el ICO desde el PNG se puede usar `tools/make-ico.ps1`; el script recorta el canvas alrededor de la placa y la Z para que el icono se lea mejor en bandeja y accesos directos pequenos.
 
 ## 16. Ultimos cambios registrados
 
@@ -302,8 +303,17 @@ Si hay que cambiar branding/icono, revisar `ZAETTA_CAPTURE/zaetta_icon.ico`.
 - Se cambio la captura para cubrir el escritorio virtual completo y permitir seleccionar cualquier monitor conectado.
 - Se corrigio el bug de overlays/capturas infinitas que oscurecian progresivamente la pantalla al dispararse varias capturas seguidas.
 - Se pulio el render de botones e iconos compactos con coordenadas `RectangleF`, `PixelOffsetMode.Half` y centrado real para evitar fondos descuadrados o bordes asimetricos.
-- Se agrego ajuste rapido por hover + scroll: al pasar el mouse sobre una anotacion y mover la rueda, flechas/lineas/trazos cambian grosor, texto/numeros cambian tamano y rectangulos/pixelado escalan su area.
+- Se agrego ajuste rapido por hover + scroll: al pasar el mouse sobre una anotacion y mover la rueda, flechas/lineas/trazos cambian grosor, texto/numeros cambian tamano, rectangulos escalan su area y pixelado ajusta intensidad.
 - Se separo el comportamiento de rueda: scroll normal agranda o achica el objeto bajo el cursor; `Ctrl + scroll` ajusta el grosor de flechas, lineas, marcos, lapiz y resaltador.
+- Se agrego intensidad ajustable de pixelado: `+`/`-` cambian la intensidad cuando Pixelar esta activo y cada operacion guarda su propio nivel.
+- Se agrego el logo oficial como fuente en `ZAETTA_CAPTURE/logo_oficial.png`, se regenero `ZAETTA_CAPTURE/zaetta_icon.ico` multi-tamano y se recompilaron app e instalador con ese icono.
+- Se reemplazo la Z azul hardcodeada del instalador por el logo/icono oficial embebido.
+- Se ajusto el encabezado del instalador para usar una Z dorada recortada desde el logo oficial y se cambio la paleta de boton/progreso de cyan a dorado.
+- Se dejo una sola Z visual en el instalador: el icono oficial funciona como la Z del titulo y el texto queda como "aetta Capture", evitando una Z blanca redundante.
+- Se movio el boton principal del instalador hacia adentro para que "Finalizar" no quede pegado/cortado contra el borde derecho.
+- Se reintrodujo el glow/difuminado de la Z como fondo pintado directamente en el formulario y ubicado fuera del texto, para dar profundidad sin tapar titulo/subtitulo.
+- Se acerco la Z/icono del titulo al texto, dibujandola por encima del label para que funcione mejor como la Z de "Zaetta", y se elimino el blur por pixel calculado al abrir el instalador para mejorar el tiempo de arranque.
+- Se cambio la paleta visual de la app principal de cyan/azul a negro/dorado: acentos globales, Z de la barra, botones activos, hover y menus.
 - Se corrigio `Ctrl + Z` para que al deshacer una anotacion tambien se limpien seleccion y estados de mover/redimensionar, evitando contornos fantasma.
 - Se subieron estos cambios a GitHub.
 

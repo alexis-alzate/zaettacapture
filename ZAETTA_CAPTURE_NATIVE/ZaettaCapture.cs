@@ -11,13 +11,13 @@ namespace ZaettaCaptureNative
 {
     internal static class Ui
     {
-        public static readonly Color Bg = Color.FromArgb(7, 16, 25);
-        public static readonly Color Panel = Color.FromArgb(16, 29, 41);
-        public static readonly Color Panel2 = Color.FromArgb(23, 42, 58);
+        public static readonly Color Bg = Color.FromArgb(7, 10, 13);
+        public static readonly Color Panel = Color.FromArgb(18, 22, 25);
+        public static readonly Color Panel2 = Color.FromArgb(32, 29, 22);
         public static readonly Color Text = Color.FromArgb(246, 251, 255);
-        public static readonly Color Muted = Color.FromArgb(158, 179, 198);
-        public static readonly Color Accent = Color.FromArgb(21, 173, 216);
-        public static readonly Color Accent2 = Color.FromArgb(32, 196, 244);
+        public static readonly Color Muted = Color.FromArgb(178, 170, 150);
+        public static readonly Color Accent = Color.FromArgb(214, 151, 31);
+        public static readonly Color Accent2 = Color.FromArgb(255, 219, 91);
     }
 
     internal static class ContextMenus
@@ -45,11 +45,39 @@ namespace ZaettaCaptureNative
         }
     }
 
+    internal static class Pixelation
+    {
+        public const int MinIntensity = 4;
+        public const int MaxIntensity = 32;
+        public const int DefaultIntensity = 12;
+
+        public static int ClampIntensity(int value)
+        {
+            return Math.Max(MinIntensity, Math.Min(MaxIntensity, value));
+        }
+
+        public static void Draw(Graphics g, Bitmap source, Rectangle sourceRect, Rectangle destRect, int intensity)
+        {
+            sourceRect.Intersect(new Rectangle(0, 0, source.Width, source.Height));
+            if (sourceRect.Width < 4 || sourceRect.Height < 4 || destRect.Width < 4 || destRect.Height < 4)
+                return;
+
+            int blockSize = ClampIntensity(intensity);
+            using (Bitmap crop = source.Clone(sourceRect, source.PixelFormat))
+            using (Bitmap small = new Bitmap(crop, Math.Max(1, crop.Width / blockSize), Math.Max(1, crop.Height / blockSize)))
+            using (Bitmap big = new Bitmap(small, destRect.Width, destRect.Height))
+            {
+                g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                g.DrawImage(big, destRect);
+            }
+        }
+    }
+
     internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
     {
-        private readonly Color bg = Color.FromArgb(7, 16, 25);
-        private readonly Color accent = Color.FromArgb(23, 42, 58);
-        private readonly Color border = Color.FromArgb(32, 196, 244);
+        private readonly Color bg = Color.FromArgb(7, 10, 13);
+        private readonly Color accent = Color.FromArgb(32, 29, 22);
+        private readonly Color border = Ui.Accent2;
 
         protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
         {
@@ -83,7 +111,7 @@ namespace ZaettaCaptureNative
 
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
         {
-            using (Pen pen = new Pen(Color.FromArgb(36, 69, 86)))
+            using (Pen pen = new Pen(Color.FromArgb(76, 61, 34)))
                 e.Graphics.DrawRectangle(pen, 0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1);
         }
     }
@@ -101,8 +129,8 @@ namespace ZaettaCaptureNative
         public ZaettaButton(string text, bool primary)
         {
             Text = text;
-            Fill = primary ? Ui.Accent : Color.FromArgb(12, 23, 31);
-            HoverFill = primary ? Ui.Accent2 : Color.FromArgb(20, 38, 49);
+            Fill = primary ? Ui.Accent : Color.FromArgb(14, 17, 20);
+            HoverFill = primary ? Ui.Accent2 : Color.FromArgb(34, 28, 19);
             TextFill = Color.White;
             Radius = 4;
             FlatStyle = FlatStyle.Flat;
@@ -148,7 +176,7 @@ namespace ZaettaCaptureNative
                         using (Pen pen = new Pen(fillColor, 1))
                             e.Graphics.DrawPath(pen, path);
 
-                    using (Pen edge = new Pen(hovering ? Color.FromArgb(92, 150, 238, 255) : Color.FromArgb(42, 190, 220, 230), 1))
+                    using (Pen edge = new Pen(hovering ? Color.FromArgb(120, 255, 219, 91) : Color.FromArgb(72, 214, 151, 31), 1))
                         e.Graphics.DrawPath(edge, path);
                 }
             }
@@ -785,6 +813,7 @@ namespace ZaettaCaptureNative
         private Tool tool = Tool.Arrow;
         private Color color = Color.FromArgb(255, 59, 48);
         private int drawWidth = 4;
+        private int pixelIntensity = Pixelation.DefaultIntensity;
         private int counterValue = 1;
         private Panel bottomToolbar;
         private Panel sideToolbar;
@@ -1042,7 +1071,12 @@ namespace ZaettaCaptureNative
                 return;
             }
 
-            AdjustDrawWidth(e.Delta > 0 ? 1 : -1);
+            int wheelDelta = e.Delta > 0 ? 1 : -1;
+            if (tool == Tool.Pixelate)
+                AdjustPixelIntensity(wheelDelta * 2);
+            else
+                AdjustDrawWidth(wheelDelta);
+
             if ((tool == Tool.Pencil || tool == Tool.Highlight) && ops.Count > 0)
                 ops[ops.Count - 1].Width = drawWidth;
 
@@ -1160,7 +1194,7 @@ namespace ZaettaCaptureNative
                 return;
             }
             Point end = ClampToSelection(current);
-            ops.Add(new DrawOp { Tool = tool, A = ClampToSelection(drawStart), B = end, Color = color, Width = drawWidth });
+            ops.Add(new DrawOp { Tool = tool, A = ClampToSelection(drawStart), B = end, Color = color, Width = tool == Tool.Pixelate ? pixelIntensity : drawWidth });
             Invalidate();
         }
 
@@ -1177,7 +1211,7 @@ namespace ZaettaCaptureNative
                 foreach (DrawOp op in ops)
                     DrawOpOnOverlay(g, op);
                 if (drawing && tool != Tool.Pencil && tool != Tool.Highlight)
-                    DrawOpOnOverlay(g, new DrawOp { Tool = tool, A = ClampToSelection(drawStart), B = ClampToSelection(current), Color = color, Width = drawWidth });
+                    DrawOpOnOverlay(g, new DrawOp { Tool = tool, A = ClampToSelection(drawStart), B = ClampToSelection(current), Color = color, Width = tool == Tool.Pixelate ? pixelIntensity : drawWidth });
                 DrawSelectedOpHandles(g);
                 DrawSelectionBorder(g, box);
                 DrawHandles(g, box);
@@ -1209,8 +1243,8 @@ namespace ZaettaCaptureNative
             ZaettaButton brand = AddToolButton(bottomToolbar, "Z", 5, 4, 28, false, delegate { ShowAbout(); }, "Acerca de Zaetta Capture.");
             brand.OutlineOnly = false;
             brand.Fill = Color.FromArgb(3, 8, 13);
-            brand.HoverFill = Color.FromArgb(10, 22, 30);
-            brand.TextFill = Color.FromArgb(32, 196, 244);
+            brand.HoverFill = Color.FromArgb(30, 24, 16);
+            brand.TextFill = Ui.Accent2;
             brand.Font = new Font("Segoe UI", 11, FontStyle.Bold);
             brand.Invalidate();
             ZaettaButton toolButton = AddToolButton(bottomToolbar, ToolName(tool), 38, 4, 72, false, delegate { }, "Herramienta activa.");
@@ -1219,8 +1253,8 @@ namespace ZaettaCaptureNative
             ColorSwatchButton colorButton = AddColorButton(bottomToolbar, 116, 4, 28);
             tips.SetToolTip(colorButton, "Cambiar color de flechas, marcos, texto y resaltador.");
             colorButton.Click += delegate { ShowColorMenu(colorButton); };
-            AddToolButton(bottomToolbar, "-", 150, 4, 28, false, delegate { Thinner(); }, "Disminuir grosor del trazo.");
-            AddToolButton(bottomToolbar, "+", 184, 4, 28, false, delegate { Thicker(); }, "Aumentar grosor del trazo.");
+            AddToolButton(bottomToolbar, "-", 150, 4, 28, false, delegate { Thinner(); }, tool == Tool.Pixelate ? "Disminuir intensidad del pixelado." : "Disminuir grosor del trazo.");
+            AddToolButton(bottomToolbar, "+", 184, 4, 28, false, delegate { Thicker(); }, tool == Tool.Pixelate ? "Aumentar intensidad del pixelado." : "Aumentar grosor del trazo.");
             AddToolButton(bottomToolbar, "Undo", 218, 4, 42, false, delegate { Undo(); }, "Deshacer el ultimo cambio.");
             ZaettaButton moreBottom = AddToolButton(bottomToolbar, "...", 266, 4, 34, false, delegate { }, "Ver mas herramientas.");
             moreBottom.Click += delegate { ShowToolsMenu(moreBottom); };
@@ -1278,13 +1312,13 @@ namespace ZaettaCaptureNative
             {
                 button.Fill = Ui.Accent;
                 button.HoverFill = Ui.Accent2;
-                button.TextFill = Color.FromArgb(4, 11, 16);
+                button.TextFill = Color.FromArgb(12, 12, 10);
             }
             else if (parent == sideToolbar)
             {
-                button.Fill = Color.FromArgb(8, 20, 27);
-                button.HoverFill = Color.FromArgb(18, 42, 52);
-                button.TextFill = Color.FromArgb(225, 242, 246);
+                button.Fill = Color.FromArgb(12, 16, 19);
+                button.HoverFill = Color.FromArgb(34, 28, 19);
+                button.TextFill = Color.FromArgb(238, 232, 212);
             }
 
             button.Click += click;
@@ -1391,7 +1425,7 @@ namespace ZaettaCaptureNative
         private void ShowToolsMenu(Control anchor)
         {
             ContextMenuStrip menu = new ContextMenuStrip();
-            menu.BackColor = Color.FromArgb(7, 16, 25);
+            menu.BackColor = Ui.Bg;
             menu.ForeColor = Color.FromArgb(238, 246, 250);
             menu.ShowImageMargin = true;
             menu.ImageScalingSize = new Size(14, 14);
@@ -1414,7 +1448,7 @@ namespace ZaettaCaptureNative
         private void ShowColorMenu(Control anchor)
         {
             ContextMenuStrip menu = new ContextMenuStrip();
-            menu.BackColor = Color.FromArgb(7, 16, 25);
+            menu.BackColor = Ui.Bg;
             menu.ForeColor = Color.FromArgb(238, 246, 250);
             menu.ShowImageMargin = true;
             menu.ImageScalingSize = new Size(14, 14);
@@ -1422,7 +1456,7 @@ namespace ZaettaCaptureNative
             menu.Font = new Font("Segoe UI", 8, FontStyle.Bold);
             menu.Padding = new Padding(2, 3, 2, 3);
             menu.Renderer = new DarkMenuRenderer();
-            AddColorMenuItem(menu, "Zaetta", Color.FromArgb(0, 255, 210));
+            AddColorMenuItem(menu, "Zaetta", Ui.Accent2);
             AddColorMenuItem(menu, "Rojo", Color.FromArgb(255, 59, 48));
             AddColorMenuItem(menu, "Amarillo", Color.FromArgb(255, 204, 0));
             AddColorMenuItem(menu, "Verde", Color.FromArgb(52, 199, 89));
@@ -1451,7 +1485,7 @@ namespace ZaettaCaptureNative
         {
             string label = (tool == selected ? "> " : "  ") + ToolName(selected);
             ToolStripMenuItem item = new ToolStripMenuItem(label);
-            item.Image = BuildToolIcon(selected, tool == selected ? color : Color.FromArgb(210, 235, 244));
+            item.Image = BuildToolIcon(selected, tool == selected ? color : Color.FromArgb(232, 221, 196));
             item.Padding = new Padding(4, 2, 10, 2);
             item.ToolTipText = ToolDescription(selected);
             item.Click += delegate { SetTool(selected); };
@@ -1541,7 +1575,7 @@ namespace ZaettaCaptureNative
         {
             Color[] colors = new[]
             {
-                Color.FromArgb(0, 255, 210),
+                Ui.Accent2,
                 Color.FromArgb(255, 59, 48),
                 Color.FromArgb(255, 204, 0),
                 Color.FromArgb(52, 199, 89),
@@ -1563,17 +1597,30 @@ namespace ZaettaCaptureNative
 
         private void Thinner()
         {
-            AdjustDrawWidth(-1);
+            if (tool == Tool.Pixelate)
+                AdjustPixelIntensity(-2);
+            else
+                AdjustDrawWidth(-1);
+            Invalidate();
         }
 
         private void Thicker()
         {
-            AdjustDrawWidth(1);
+            if (tool == Tool.Pixelate)
+                AdjustPixelIntensity(2);
+            else
+                AdjustDrawWidth(1);
+            Invalidate();
         }
 
         private void AdjustDrawWidth(int delta)
         {
             drawWidth = Math.Max(2, Math.Min(12, drawWidth + delta));
+        }
+
+        private void AdjustPixelIntensity(int delta)
+        {
+            pixelIntensity = Pixelation.ClampIntensity(pixelIntensity + delta);
         }
 
         private static bool CanResizeStroke(DrawOp op)
@@ -1611,7 +1658,14 @@ namespace ZaettaCaptureNative
                 return;
             }
 
-            if (op.Tool == Tool.Rect || op.Tool == Tool.Pixelate)
+            if (op.Tool == Tool.Pixelate)
+            {
+                op.Width = Pixelation.ClampIntensity(op.Width + (delta * 2));
+                pixelIntensity = op.Width;
+                return;
+            }
+
+            if (op.Tool == Tool.Rect)
             {
                 ScaleBoxOp(op, delta > 0 ? 1.08f : 0.92f);
                 return;
@@ -1744,22 +1798,14 @@ namespace ZaettaCaptureNative
                     }
                 }
                 else if (op.Tool == Tool.Pixelate)
-                    DrawPixelated(g, Normalize(op.A, op.B));
+                    DrawPixelated(g, Normalize(op.A, op.B), op.Width);
             }
         }
 
-        private void DrawPixelated(Graphics g, Rectangle rect)
+        private void DrawPixelated(Graphics g, Rectangle rect, int intensity)
         {
             rect.Intersect(selection);
-            if (rect.Width < 4 || rect.Height < 4)
-                return;
-            using (Bitmap crop = screenshot.Clone(rect, screenshot.PixelFormat))
-            using (Bitmap small = new Bitmap(crop, Math.Max(1, crop.Width / 12), Math.Max(1, crop.Height / 12)))
-            using (Bitmap big = new Bitmap(small, rect.Width, rect.Height))
-            {
-                g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                g.DrawImage(big, rect);
-            }
+            Pixelation.Draw(g, screenshot, rect, rect, intensity);
         }
 
         private Bitmap RenderCrop()
@@ -2409,6 +2455,7 @@ namespace ZaettaCaptureNative
         private readonly List<DrawOp> ops = new List<DrawOp>();
         private Tool tool = Tool.Arrow;
         private Color color = Color.FromArgb(255, 59, 48);
+        private int pixelIntensity = Pixelation.DefaultIntensity;
         private Point start;
         private Point current;
         private bool drawing;
@@ -2616,7 +2663,7 @@ namespace ZaettaCaptureNative
                 return;
             drawing = false;
             current = ImagePoint(e.Location);
-            ops.Add(new DrawOp { Tool = tool, A = start, B = current, Color = color, Width = 4 });
+            ops.Add(new DrawOp { Tool = tool, A = start, B = current, Color = color, Width = tool == Tool.Pixelate ? pixelIntensity : 4 });
             Invalidate();
         }
 
@@ -2645,7 +2692,7 @@ namespace ZaettaCaptureNative
             }
             if (drawing)
             {
-                DrawOperation(e.Graphics, new DrawOp { Tool = tool, A = start, B = current, Color = color, Width = 4 }, imageRect);
+                DrawOperation(e.Graphics, new DrawOp { Tool = tool, A = start, B = current, Color = color, Width = tool == Tool.Pixelate ? pixelIntensity : 4 }, imageRect);
             }
             e.Graphics.ResetClip();
             using (Pen border = new Pen(Color.FromArgb(190, 210, 222)))
@@ -2689,13 +2736,7 @@ namespace ZaettaCaptureNative
             if (source.Width < 4 || source.Height < 4)
                 return;
 
-            using (Bitmap crop = original.Clone(source, original.PixelFormat))
-            using (Bitmap small = new Bitmap(crop, Math.Max(1, crop.Width / 12), Math.Max(1, crop.Height / 12)))
-            using (Bitmap big = new Bitmap(small, rect.Width, rect.Height))
-            {
-                g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                g.DrawImage(big, rect);
-            }
+            Pixelation.Draw(g, original, source, rect, op.Width);
         }
 
         private Bitmap RenderImage()
@@ -2734,21 +2775,10 @@ namespace ZaettaCaptureNative
                     rect.Intersect(imageRect);
                     if (rect.Width >= 4 && rect.Height >= 4)
                     {
-                        using (Bitmap crop = resultClone(original, rect))
-                        using (Bitmap small = new Bitmap(crop, Math.Max(1, rect.Width / 12), Math.Max(1, rect.Height / 12)))
-                        using (Bitmap big = new Bitmap(small, rect.Width, rect.Height))
-                        {
-                            g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                            g.DrawImage(big, rect);
-                        }
+                        Pixelation.Draw(g, original, rect, rect, op.Width);
                     }
                 }
             }
-        }
-
-        private static Bitmap resultClone(Bitmap source, Rectangle rect)
-        {
-            return source.Clone(rect, source.PixelFormat);
         }
 
         private void CopyAndClose()
