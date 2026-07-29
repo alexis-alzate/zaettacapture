@@ -5,17 +5,55 @@ Capturador de pantalla interno tipo Lightshot, desarrollado para uso operativo.
 ## Estructura
 
 - `ZAETTA_CAPTURE_NATIVE/`: version nativa en C# WinForms.
+- `ZAETTA_CAPTURE_NATIVE/App/`: arranque, metadata, bandeja y hotkeys.
+- `ZAETTA_CAPTURE_NATIVE/Capture/`: overlay/editor principal de captura.
+- `ZAETTA_CAPTURE_NATIVE/Editing/`: herramientas y operaciones de dibujo.
+- `ZAETTA_CAPTURE_NATIVE/Storage/`: historial, ultima area y preferencias.
+- `ZAETTA_CAPTURE_NATIVE/SystemIntegration/`: DPI, portapapeles, hotkeys y diagnostico.
+- `ZAETTA_CAPTURE_NATIVE/UI/`: controles visuales compartidos.
+- `ZAETTA_CAPTURE_NATIVE/Legacy/`: editor anterior conservado como referencia.
 - `ZAETTA_CAPTURE/`: recursos e iconos.
 - `CONTEXTO_ZAETTA_CAPTURE.md`: contexto completo para retomar desarrollo.
 
-## Compilar app
+## Funciones clave
+
+- Captura tipo Lightshot desde bandeja o atajo.
+- Herramientas de anotacion, texto, numero, pixelado y mover.
+- Opcion chuleable `Mantener posicion del area seleccionada`.
+- Opcion `Repetir ultima area`.
+- Historial local en `Pictures\Zaetta Capture\Historial`.
+- Instalador local en `%LOCALAPPDATA%`.
+
+## Compilar
 
 ```powershell
-& 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe' /nologo /target:winexe /out:'.\ZAETTA_CAPTURE_NATIVE\Zaetta Capture Final.exe' /win32icon:'.\ZAETTA_CAPTURE\zaetta_icon.ico' /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll '.\ZAETTA_CAPTURE_NATIVE\ZaettaCapture.cs'
+.\tools\build-native.ps1
 ```
 
-## Compilar instalador
+En Linux con Mono instalado:
 
-```powershell
-& 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe' /nologo /target:winexe /out:'.\INSTALADOR_ZAETTA_CAPTURE_FINAL.exe' /win32icon:'.\ZAETTA_CAPTURE\zaetta_icon.ico' "/resource:.\ZAETTA_CAPTURE_NATIVE\Zaetta Capture Final.exe,ZaettaApp" /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll '.\ZAETTA_CAPTURE_NATIVE\InstallerZaettaFinal.cs'
+```bash
+./tools/build-native.sh
+```
+
+Ambos scripts generan:
+
+- `ZAETTA_CAPTURE_NATIVE/Zaetta Capture Final.exe`
+- `INSTALADOR_ZAETTA_CAPTURE_FINAL.exe`
+
+En Linux se requiere:
+
+```bash
+sudo apt-get install -y mono-devel
+```
+
+El instalador embebe:
+
+- `ZaettaApp`: app compilada.
+- `ZaettaLogo`: `ZAETTA_CAPTURE/logo_oficial.png`.
+
+Si la app falla al iniciar, revisar:
+
+```text
+Pictures\Zaetta Capture\startup-error.log
 ```

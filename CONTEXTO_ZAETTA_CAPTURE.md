@@ -26,8 +26,13 @@ El flujo esperado es:
 La version funcional principal es la nativa en C# WinForms:
 
 - Carpeta: `ZAETTA_CAPTURE_NATIVE/`
-- Archivo principal: `ZaettaCapture.cs`
+- Entrada: `App/Program.cs`
+- Overlay/editor principal: `Capture/CaptureOverlay.cs`
 - Instalador: `InstallerZaettaFinal.cs`
+- Build actual probado en Linux con Mono mediante `tools/build-native.sh`.
+- Ejecutables generados actuales:
+  - `ZAETTA_CAPTURE_NATIVE/Zaetta Capture Final.exe`
+  - `INSTALADOR_ZAETTA_CAPTURE_FINAL.exe`
 
 Tambien existe una version inicial en Python:
 
@@ -41,6 +46,8 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Icono en bandeja del sistema.
 - Click sobre el icono de bandeja para iniciar captura.
 - Menu de opciones desde el icono de bandeja.
+- Opcion chuleable `Mantener posicion del area seleccionada`, inspirada en Lightshot, para que cada captura nueva arranque usando el ultimo rectangulo si existe.
+- Opcion `Repetir ultima area` desde el menu de bandeja para forzar el ultimo rectangulo usado.
 - Captura de pantalla con seleccion de area.
 - Soporte para multiples pantallas.
 - Captura sobre todo el escritorio virtual de Windows usando `SystemInformation.VirtualScreen`, no solo la pantalla donde esta el mouse.
@@ -61,8 +68,10 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Guardar imagen localmente.
 - Atajos globales con `RegisterHotKey`. Se retiro el hook global de bajo nivel para reducir falsos positivos de antivirus/Teams.
 - Bloqueo de capturas simultaneas para evitar overlays infinitos o capturas cada vez mas oscuras.
+- Persistencia local de la ultima area usada y de la preferencia `Mantener posicion del area seleccionada`; cuando esta chuleada, incluso el atajo normal abre el overlay con ese rectangulo marcado sobre una captura nueva.
 - Herramienta de texto.
 - Herramienta para mover elementos.
+- La herramienta `Mover` tambien puede mover la seleccion completa: clic en una anotacion mueve la anotacion; clic en espacio vacio dentro de la seleccion mueve todo el rectangulo y arrastra sus anotaciones.
 - Herramientas de dibujo.
 - Flechas con cabeza agrandada mediante `AdjustableArrowCap` para que se vean mas claras en evidencias.
 - Ajuste de color para figuras y trazos.
@@ -72,9 +81,11 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Icono y marca visual Zaetta con el logo oficial.
 - Ventana "Acerca de" con desarrollador, version y descripcion.
 - Instalador `.exe` con barra de progreso.
+- Instalador con logo oficial embebido como recurso `ZaettaLogo`.
 - Acceso directo en escritorio.
 - Instalacion local en `%LOCALAPPDATA%`.
 - Reemplazo/limpieza de versiones anteriores durante instalacion.
+- Diagnostico de arranque: si la app falla al iniciar, muestra un mensaje y escribe `Pictures\Zaetta Capture\startup-error.log`.
 
 ## 5. Herramientas de edicion esperadas
 
@@ -111,6 +122,11 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - Al activar captura, el usuario debe poder seleccionar cualquier monitor conectado, incluso si el mouse estaba inicialmente en otro monitor. Por eso `StartCapture` debe usar el escritorio virtual completo.
 - En equipos con monitores a 125%, 150% o escalas mixtas, la app debe activar DPI awareness antes de crear ventanas; de lo contrario Windows puede virtualizar coordenadas y copiar una zona incorrecta.
 - No se deben abrir multiples overlays al mantener presionado `Impr Pant` o al disparar varias veces el atajo. `TrayContext.captureActive` bloquea una nueva captura hasta que el overlay actual cierre.
+- Si `Mantener posicion del area seleccionada` esta chuleado, cualquier captura nueva debe usar la ultima area guardada si existe, incluso cuando se active con atajo normal.
+- Si `Mantener posicion del area seleccionada` esta deschuleado, una captura normal debe iniciar desde cero.
+- `Repetir ultima area` fuerza el uso de la ultima area aunque la opcion automatica este desactivada.
+- La ultima area se guarda en `Pictures\Zaetta Capture\last-selection.txt` como `x,y,width,height`.
+- La preferencia se guarda en `Pictures\Zaetta Capture\capture-preferences.txt` como `1` o `0`.
 
 ## 7. Atajos actuales y deseados
 
@@ -135,22 +151,34 @@ Nota actual: `Print Screen` se maneja con `RegisterHotKey`, no con hook global d
 
 ### Version nativa
 
-`ZAETTA_CAPTURE_NATIVE/ZaettaCapture.cs`
+`ZAETTA_CAPTURE_NATIVE/`
 
 Contiene:
 
-- Arranque de la app.
-- Bandeja del sistema.
-- Captura de pantalla.
-- Seleccion de area.
-- Editor flotante.
-- Herramientas de dibujo.
-- Copia al portapapeles.
-- Guardado de imagen.
-- Ventana Acerca de.
-- Atajos globales mediante `RegisterHotKey`.
-- `DrawingStyle.ConfigureLineCap`, helper que centraliza el estilo de lineas/flechas.
-- `StartCapture`, actualmente captura `SystemInformation.VirtualScreen` para permitir seleccion libre en cualquier pantalla.
+- `App/`: arranque, metadatos de producto, bandeja del sistema, dialogo de atajo y flujo inicial de captura.
+- `SystemIntegration/`: DPI awareness, portapapeles y hotkeys globales mediante `RegisterHotKey`.
+- `Editing/`: herramientas, operaciones de dibujo, pixelado y estilos de dibujo.
+- `Storage/`: rutas locales, historial, ultima area y preferencias de captura.
+- `UI/`: helpers visuales compartidos.
+- `Capture/CaptureOverlay.cs`: estado principal, constructor y helpers comunes del overlay.
+- `Capture/CaptureOverlay.Keyboard.cs`: foco, atajos del overlay y supresion de menu contextual.
+- `Capture/CaptureOverlay.Input.cs`: eventos de mouse, rueda, seleccion y drag.
+- `Capture/CaptureOverlay.Toolbar.cs`: barra de herramientas, menus, colores, grosor e iconos de herramientas.
+- `Capture/CaptureOverlay.Tools.cs`: seleccion de herramientas, menus, colores, grosor e iconos.
+- `Capture/CaptureOverlay.Rendering.cs`: pintado de seleccion, anotaciones, handles y render final.
+- `Capture/CaptureOverlay.Interaction.cs`: hit testing, mover, escalar y redimensionar anotaciones/seleccion.
+- `Capture/CaptureOverlay.Adjustments.cs`: cambios de tamano/grosor/intensidad por rueda o botones.
+- `Capture/CaptureOverlay.Text.cs`: edicion de texto sobre la captura.
+- `Capture/CaptureOverlay.Commands.cs`: copiar, guardar y deshacer.
+- `Capture/ScreenshotService.cs`: captura del escritorio virtual de Windows.
+- `Capture/ScreenshotCapture.cs`: resultado de captura con bounds e imagen.
+- `Storage/HistoryService.cs`: guardado y apertura del historial local.
+- `Storage/LastSelectionStore.cs`: persistencia de la ultima area seleccionada.
+- `Storage/CapturePreferencesStore.cs`: persistencia de `Mantener posicion del area seleccionada`.
+- `SystemIntegration/StartupDiagnostics.cs`: log de errores de arranque.
+- `Legacy/EditorForm.cs`: editor anterior conservado como referencia.
+- `ZaettaCapture.cs`: archivo historico minimo que apunta a la nueva separacion.
+- `TrayContext.StartCapture`, actualmente captura `SystemInformation.VirtualScreen` para permitir seleccion libre en cualquier pantalla.
 - `TrayContext.captureActive`, bandera que impide abrir mas de una captura al mismo tiempo.
 
 `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
@@ -181,14 +209,43 @@ cd C:\Automatizaciones\zaettacapture_repo
 Compilar aplicacion nativa:
 
 ```powershell
-& 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe' /nologo /target:winexe /out:'.\ZAETTA_CAPTURE_NATIVE\Zaetta Capture Final.exe' /win32icon:'.\ZAETTA_CAPTURE\zaetta_icon.ico' /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll '.\ZAETTA_CAPTURE_NATIVE\ZaettaCapture.cs'
+.\tools\build-native.ps1
+```
+
+En Linux con Mono instalado:
+
+```bash
+./tools/build-native.sh
+```
+
+Requisito Linux:
+
+```bash
+sudo apt-get install -y mono-devel
 ```
 
 Compilar instalador final:
 
 ```powershell
-& 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe' /nologo /target:winexe /out:'.\INSTALADOR_ZAETTA_CAPTURE_FINAL.exe' /win32icon:'.\ZAETTA_CAPTURE\zaetta_icon.ico' "/resource:.\ZAETTA_CAPTURE_NATIVE\Zaetta Capture Final.exe,ZaettaApp" /reference:System.dll /reference:System.Drawing.dll /reference:System.Windows.Forms.dll '.\ZAETTA_CAPTURE_NATIVE\InstallerZaettaFinal.cs'
+.\tools\build-native.ps1
 ```
+
+En Linux con Mono instalado:
+
+```bash
+./tools/build-native.sh
+```
+
+El build actual embebe en el instalador:
+
+- `ZaettaApp`: ejecutable final de la aplicacion.
+- `ZaettaLogo`: `ZAETTA_CAPTURE/logo_oficial.png`.
+
+Tamanos recientes de referencia:
+
+- `ZAETTA_CAPTURE_NATIVE/Zaetta Capture Final.exe`: ~172 KB.
+- `INSTALADOR_ZAETTA_CAPTURE_FINAL.exe`: ~1.7 MB cuando incluye `ZaettaLogo`.
+- `ZAETTA_CAPTURE/logo_oficial.png`: ~1.4 MB.
 
 ## 10. Como ejecutar en desarrollo
 
@@ -279,10 +336,14 @@ Evitar:
 
 Cuando se vuelva a trabajar en esta app, empezar revisando:
 
-1. `ZAETTA_CAPTURE_NATIVE/ZaettaCapture.cs`
-2. `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
-3. Este archivo `CONTEXTO_ZAETTA_CAPTURE.md`
-4. `README.md`
+1. `ZAETTA_CAPTURE_NATIVE/App/Program.cs`
+2. `ZAETTA_CAPTURE_NATIVE/App/TrayContext.cs`
+3. `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.cs`
+4. `ZAETTA_CAPTURE_NATIVE/Editing/`
+5. `ZAETTA_CAPTURE_NATIVE/UI/`
+6. `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
+7. Este archivo `CONTEXTO_ZAETTA_CAPTURE.md`
+8. `README.md`
 
 Si hay que corregir funcionalidad de captura, hacerlo primero en la version nativa.
 
@@ -290,7 +351,43 @@ Si hay que corregir el instalador, tocar solo `InstallerZaettaFinal.cs`.
 
 Si hay que cambiar branding/icono, el logo fuente oficial esta en `ZAETTA_CAPTURE/logo_oficial.png` y el icono que se embebe en los ejecutables es `ZAETTA_CAPTURE/zaetta_icon.ico`. Para regenerar el ICO desde el PNG se puede usar `tools/make-ico.ps1`; el script recorta el canvas alrededor de la placa y la Z para que el icono se lea mejor en bandeja y accesos directos pequenos.
 
+Si la app no aparece en bandeja al ejecutarse, revisar primero:
+
+1. La flecha de iconos ocultos de Windows.
+2. `Pictures\Zaetta Capture\startup-error.log`.
+3. Compatibilidad de metodos .NET Framework si el build fue generado con Mono.
+
 ## 16. Ultimos cambios registrados
+
+### 2026-07-28
+
+- Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.
+- Se separaron responsabilidades en `App/`, `Capture/`, `Editing/`, `Storage/`, `SystemIntegration/`, `UI/` y `Legacy/`.
+- `ZaettaCapture.cs` quedo como archivo historico minimo; el overlay real vive en `Capture/`.
+- `CaptureOverlay` se dividio como `partial class` en archivos por responsabilidad: estado/base, teclado, mouse/input, toolbar, tools, rendering, interaction, adjustments, text y commands.
+- Se agregaron servicios internos:
+  - `AppInfo`.
+  - `ScreenshotService`.
+  - `ScreenshotCapture`.
+  - `HistoryService`.
+  - `LastSelectionStore`.
+  - `CapturePreferencesStore`.
+  - `StartupDiagnostics`.
+- Se agrego build multiplataforma:
+  - `tools/build-native.ps1` para Windows/.NET Framework.
+  - `tools/build-native.sh` para Linux con Mono.
+- Se compilo exitosamente con Mono 6.8 en Ubuntu.
+- Se agrego fallback de icono de bandeja con `SystemIcons.Application` si falla `Icon.ExtractAssociatedIcon`.
+- Se agrego manejo global de error de arranque en `Program.Main`; los errores se muestran y se guardan en `Pictures\Zaetta Capture\startup-error.log`.
+- Se corrigio compatibilidad .NET de `String.Split` en `LastSelectionStore` usando `Split(new[] { ',' }, StringSplitOptions.None)`.
+- Se implemento `Repetir ultima area`.
+- Se implemento la opcion chuleable `Mantener posicion del area seleccionada`, inspirada en Lightshot.
+- Se persistio la ultima area seleccionada en `Pictures\Zaetta Capture\last-selection.txt`.
+- Se persistio la preferencia de mantener area en `Pictures\Zaetta Capture\capture-preferences.txt`.
+- Se implemento movimiento de la seleccion completa con la herramienta `Mover`; las anotaciones se desplazan junto con el rectangulo.
+- Se recompilo la app y el instalador.
+- Se incrusto `ZAETTA_CAPTURE/logo_oficial.png` como recurso `ZaettaLogo` en el instalador.
+- El instalador quedo nuevamente alrededor de 1.7 MB por incluir el logo oficial nitido.
 
 ### 2026-07-27
 
