@@ -60,6 +60,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Botones compactos con iconos dibujados para herramientas principales, estilo oscuro/minimal y estados hover/activo mas pulidos.
 - Render de botones ajustado con bordes alineados y sin doble reduccion de rectangulo para evitar desniveles visuales en iconos compactos.
 - Tooltips descriptivos en botones.
+- Boton de candado en la barra inferior para bloquear temporalmente el cierre al hacer clic fuera de la seleccion.
 - Copiar con boton.
 - Copiar con clic derecho sobre la captura.
 - Copiar con `Ctrl + C`.
@@ -117,6 +118,10 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - Al copiar, no debe quedar ninguna ventana flotante activa.
 - Al hacer clic derecho sobre la captura, debe copiar sin abrir el menu contextual de Windows.
 - Si el usuario cancela, debe cerrar todo y devolver el control normal del mouse.
+- Si el candado esta activo, clic izquierdo fuera de la seleccion no debe cerrar el capturador.
+- Aunque el candado este activo, clic derecho, boton Copiar y `Ctrl + C` deben copiar y cerrar.
+- El candado es un estado temporal del overlay activo, no una preferencia global de bandeja. Cada nueva captura inicia desbloqueada.
+- El objetivo del candado es permitir que el usuario mantenga la seleccion visible mientras interactua accidentalmente por fuera del rectangulo, sin perder el recorte que ya tenia listo.
 - El programa debe sentirse inmediato; la seleccion no puede tener lag perceptible.
 - El instalador debe sobreescribir versiones anteriores y evitar que queden varias copias con nombres distintos.
 - Al activar captura, el usuario debe poder seleccionar cualquier monitor conectado, incluso si el mouse estaba inicialmente en otro monitor. Por eso `StartCapture` debe usar el escritorio virtual completo.
@@ -164,7 +169,7 @@ Contiene:
 - `Capture/CaptureOverlay.Keyboard.cs`: foco, atajos del overlay y supresion de menu contextual.
 - `Capture/CaptureOverlay.Input.cs`: eventos de mouse, rueda, seleccion y drag.
 - `Capture/CaptureOverlay.Toolbar.cs`: barra de herramientas, menus, colores, grosor e iconos de herramientas.
-- `Capture/CaptureOverlay.Tools.cs`: seleccion de herramientas, menus, colores, grosor e iconos.
+- `Capture/CaptureOverlay.Tools.cs`: seleccion de herramientas, menus, colores, grosor, iconos y alternancia del candado.
 - `Capture/CaptureOverlay.Rendering.cs`: pintado de seleccion, anotaciones, handles y render final.
 - `Capture/CaptureOverlay.Interaction.cs`: hit testing, mover, escalar y redimensionar anotaciones/seleccion.
 - `Capture/CaptureOverlay.Adjustments.cs`: cambios de tamano/grosor/intensidad por rueda o botones.
@@ -175,6 +180,27 @@ Contiene:
 - `Storage/HistoryService.cs`: guardado y apertura del historial local.
 - `Storage/LastSelectionStore.cs`: persistencia de la ultima area seleccionada.
 - `Storage/CapturePreferencesStore.cs`: persistencia de `Mantener posicion del area seleccionada`.
+
+### Candado de captura
+
+El candado vive dentro de `CaptureOverlay` porque aplica solo a la captura abierta en ese momento. No debe guardarse como preferencia global.
+
+Archivos relacionados:
+
+- `Capture/CaptureOverlay.cs`: campo `selectionLocked`.
+- `Capture/CaptureOverlay.Input.cs`: evita cerrar con clic izquierdo fuera de la seleccion cuando el candado esta activo.
+- `Capture/CaptureOverlay.Toolbar.cs`: agrega el boton `Lock` en la barra inferior.
+- `Capture/CaptureOverlay.Tools.cs`: metodo `ToggleSelectionLock`.
+- `UI/ZaettaButton.cs`: dibujo del icono de candado.
+
+Comportamiento esperado:
+
+- Desbloqueado: clic izquierdo fuera de la seleccion cierra/cancela la captura.
+- Bloqueado: clic izquierdo fuera de la seleccion no cierra la captura.
+- Bloqueado o desbloqueado: clic derecho dentro de la seleccion copia y cierra.
+- Bloqueado o desbloqueado: boton Copiar copia y cierra.
+- Bloqueado o desbloqueado: `Ctrl + C` copia y cierra.
+- `Esc` y boton `X` siguen funcionando como cancelacion manual.
 - `SystemIntegration/StartupDiagnostics.cs`: log de errores de arranque.
 - `Legacy/EditorForm.cs`: editor anterior conservado como referencia.
 - `ZaettaCapture.cs`: archivo historico minimo que apunta a la nueva separacion.
@@ -385,6 +411,8 @@ Si la app no aparece en bandeja al ejecutarse, revisar primero:
 - Se persistio la ultima area seleccionada en `Pictures\Zaetta Capture\last-selection.txt`.
 - Se persistio la preferencia de mantener area en `Pictures\Zaetta Capture\capture-preferences.txt`.
 - Se implemento movimiento de la seleccion completa con la herramienta `Mover`; las anotaciones se desplazan junto con el rectangulo.
+- Se implemento boton de candado en el overlay para impedir que un clic izquierdo fuera de la seleccion cierre accidentalmente la captura.
+- Se mantuvo el cierre normal al copiar con clic derecho, boton Copiar o `Ctrl + C`, incluso cuando el candado esta activo.
 - Se recompilo la app y el instalador.
 - Se incrusto `ZAETTA_CAPTURE/logo_oficial.png` como recurso `ZaettaLogo` en el instalador.
 - El instalador quedo nuevamente alrededor de 1.7 MB por incluir el logo oficial nitido.

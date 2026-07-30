@@ -10,7 +10,7 @@ namespace ZaettaCaptureNative
         private void ShowToolbars()
         {
             HideToolbars();
-            bottomToolbar = new FloatingToolbarPanel { Width = 506, Height = 34 };
+            bottomToolbar = new FloatingToolbarPanel { Width = 546, Height = 34 };
             bottomToolbar.Left = Math.Max(8, Math.Min(selection.Left, ClientSize.Width - bottomToolbar.Width - 8));
             bottomToolbar.Top = selection.Bottom + 8 < ClientSize.Height - bottomToolbar.Height
                 ? selection.Bottom + 8
@@ -48,7 +48,8 @@ namespace ZaettaCaptureNative
             moreBottom.Click += delegate { ShowToolsMenu(moreBottom); };
             AddToolButton(bottomToolbar, "Copiar", 306, 4, 68, false, delegate { CopyAndClose(); }, "Copiar al portapapeles y cerrar la captura.");
             AddToolButton(bottomToolbar, "Guardar", 380, 4, 70, true, delegate { SaveImage(); }, "Guardar la captura como archivo PNG.");
-            ZaettaButton close = AddToolButton(bottomToolbar, "X", 456, 4, 44, false, delegate { Close(); }, "Cancelar y cerrar sin copiar.");
+            AddToolButton(bottomToolbar, "Lock", 456, 4, 34, selectionLocked, delegate { ToggleSelectionLock(); }, selectionLocked ? "Desbloquear cierre al hacer clic fuera." : "Bloquear cierre al hacer clic fuera.");
+            ZaettaButton close = AddToolButton(bottomToolbar, "X", 496, 4, 44, false, delegate { Close(); }, "Cancelar y cerrar sin copiar.");
             close.Fill = Color.FromArgb(120, 32, 42);
             close.HoverFill = Color.FromArgb(170, 48, 58);
             close.Invalidate();
@@ -139,6 +140,8 @@ namespace ZaettaCaptureNative
                 return "pixel";
             if (text == "...")
                 return "more";
+            if (text == "Lock")
+                return "lock";
             return string.Empty;
         }
 

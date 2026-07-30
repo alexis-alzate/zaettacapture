@@ -80,7 +80,8 @@ namespace ZaettaCaptureNative
             }
             if (!selection.Contains(e.Location))
             {
-                Close();
+                if (!selectionLocked)
+                    Close();
                 return;
             }
             if (tool == Tool.Move)

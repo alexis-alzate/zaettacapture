@@ -157,6 +157,13 @@ namespace ZaettaCaptureNative
                     g.FillEllipse(brush, cx - 2, cy - 2, 4, 4);
                     g.FillEllipse(brush, cx + 3, cy - 2, 4, 4);
                 }
+                else if (key == "lock")
+                {
+                    RectangleF body = new RectangleF(cx - 6, cy - 1, 12, 8);
+                    g.DrawRectangle(pen, body.X, body.Y, body.Width, body.Height);
+                    g.DrawArc(pen, cx - 5, cy - 8, 10, 11, 200, 140);
+                    g.FillEllipse(brush, cx - 1.5f, cy + 2, 3, 3);
+                }
             }
         }
     }

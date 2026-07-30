@@ -15,6 +15,13 @@ namespace ZaettaCaptureNative
             Invalidate();
         }
 
+        private void ToggleSelectionLock()
+        {
+            selectionLocked = !selectionLocked;
+            ShowToolbars();
+            Invalidate();
+        }
+
         private string ToolName(Tool selected)
         {
             if (selected == Tool.Move) return "Mover";

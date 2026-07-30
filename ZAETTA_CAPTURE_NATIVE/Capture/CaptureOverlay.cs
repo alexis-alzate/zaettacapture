@@ -36,6 +36,7 @@ namespace ZaettaCaptureNative
         private Point selectionMoveOffset;
         private bool pendingRightCopy;
         private bool leftButtonDown;
+        private bool selectionLocked;
         private readonly ToolTip tips = new ToolTip();
         private static readonly Color SelectionStroke = Color.FromArgb(245, 245, 245);
         private static readonly Color SelectionShadow = Color.FromArgb(72, 24, 24, 24);
