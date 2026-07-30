@@ -27,7 +27,7 @@ namespace ZaettaCaptureNative
             activeTextBox.MouseDown += delegate(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Right)
-                    BeginRightCopy();
+                    BeginRightCopy(activeTextBox, e.Location);
             };
             activeTextBox.MouseUp += delegate(object sender, MouseEventArgs e)
             {
@@ -60,6 +60,13 @@ namespace ZaettaCaptureNative
             {
                 CommitTextEdit();
                 CopyAndClose();
+                e.SuppressKeyPress = true;
+                return;
+            }
+            if (e.Control && e.KeyCode == Keys.L)
+            {
+                CommitTextEdit();
+                ToggleSelectionLock();
                 e.SuppressKeyPress = true;
                 return;
             }

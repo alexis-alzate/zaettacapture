@@ -102,7 +102,7 @@ namespace ZaettaCaptureInstaller
             card.Controls.Add(status);
 
             detail = new Label();
-            detail.Text = "Se instalara la aplicacion y se creara el acceso directo en el escritorio.";
+            detail.Text = "Se instalara la aplicacion, accesos directos e inicio con Windows.";
             detail.ForeColor = Color.FromArgb(165, 184, 199);
             detail.BackColor = card.BackColor;
             detail.Font = new Font("Segoe UI", 9, FontStyle.Regular);
@@ -209,6 +209,7 @@ namespace ZaettaCaptureInstaller
                 SetProgress(72, "Registrando aplicacion...", "Creando accesos directos y registro de Windows.");
                 CreateShortcut(appPath, installDir);
                 RegisterAppPath(appPath);
+                RegisterStartup(appPath);
                 RegisterUninstallEntry(installDir, appPath, installerPath);
                 SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
 
@@ -253,6 +254,7 @@ namespace ZaettaCaptureInstaller
             StopRunningZaetta();
             RemoveLegacyUninstallEntries();
             RemoveLegacyAppPaths();
+            RemoveStartupEntries();
 
             string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
@@ -354,6 +356,7 @@ namespace ZaettaCaptureInstaller
 
                 RemoveLegacyUninstallEntries();
                 RemoveLegacyAppPaths();
+                RemoveStartupEntries();
                 SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
 
                 if (showMessage)
@@ -433,6 +436,33 @@ namespace ZaettaCaptureInstaller
             {
                 key.SetValue("", appPath);
                 key.SetValue("Path", Path.GetDirectoryName(appPath));
+            }
+        }
+
+        private static void RegisterStartup(string appPath)
+        {
+            using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run"))
+            {
+                key.SetValue(AppName, "\"" + appPath + "\"");
+            }
+        }
+
+        private static void RemoveStartupEntries()
+        {
+            string[] names =
+            {
+                "Zaetta Capture",
+                "Zaetta Capture Final",
+                "Zaetta Capture Native"
+            };
+
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true))
+            {
+                if (key == null)
+                    return;
+
+                foreach (string name in names)
+                    key.DeleteValue(name, false);
             }
         }
 

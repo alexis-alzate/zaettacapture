@@ -18,7 +18,7 @@ namespace ZaettaCaptureNative
             bottomToolbar.MouseDown += delegate(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Right)
-                    BeginRightCopy();
+                    BeginRightCopy(bottomToolbar, e.Location);
             };
             bottomToolbar.MouseUp += delegate(object sender, MouseEventArgs e)
             {
@@ -62,7 +62,7 @@ namespace ZaettaCaptureNative
             sideToolbar.MouseDown += delegate(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Right)
-                    BeginRightCopy();
+                    BeginRightCopy(sideToolbar, e.Location);
             };
             sideToolbar.MouseUp += delegate(object sender, MouseEventArgs e)
             {
@@ -115,7 +115,7 @@ namespace ZaettaCaptureNative
             button.MouseDown += delegate(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Right)
-                    BeginRightCopy();
+                    BeginRightCopy(button, e.Location);
             };
             button.MouseUp += delegate(object sender, MouseEventArgs e)
             {
@@ -164,7 +164,7 @@ namespace ZaettaCaptureNative
             button.MouseDown += delegate(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Right)
-                    BeginRightCopy();
+                    BeginRightCopy(button, e.Location);
             };
             button.MouseUp += delegate(object sender, MouseEventArgs e)
             {

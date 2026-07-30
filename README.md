@@ -21,7 +21,9 @@ Capturador de pantalla interno tipo Lightshot, desarrollado para uso operativo.
 - Herramientas de anotacion, texto, numero, pixelado y mover.
 - Opcion chuleable `Mantener posicion del area seleccionada`.
 - Opcion `Repetir ultima area`.
-- Candado temporal en el overlay para que un clic fuera de la seleccion no cierre la captura por accidente.
+- Candado temporal en el overlay para que un clic fuera de la seleccion no cierre la captura por accidente; con candado activo, clic derecho abre menu contextual.
+- Opcion de bandeja `Abrir capturas con candado` y atajo `Ctrl + L` para alternarlo durante una captura.
+- Opcion de bandeja `Iniciar con Windows`; el instalador la activa por defecto.
 - Historial local en `Pictures\Zaetta Capture\Historial`.
 - Instalador local en `%LOCALAPPDATA%`.
 

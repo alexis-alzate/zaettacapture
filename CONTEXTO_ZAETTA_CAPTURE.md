@@ -46,8 +46,10 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Icono en bandeja del sistema.
 - Click sobre el icono de bandeja para iniciar captura.
 - Menu de opciones desde el icono de bandeja.
+- Opcion chuleable `Iniciar con Windows` desde el menu de bandeja.
 - Opcion chuleable `Mantener posicion del area seleccionada`, inspirada en Lightshot, para que cada captura nueva arranque usando el ultimo rectangulo si existe.
 - Opcion `Repetir ultima area` desde el menu de bandeja para forzar el ultimo rectangulo usado.
+- Opcion chuleable `Abrir capturas con candado` desde el menu de bandeja para usuarios que prefieren iniciar siempre en modo protegido.
 - Captura de pantalla con seleccion de area.
 - Soporte para multiples pantallas.
 - Captura sobre todo el escritorio virtual de Windows usando `SystemInformation.VirtualScreen`, no solo la pantalla donde esta el mouse.
@@ -61,6 +63,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Render de botones ajustado con bordes alineados y sin doble reduccion de rectangulo para evitar desniveles visuales en iconos compactos.
 - Tooltips descriptivos en botones.
 - Boton de candado en la barra inferior para bloquear temporalmente el cierre al hacer clic fuera de la seleccion.
+- Atajo `Ctrl + L` dentro del overlay para activar o desactivar rapidamente el candado.
 - Copiar con boton.
 - Copiar con clic derecho sobre la captura.
 - Copiar con `Ctrl + C`.
@@ -84,6 +87,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Instalador `.exe` con barra de progreso.
 - Instalador con logo oficial embebido como recurso `ZaettaLogo`.
 - Acceso directo en escritorio.
+- Inicio automatico con Windows registrado por el instalador para que la app quede disponible en bandeja despues de reiniciar el equipo.
 - Instalacion local en `%LOCALAPPDATA%`.
 - Reemplazo/limpieza de versiones anteriores durante instalacion.
 - Diagnostico de arranque: si la app falla al iniciar, muestra un mensaje y escribe `Pictures\Zaetta Capture\startup-error.log`.
@@ -116,14 +120,20 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - Las flechas deben tener cabeza visible y profesional. Actualmente se usa `AdjustableArrowCap(5.8f, 7.2f, true)`.
 - Al copiar, no debe abrir ventana de guardar.
 - Al copiar, no debe quedar ninguna ventana flotante activa.
-- Al hacer clic derecho sobre la captura, debe copiar sin abrir el menu contextual de Windows.
+- Al hacer clic derecho sobre la captura sin candado activo, debe copiar sin abrir el menu contextual de Windows.
 - Si el usuario cancela, debe cerrar todo y devolver el control normal del mouse.
 - Si el candado esta activo, clic izquierdo fuera de la seleccion no debe cerrar el capturador.
-- Aunque el candado este activo, clic derecho, boton Copiar y `Ctrl + C` deben copiar y cerrar.
-- El candado es un estado temporal del overlay activo, no una preferencia global de bandeja. Cada nueva captura inicia desbloqueada.
+- Si el candado esta apagado, clic derecho dentro de la seleccion debe copiar y cerrar rapido.
+- Si el candado esta activo, clic derecho no debe copiar de inmediato: debe abrir un menu contextual propio de Zaetta con acciones como Copiar, Guardar, Desbloquear y Cancelar.
+- Aunque el candado este activo, boton Copiar y `Ctrl + C` deben copiar y cerrar.
+- Cuando el usuario elige Copiar desde el menu contextual del candado, debe copiar y cerrar.
+- El candado es un estado del overlay activo. Por defecto cada captura inicia desbloqueada, salvo que el usuario active en bandeja la preferencia `Abrir capturas con candado`.
+- La preferencia global solo define el estado inicial de nuevas capturas; el usuario siempre puede activar/desactivar el candado dentro del overlay con el boton o con `Ctrl + L`.
 - El objetivo del candado es permitir que el usuario mantenga la seleccion visible mientras interactua accidentalmente por fuera del rectangulo, sin perder el recorte que ya tenia listo.
 - El programa debe sentirse inmediato; la seleccion no puede tener lag perceptible.
 - El instalador debe sobreescribir versiones anteriores y evitar que queden varias copias con nombres distintos.
+- El instalador debe dejar activado `Iniciar con Windows` por defecto para el usuario actual. La app no debe requerir permisos de administrador para esto.
+- La opcion `Iniciar con Windows` debe poder apagarse o prenderse desde el menu de bandeja.
 - Al activar captura, el usuario debe poder seleccionar cualquier monitor conectado, incluso si el mouse estaba inicialmente en otro monitor. Por eso `StartCapture` debe usar el escritorio virtual completo.
 - En equipos con monitores a 125%, 150% o escalas mixtas, la app debe activar DPI awareness antes de crear ventanas; de lo contrario Windows puede virtualizar coordenadas y copiar una zona incorrecta.
 - No se deben abrir multiples overlays al mantener presionado `Impr Pant` o al disparar varias veces el atajo. `TrayContext.captureActive` bloquea una nueva captura hasta que el overlay actual cierre.
@@ -131,7 +141,15 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - Si `Mantener posicion del area seleccionada` esta deschuleado, una captura normal debe iniciar desde cero.
 - `Repetir ultima area` fuerza el uso de la ultima area aunque la opcion automatica este desactivada.
 - La ultima area se guarda en `Pictures\Zaetta Capture\last-selection.txt` como `x,y,width,height`.
-- La preferencia se guarda en `Pictures\Zaetta Capture\capture-preferences.txt` como `1` o `0`.
+- Las preferencias de captura se guardan en `Pictures\Zaetta Capture\capture-preferences.txt`.
+- Formato actual de preferencias:
+
+```text
+keepLastSelectionPosition=1
+openLocked=0
+```
+
+- Compatibilidad: si el archivo antiguo solo contiene `1`, `0`, `true` o `false`, se interpreta como el valor legacy de `Mantener posicion del area seleccionada`.
 
 ## 7. Atajos actuales y deseados
 
@@ -141,6 +159,7 @@ Atajos deseados:
 - `Delete` o `Supr`: opcion configurable para iniciar captura si el usuario lo prefiere.
 - `Ctrl + Shift + S`: atajo alternativo.
 - `Ctrl + C`: copiar captura editada.
+- `Ctrl + L`: activar o desactivar candado del overlay.
 - `Esc`: cancelar captura o cerrar editor.
 - `R`: seleccionar rectangulo.
 - `T`: seleccionar texto.
@@ -161,7 +180,7 @@ Nota actual: `Print Screen` se maneja con `RegisterHotKey`, no con hook global d
 Contiene:
 
 - `App/`: arranque, metadatos de producto, bandeja del sistema, dialogo de atajo y flujo inicial de captura.
-- `SystemIntegration/`: DPI awareness, portapapeles y hotkeys globales mediante `RegisterHotKey`.
+- `SystemIntegration/`: DPI awareness, portapapeles, hotkeys globales mediante `RegisterHotKey` e inicio con Windows.
 - `Editing/`: herramientas, operaciones de dibujo, pixelado y estilos de dibujo.
 - `Storage/`: rutas locales, historial, ultima area y preferencias de captura.
 - `UI/`: helpers visuales compartidos.
@@ -180,32 +199,47 @@ Contiene:
 - `Storage/HistoryService.cs`: guardado y apertura del historial local.
 - `Storage/LastSelectionStore.cs`: persistencia de la ultima area seleccionada.
 - `Storage/CapturePreferencesStore.cs`: persistencia de `Mantener posicion del area seleccionada`.
+- `Storage/CapturePreferencesStore.cs`: tambien persiste `Abrir capturas con candado`.
+- `SystemIntegration/StartupService.cs`: lee y actualiza la entrada de inicio automatico del usuario actual en `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+- `SystemIntegration/StartupDiagnostics.cs`: log de errores de arranque.
+- `Legacy/EditorForm.cs`: editor anterior conservado como referencia.
+- `ZaettaCapture.cs`: archivo historico minimo que apunta a la nueva separacion.
+- `TrayContext.StartCapture`, actualmente captura `SystemInformation.VirtualScreen` para permitir seleccion libre en cualquier pantalla.
+- `TrayContext.captureActive`, bandera que impide abrir mas de una captura al mismo tiempo.
 
 ### Candado de captura
 
-El candado vive dentro de `CaptureOverlay` porque aplica solo a la captura abierta en ese momento. No debe guardarse como preferencia global.
+El candado vive dentro de `CaptureOverlay` porque el bloqueo real aplica a la captura abierta en ese momento. La bandeja solo guarda una preferencia opcional para definir si nuevas capturas empiezan bloqueadas.
 
 Archivos relacionados:
 
 - `Capture/CaptureOverlay.cs`: campo `selectionLocked`.
 - `Capture/CaptureOverlay.Input.cs`: evita cerrar con clic izquierdo fuera de la seleccion cuando el candado esta activo.
 - `Capture/CaptureOverlay.Toolbar.cs`: agrega el boton `Lock` en la barra inferior.
-- `Capture/CaptureOverlay.Tools.cs`: metodo `ToggleSelectionLock`.
+- `Capture/CaptureOverlay.Keyboard.cs`: permite alternar el candado con `Ctrl + L`.
+- `Capture/CaptureOverlay.Tools.cs`: metodo `ToggleSelectionLock` y menu contextual del modo bloqueado.
 - `UI/ZaettaButton.cs`: dibujo del icono de candado.
+- `App/TrayContext.cs`: opcion chuleable `Abrir capturas con candado`.
+- `Storage/CapturePreferencesStore.cs`: guarda/carga la preferencia `openLocked`.
 
 Comportamiento esperado:
 
 - Desbloqueado: clic izquierdo fuera de la seleccion cierra/cancela la captura.
 - Bloqueado: clic izquierdo fuera de la seleccion no cierra la captura.
-- Bloqueado o desbloqueado: clic derecho dentro de la seleccion copia y cierra.
+- Si `Abrir capturas con candado` esta chuleado en bandeja, toda nueva captura inicia bloqueada.
+- Si `Abrir capturas con candado` esta deschuleado, toda nueva captura inicia desbloqueada.
+- Desbloqueado: clic derecho dentro de la seleccion copia y cierra.
+- Bloqueado: clic derecho abre menu contextual de Zaetta y no cierra hasta que el usuario elija una accion.
+- Bloqueado: la opcion `Copiar` del menu contextual copia y cierra.
+- Bloqueado: la opcion `Guardar` abre el guardado sin cerrar automaticamente.
+- Bloqueado: la opcion `Desbloquear candado` apaga el bloqueo y mantiene la captura abierta.
+- Bloqueado: la opcion `Cancelar captura` cierra sin copiar.
+- El menu contextual del candado debe usar colores propios (`BackColor`/`ForeColor`) para evitar texto negro sobre fondo oscuro.
+- No desechar manualmente el `ContextMenuStrip` dentro del evento `Closed`; WinForms puede seguir consultando el objeto durante el cierre y lanzar `ObjectDisposedException`.
 - Bloqueado o desbloqueado: boton Copiar copia y cierra.
 - Bloqueado o desbloqueado: `Ctrl + C` copia y cierra.
+- Bloqueado o desbloqueado: `Ctrl + L` alterna el candado sin cerrar.
 - `Esc` y boton `X` siguen funcionando como cancelacion manual.
-- `SystemIntegration/StartupDiagnostics.cs`: log de errores de arranque.
-- `Legacy/EditorForm.cs`: editor anterior conservado como referencia.
-- `ZaettaCapture.cs`: archivo historico minimo que apunta a la nueva separacion.
-- `TrayContext.StartCapture`, actualmente captura `SystemInformation.VirtualScreen` para permitir seleccion libre en cualquier pantalla.
-- `TrayContext.captureActive`, bandera que impide abrir mas de una captura al mismo tiempo.
 
 `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
 
@@ -214,6 +248,7 @@ Contiene:
 - Instalacion local.
 - Copia del ejecutable final.
 - Creacion de acceso directo.
+- Registro de inicio automatico con Windows para el usuario actual.
 - Limpieza/reemplazo de versiones anteriores.
 - Barra de progreso.
 - Mensajes de exito o error.
@@ -266,6 +301,18 @@ El build actual embebe en el instalador:
 
 - `ZaettaApp`: ejecutable final de la aplicacion.
 - `ZaettaLogo`: `ZAETTA_CAPTURE/logo_oficial.png`.
+
+El instalador tambien registra la app en:
+
+```text
+HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+```
+
+Valor:
+
+```text
+Zaetta Capture = "%LOCALAPPDATA%\Zaetta Capture\Zaetta Capture.exe"
+```
 
 Tamanos recientes de referencia:
 
@@ -412,7 +459,15 @@ Si la app no aparece en bandeja al ejecutarse, revisar primero:
 - Se persistio la preferencia de mantener area en `Pictures\Zaetta Capture\capture-preferences.txt`.
 - Se implemento movimiento de la seleccion completa con la herramienta `Mover`; las anotaciones se desplazan junto con el rectangulo.
 - Se implemento boton de candado en el overlay para impedir que un clic izquierdo fuera de la seleccion cierre accidentalmente la captura.
-- Se mantuvo el cierre normal al copiar con clic derecho, boton Copiar o `Ctrl + C`, incluso cuando el candado esta activo.
+- Se ajusto el clic derecho: sin candado copia y cierra rapido; con candado abre menu contextual de Zaetta para Copiar, Guardar, Desbloquear o Cancelar.
+- Se corrigio el menu contextual del candado para que el texto sea visible y para evitar el error `ObjectDisposedException` de `ContextMenuStrip`.
+- Se agrego la opcion de bandeja `Abrir capturas con candado`, persistida en `capture-preferences.txt` como `openLocked`.
+- Se agrego el atajo `Ctrl + L` para activar/desactivar el candado desde el overlay.
+- Se cambio `capture-preferences.txt` a formato de llaves (`keepLastSelectionPosition`, `openLocked`) manteniendo compatibilidad con el formato legacy de un solo valor.
+- Se mantuvo el cierre normal al copiar con boton Copiar o `Ctrl + C`, incluso cuando el candado esta activo.
+- Se agrego inicio automatico con Windows mediante registro `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+- Se agrego opcion de bandeja `Iniciar con Windows` para activar/desactivar ese comportamiento.
+- El instalador ahora activa el inicio con Windows por defecto y limpia entradas antiguas de inicio automatico durante instalacion/desinstalacion.
 - Se recompilo la app y el instalador.
 - Se incrusto `ZAETTA_CAPTURE/logo_oficial.png` como recurso `ZaettaLogo` en el instalador.
 - El instalador quedo nuevamente alrededor de 1.7 MB por incluir el logo oficial nitido.

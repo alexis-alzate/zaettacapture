@@ -33,7 +33,14 @@ namespace ZaettaCaptureNative
 
         private void BeginRightCopy()
         {
+            BeginRightCopy(this, PointToClient(Cursor.Position));
+        }
+
+        private void BeginRightCopy(Control owner, Point location)
+        {
             pendingRightCopy = true;
+            pendingRightOwner = owner;
+            pendingRightLocation = location;
             Capture = true;
         }
 
@@ -43,7 +50,11 @@ namespace ZaettaCaptureNative
                 return;
             pendingRightCopy = false;
             Capture = false;
-            CopyAndClose();
+            if (selectionLocked)
+                ShowCaptureContextMenu(pendingRightOwner ?? this, pendingRightLocation);
+            else
+                CopyAndClose();
+            pendingRightOwner = null;
         }
 
         protected override void OnMouseDown(MouseEventArgs e)
@@ -53,7 +64,7 @@ namespace ZaettaCaptureNative
                 leftButtonDown = true;
             if (e.Button == MouseButtons.Right && HasSelection())
             {
-                BeginRightCopy();
+                BeginRightCopy(this, e.Location);
                 return;
             }
             if (e.Button != MouseButtons.Left)

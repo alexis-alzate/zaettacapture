@@ -14,9 +14,12 @@ namespace ZaettaCaptureNative
         private ToolStripMenuItem customHotkeyItem;
         private ToolStripMenuItem repeatLastAreaItem;
         private ToolStripMenuItem keepLastSelectionPositionItem;
+        private ToolStripMenuItem openLockedItem;
+        private ToolStripMenuItem startupWithWindowsItem;
         private Rectangle lastSelection;
         private bool hasLastSelection;
         private bool keepLastSelectionPosition;
+        private bool openLocked;
         private bool captureActive;
 
         public TrayContext()
@@ -36,6 +39,11 @@ namespace ZaettaCaptureNative
             keepLastSelectionPosition = CapturePreferencesStore.LoadKeepLastSelectionPosition();
             if (keepLastSelectionPositionItem != null)
                 keepLastSelectionPositionItem.Checked = keepLastSelectionPosition;
+            openLocked = CapturePreferencesStore.LoadOpenLocked();
+            if (openLockedItem != null)
+                openLockedItem.Checked = openLocked;
+            if (startupWithWindowsItem != null)
+                startupWithWindowsItem.Checked = StartupService.IsEnabled();
 
             hotKeyWindow = new HotKeyWindow(StartCapture);
             hotKeyWindow.Register(Keys.PrintScreen, 0);
@@ -70,6 +78,14 @@ namespace ZaettaCaptureNative
             keepLastSelectionPositionItem.Checked = true;
             keepLastSelectionPositionItem.CheckOnClick = true;
             menu.Items.Add(keepLastSelectionPositionItem);
+            openLockedItem = new ToolStripMenuItem("Abrir capturas con candado", null, delegate { ToggleOpenLocked(); });
+            openLockedItem.Checked = false;
+            openLockedItem.CheckOnClick = true;
+            menu.Items.Add(openLockedItem);
+            startupWithWindowsItem = new ToolStripMenuItem("Iniciar con Windows", null, delegate { ToggleStartupWithWindows(); });
+            startupWithWindowsItem.Checked = false;
+            startupWithWindowsItem.CheckOnClick = true;
+            menu.Items.Add(startupWithWindowsItem);
             var hotkeys = new ToolStripMenuItem("Atajo de captura");
             printScreenItem = new ToolStripMenuItem("Impr Pant", null, delegate { SetHotkey(Keys.PrintScreen, 0, printScreenItem); });
             ctrlShiftSItem = new ToolStripMenuItem("Ctrl + Shift + S", null, delegate { SetHotkey(Keys.S, HotKeyWindow.MOD_CONTROL | HotKeyWindow.MOD_SHIFT, ctrlShiftSItem); });
@@ -132,6 +148,25 @@ namespace ZaettaCaptureNative
             CapturePreferencesStore.SaveKeepLastSelectionPosition(keepLastSelectionPosition);
         }
 
+        private void ToggleOpenLocked()
+        {
+            openLocked = openLockedItem.Checked;
+            CapturePreferencesStore.SaveOpenLocked(openLocked);
+        }
+
+        private void ToggleStartupWithWindows()
+        {
+            try
+            {
+                StartupService.SetEnabled(startupWithWindowsItem.Checked);
+            }
+            catch (Exception ex)
+            {
+                startupWithWindowsItem.Checked = StartupService.IsEnabled();
+                MessageBox.Show("No se pudo cambiar el inicio con Windows.\n\n" + ex.Message, AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         private void StartCapture()
         {
             StartCapture(false);
@@ -148,8 +183,8 @@ namespace ZaettaCaptureNative
                 ScreenshotCapture capture = ScreenshotService.CaptureVirtualScreen();
                 bool shouldUseLastSelection = hasLastSelection && (useLastSelection || keepLastSelectionPosition);
                 CaptureOverlay overlay = shouldUseLastSelection
-                    ? new CaptureOverlay(capture.Bounds, capture.Image, lastSelection)
-                    : new CaptureOverlay(capture.Bounds, capture.Image);
+                    ? new CaptureOverlay(capture.Bounds, capture.Image, lastSelection, openLocked)
+                    : new CaptureOverlay(capture.Bounds, capture.Image, openLocked);
                 overlay.FormClosed += delegate
                 {
                     if (overlay.HasCompletedSelection)

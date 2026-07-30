@@ -37,6 +37,8 @@ namespace ZaettaCaptureNative
         private bool pendingRightCopy;
         private bool leftButtonDown;
         private bool selectionLocked;
+        private Control pendingRightOwner;
+        private Point pendingRightLocation;
         private readonly ToolTip tips = new ToolTip();
         private static readonly Color SelectionStroke = Color.FromArgb(245, 245, 245);
         private static readonly Color SelectionShadow = Color.FromArgb(72, 24, 24, 24);
@@ -46,9 +48,15 @@ namespace ZaettaCaptureNative
         private static readonly Color SelectionLabelBg = Color.FromArgb(232, 20, 20, 20);
 
         public CaptureOverlay(Rectangle screenBounds, Bitmap screenshot)
+            : this(screenBounds, screenshot, false)
+        {
+        }
+
+        public CaptureOverlay(Rectangle screenBounds, Bitmap screenshot, bool startLocked)
         {
             this.screenshot = screenshot;
             this.dimmedScreenshot = BuildDimmedScreenshot(screenshot);
+            selectionLocked = startLocked;
             FormBorderStyle = FormBorderStyle.None;
             StartPosition = FormStartPosition.Manual;
             Location = screenBounds.Location;
@@ -66,7 +74,12 @@ namespace ZaettaCaptureNative
         }
 
         public CaptureOverlay(Rectangle screenBounds, Bitmap screenshot, Rectangle initialSelection)
-            : this(screenBounds, screenshot)
+            : this(screenBounds, screenshot, initialSelection, false)
+        {
+        }
+
+        public CaptureOverlay(Rectangle screenBounds, Bitmap screenshot, Rectangle initialSelection, bool startLocked)
+            : this(screenBounds, screenshot, startLocked)
         {
             selection = ClampInitialSelection(initialSelection);
             start = selection.Location;

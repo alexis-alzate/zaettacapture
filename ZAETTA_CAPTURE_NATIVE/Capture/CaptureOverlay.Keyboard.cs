@@ -49,6 +49,12 @@ namespace ZaettaCaptureNative
                 e.SuppressKeyPress = true;
                 return;
             }
+            if (e.Control && e.KeyCode == Keys.L)
+            {
+                ToggleSelectionLock();
+                e.SuppressKeyPress = true;
+                return;
+            }
             if (activeTextBox == null && !e.Control && !e.Alt && !e.Shift && TryApplyToolShortcut(e.KeyCode))
             {
                 e.SuppressKeyPress = true;

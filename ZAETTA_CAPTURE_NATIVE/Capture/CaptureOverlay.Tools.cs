@@ -22,6 +22,45 @@ namespace ZaettaCaptureNative
             Invalidate();
         }
 
+        private void ShowCaptureContextMenu(Control owner, Point location)
+        {
+            if (owner == null)
+                owner = this;
+
+            ContextMenuStrip menu = new ContextMenuStrip();
+            menu.BackColor = Ui.Bg;
+            menu.ForeColor = Color.FromArgb(238, 246, 250);
+            menu.ShowImageMargin = false;
+            menu.ShowItemToolTips = true;
+            menu.Font = new Font("Segoe UI", 8, FontStyle.Bold);
+            menu.Padding = new Padding(2, 3, 2, 3);
+            menu.Renderer = new DarkMenuRenderer();
+
+            ToolStripMenuItem copy = new ToolStripMenuItem("Copiar");
+            copy.ForeColor = menu.ForeColor;
+            copy.Click += delegate { CopyAndClose(); };
+            menu.Items.Add(copy);
+
+            ToolStripMenuItem save = new ToolStripMenuItem("Guardar");
+            save.ForeColor = menu.ForeColor;
+            save.Click += delegate { SaveImage(); };
+            menu.Items.Add(save);
+
+            ToolStripMenuItem unlock = new ToolStripMenuItem("Desbloquear candado");
+            unlock.ForeColor = menu.ForeColor;
+            unlock.Click += delegate { ToggleSelectionLock(); };
+            menu.Items.Add(unlock);
+
+            menu.Items.Add(new ToolStripSeparator());
+
+            ToolStripMenuItem cancel = new ToolStripMenuItem("Cancelar captura");
+            cancel.ForeColor = menu.ForeColor;
+            cancel.Click += delegate { Close(); };
+            menu.Items.Add(cancel);
+
+            menu.Show(owner, location);
+        }
+
         private string ToolName(Tool selected)
         {
             if (selected == Tool.Move) return "Mover";
