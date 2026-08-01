@@ -1661,6 +1661,26 @@ Manifest esperado para publicar:
 - Se creo `v1.0.17` para persistir el atajo de captura elegido y conservarlo despues de actualizar.
 - Se creo `v1.0.18` para reforzar el toast bonito cuando el update se detecta automaticamente, no solo al usar `Buscar actualizaciones`.
 - Se creo `v1.0.19` para agregar una ventana `Opciones...` desde la bandeja, estilo configuracion de app de captura.
+- Se creo `v1.0.20` para pulir el frente de `Opciones...`: se retiro el `TabControl` blanco nativo, se agrego navegacion lateral oscura/dorada y se simplifico el menu de bandeja para dejar solo acciones importantes.
+
+#### v1.0.20 - Opciones mas limpias y menu de bandeja menos cargado
+
+Fecha: 2026-08-01.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/App/SettingsForm.cs`: se reemplazo la ventana con pestanas nativas por una interfaz propia con panel lateral `General` / `Atajo`, panel oscuro central y botones dorados. Decision: el `TabControl` de WinForms metia una franja blanca que rompia la estetica negra/dorada de Zaetta.
+- `ZAETTA_CAPTURE_NATIVE/App/TrayContext.cs`: el menu blanco de bandeja dejo de mostrar `Mantener posicion`, `Abrir capturas con candado` y el submenu completo de atajo. Decision: esas opciones ya viven en `Opciones...`; en la bandeja deben quedar acciones rapidas, no configuracion duplicada.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`: version interna subida a `1.0.20`.
+- `website/latest.json`: manifest actualizado para que el updater detecte y descargue `v1.0.20`.
+
+Comportamiento esperado:
+
+- Click derecho en bandeja muestra solo acciones principales: capturar, repetir ultima area, opciones, historial, actualizaciones, acerca de y salir.
+- `Opciones...` abre una ventana oscura, sin pestanas blancas, con navegacion lateral.
+- En `General` quedan las preferencias persistentes de area y candado.
+- En `Atajo` queda el shortcut actual, boton `Cambiar` y presets rapidos.
+- Guardar aplica las preferencias y vuelve a registrar el atajo igual que antes.
 
 ### 2026-07-28
 

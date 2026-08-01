@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.19/ZaettaCaptureSetup.exe",
-  "sha256": "794a854358b112af84f694f6a44d1ed7a05f743b883aad16d4b28f6b683e3358",
-  "fileSizeBytes": 1750016,
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.20/ZaettaCaptureSetup.exe",
+  "sha256": "2bcd3867634c29daa1855681d8b9dbae6d38c0b4109cd65f3d8038b2ecee55f4",
+  "fileSizeBytes": 1751552,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -28,6 +28,8 @@
     "Actualizaciones mas agresivas: chequeos cada 30 segundos al iniciar y luego cada 5 minutos sin reiniciar la app.",
     "El atajo de captura elegido se guarda y se conserva despues de actualizar.",
     "El toast bonito de actualizacion tambien se muestra en detecciones automaticas, con mas tiempo visible.",
-    "Nuevo menu Opciones desde la bandeja para configurar comportamiento y atajo de captura."
+    "Nuevo menu Opciones desde la bandeja para configurar comportamiento y atajo de captura.",
+    "Opciones redisenadas sin pestanas blancas: navegacion lateral oscura, paneles compactos y acciones doradas.",
+    "Menu de bandeja simplificado: las configuraciones secundarias viven dentro de Opciones."
   ]
 }

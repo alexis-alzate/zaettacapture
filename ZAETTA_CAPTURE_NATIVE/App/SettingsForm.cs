@@ -9,6 +9,10 @@ namespace ZaettaCaptureNative
         private readonly CheckBox keepSelection;
         private readonly CheckBox openLocked;
         private readonly Label hotkeyValue;
+        private readonly Panel generalPanel;
+        private readonly Panel hotkeyPanel;
+        private readonly Button generalNav;
+        private readonly Button hotkeyNav;
         private Keys selectedKey;
         private uint selectedModifiers;
 
@@ -43,7 +47,7 @@ namespace ZaettaCaptureNative
             MaximizeBox = false;
             MinimizeBox = false;
             ShowInTaskbar = true;
-            ClientSize = new Size(520, 360);
+            ClientSize = new Size(620, 390);
             BackColor = Ui.Bg;
             ForeColor = Ui.Text;
             Font = new Font("Segoe UI", 9f);
@@ -52,65 +56,67 @@ namespace ZaettaCaptureNative
             title.Text = "Opciones";
             title.Font = new Font("Segoe UI", 18f, FontStyle.Bold);
             title.ForeColor = Ui.Text;
-            title.SetBounds(24, 18, 360, 38);
+            title.BackColor = Ui.Bg;
+            title.SetBounds(28, 22, 220, 38);
 
-            TabControl tabs = new TabControl();
-            tabs.SetBounds(24, 72, 472, 210);
-            tabs.Font = new Font("Segoe UI", 9f);
+            Label subtitle = new Label();
+            subtitle.Text = "Ajustes de captura, bandeja y atajo.";
+            subtitle.ForeColor = Ui.Muted;
+            subtitle.BackColor = Ui.Bg;
+            subtitle.SetBounds(30, 58, 330, 22);
 
-            TabPage general = new TabPage("General");
-            general.BackColor = Ui.Bg;
-            general.ForeColor = Ui.Text;
+            Panel side = new Panel();
+            side.BackColor = Color.FromArgb(10, 13, 16);
+            side.SetBounds(24, 98, 146, 202);
 
-            keepSelection = BuildCheckBox("Mantener posicion del area seleccionada", keepLastSelectionPosition, 18, 24);
-            openLocked = BuildCheckBox("Abrir capturas con candado", startOpenLocked, 18, 62);
-            Label startup = BuildMutedLabel("Inicio con Windows activo automaticamente.", 20, 110, 390, 22);
-            Label tray = BuildMutedLabel("Zaetta queda en bandeja despues de instalar o actualizar.", 20, 136, 410, 22);
-            general.Controls.Add(keepSelection);
-            general.Controls.Add(openLocked);
-            general.Controls.Add(startup);
-            general.Controls.Add(tray);
+            generalNav = BuildNavButton("General", 10, 12);
+            generalNav.Click += delegate { ShowSection(true); };
+            hotkeyNav = BuildNavButton("Atajo", 10, 58);
+            hotkeyNav.Click += delegate { ShowSection(false); };
+            side.Controls.Add(generalNav);
+            side.Controls.Add(hotkeyNav);
 
-            TabPage hotkeys = new TabPage("Atajo");
-            hotkeys.BackColor = Ui.Bg;
-            hotkeys.ForeColor = Ui.Text;
+            generalPanel = BuildContentPanel();
+            keepSelection = BuildCheckBox("Mantener la ultima area", keepLastSelectionPosition, 24, 28);
+            Label keepText = BuildMutedLabel("Las capturas nuevas arrancan con el ultimo rectangulo usado.", 48, 57, 330, 20);
+            openLocked = BuildCheckBox("Abrir capturas con candado", startOpenLocked, 24, 94);
+            Label lockText = BuildMutedLabel("El area queda protegida hasta que la desbloquees.", 48, 123, 330, 20);
+            Label startup = BuildInfoLine("Inicio con Windows", "Activo automaticamente.", 24, 164);
+            Label tray = BuildInfoLine("Bandeja", "La app queda lista despues de instalar o actualizar.", 24, 190);
+            generalPanel.Controls.Add(keepSelection);
+            generalPanel.Controls.Add(keepText);
+            generalPanel.Controls.Add(openLocked);
+            generalPanel.Controls.Add(lockText);
+            generalPanel.Controls.Add(startup);
+            generalPanel.Controls.Add(tray);
 
-            Label hotkeyTitle = new Label();
-            hotkeyTitle.Text = "Atajo de captura";
-            hotkeyTitle.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
-            hotkeyTitle.ForeColor = Ui.Text;
-            hotkeyTitle.SetBounds(20, 24, 220, 26);
-
-            hotkeyValue = BuildMutedLabel(FormatHotkey(selectedKey, selectedModifiers), 20, 58, 260, 24);
+            hotkeyPanel = BuildContentPanel();
+            Label hotkeyTitle = BuildSectionTitle("Atajo de captura", 24, 24);
+            hotkeyValue = BuildHotkeyValue(FormatHotkey(selectedKey, selectedModifiers), 24, 58);
             ZaettaButton changeHotkey = new ZaettaButton("Cambiar", true);
             changeHotkey.TextFill = Color.FromArgb(12, 12, 10);
-            changeHotkey.SetBounds(308, 50, 120, 34);
+            changeHotkey.SetBounds(298, 52, 118, 34);
             changeHotkey.Click += delegate { CaptureHotkey(); };
-
+            Label presets = BuildMutedLabel("Presets rapidos", 24, 112, 180, 22);
             ZaettaButton printScreen = new ZaettaButton("Impr Pant", false);
-            printScreen.SetBounds(20, 112, 120, 34);
+            printScreen.SetBounds(24, 144, 118, 34);
             printScreen.Click += delegate { SetHotkey(Keys.PrintScreen, 0); };
-
             ZaettaButton ctrlShift = new ZaettaButton("Ctrl Shift S", false);
-            ctrlShift.SetBounds(150, 112, 120, 34);
+            ctrlShift.SetBounds(154, 144, 118, 34);
             ctrlShift.Click += delegate { SetHotkey(Keys.S, HotKeyWindow.MOD_CONTROL | HotKeyWindow.MOD_SHIFT); };
-
             ZaettaButton ctrlAlt = new ZaettaButton("Ctrl Alt S", false);
-            ctrlAlt.SetBounds(280, 112, 120, 34);
+            ctrlAlt.SetBounds(284, 144, 118, 34);
             ctrlAlt.Click += delegate { SetHotkey(Keys.S, HotKeyWindow.MOD_CONTROL | HotKeyWindow.MOD_ALT); };
-
-            hotkeys.Controls.Add(hotkeyTitle);
-            hotkeys.Controls.Add(hotkeyValue);
-            hotkeys.Controls.Add(changeHotkey);
-            hotkeys.Controls.Add(printScreen);
-            hotkeys.Controls.Add(ctrlShift);
-            hotkeys.Controls.Add(ctrlAlt);
-
-            tabs.TabPages.Add(general);
-            tabs.TabPages.Add(hotkeys);
+            hotkeyPanel.Controls.Add(hotkeyTitle);
+            hotkeyPanel.Controls.Add(hotkeyValue);
+            hotkeyPanel.Controls.Add(changeHotkey);
+            hotkeyPanel.Controls.Add(presets);
+            hotkeyPanel.Controls.Add(printScreen);
+            hotkeyPanel.Controls.Add(ctrlShift);
+            hotkeyPanel.Controls.Add(ctrlAlt);
 
             ZaettaButton cancel = new ZaettaButton("Cancelar", false);
-            cancel.SetBounds(226, 306, 120, 36);
+            cancel.SetBounds(330, 326, 120, 36);
             cancel.Click += delegate
             {
                 DialogResult = DialogResult.Cancel;
@@ -119,7 +125,7 @@ namespace ZaettaCaptureNative
 
             ZaettaButton save = new ZaettaButton("Guardar", true);
             save.TextFill = Color.FromArgb(12, 12, 10);
-            save.SetBounds(364, 306, 132, 36);
+            save.SetBounds(464, 326, 132, 36);
             save.Click += delegate
             {
                 DialogResult = DialogResult.OK;
@@ -127,11 +133,52 @@ namespace ZaettaCaptureNative
             };
 
             Controls.Add(title);
-            Controls.Add(tabs);
+            Controls.Add(subtitle);
+            Controls.Add(side);
+            Controls.Add(generalPanel);
+            Controls.Add(hotkeyPanel);
             Controls.Add(cancel);
             Controls.Add(save);
             AcceptButton = save;
             CancelButton = cancel;
+            ShowSection(true);
+        }
+
+        private static Panel BuildContentPanel()
+        {
+            Panel panel = new Panel();
+            panel.BackColor = Ui.Panel;
+            panel.SetBounds(186, 98, 410, 202);
+            return panel;
+        }
+
+        private static Button BuildNavButton(string text, int x, int y)
+        {
+            Button button = new Button();
+            button.Text = text;
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 0;
+            button.TextAlign = ContentAlignment.MiddleLeft;
+            button.Font = new Font("Segoe UI", 9f, FontStyle.Bold);
+            button.ForeColor = Ui.Text;
+            button.BackColor = Color.FromArgb(14, 17, 20);
+            button.Cursor = Cursors.Hand;
+            button.SetBounds(x, y, 126, 34);
+            return button;
+        }
+
+        private void ShowSection(bool general)
+        {
+            generalPanel.Visible = general;
+            hotkeyPanel.Visible = !general;
+            SetNavState(generalNav, general);
+            SetNavState(hotkeyNav, !general);
+        }
+
+        private static void SetNavState(Button button, bool selected)
+        {
+            button.BackColor = selected ? Color.FromArgb(34, 28, 19) : Color.FromArgb(14, 17, 20);
+            button.ForeColor = selected ? Ui.Accent2 : Ui.Text;
         }
 
         private static CheckBox BuildCheckBox(string text, bool isChecked, int x, int y)
@@ -140,18 +187,53 @@ namespace ZaettaCaptureNative
             box.Text = text;
             box.Checked = isChecked;
             box.ForeColor = Ui.Text;
-            box.BackColor = Ui.Bg;
-            box.SetBounds(x, y, 390, 28);
+            box.BackColor = Ui.Panel;
+            box.Font = new Font("Segoe UI", 10f, FontStyle.Bold);
+            box.SetBounds(x, y, 330, 28);
             return box;
+        }
+
+        private static Label BuildSectionTitle(string text, int x, int y)
+        {
+            Label label = new Label();
+            label.Text = text;
+            label.ForeColor = Ui.Text;
+            label.BackColor = Ui.Panel;
+            label.Font = new Font("Segoe UI", 12f, FontStyle.Bold);
+            label.SetBounds(x, y, 250, 28);
+            return label;
+        }
+
+        private static Label BuildHotkeyValue(string text, int x, int y)
+        {
+            Label label = new Label();
+            label.Text = text;
+            label.ForeColor = Ui.Accent2;
+            label.BackColor = Color.FromArgb(12, 15, 18);
+            label.Font = new Font("Segoe UI", 11f, FontStyle.Bold);
+            label.TextAlign = ContentAlignment.MiddleLeft;
+            label.Padding = new Padding(12, 0, 0, 0);
+            label.SetBounds(x, y, 250, 32);
+            return label;
         }
 
         private static Label BuildMutedLabel(string text, int x, int y, int width, int height)
         {
             Label label = new Label();
             label.Text = text;
-            label.ForeColor = Color.FromArgb(210, 226, 232);
-            label.BackColor = Ui.Bg;
+            label.ForeColor = Color.FromArgb(206, 215, 218);
+            label.BackColor = Ui.Panel;
             label.SetBounds(x, y, width, height);
+            return label;
+        }
+
+        private static Label BuildInfoLine(string name, string value, int x, int y)
+        {
+            Label label = new Label();
+            label.Text = name + ": " + value;
+            label.ForeColor = Ui.Muted;
+            label.BackColor = Ui.Panel;
+            label.SetBounds(x, y, 350, 20);
             return label;
         }
 
