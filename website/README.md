@@ -47,17 +47,17 @@ El instalador versionado debe vivir en GitHub Releases.
 Release actual:
 
 ```text
-Tag: v1.0.6
-Title: Zaetta Capture v1.0.6
+Tag: v1.0.7
+Title: Zaetta Capture v1.0.7
 Asset: ZaettaCaptureSetup.exe
-SHA256: 0a3604cea108ff743fb69334069703495f2d61941445f533e73a07ab414454b7
+SHA256: c720052fafbcaec395713ab17a9926458f0fb8af72021109917f73e443805d1b
 Size: 1739776 bytes
 ```
 
 URL esperada del asset:
 
 ```text
-https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.6/ZaettaCaptureSetup.exe
+https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.7/ZaettaCaptureSetup.exe
 ```
 
 `latest.json` debe apuntar a esa URL para que el updater descargue desde GitHub Releases y no desde Vercel.

@@ -1,9 +1,9 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.6/ZaettaCaptureSetup.exe",
-  "sha256": "0a3604cea108ff743fb69334069703495f2d61941445f533e73a07ab414454b7",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.7/ZaettaCaptureSetup.exe",
+  "sha256": "c720052fafbcaec395713ab17a9926458f0fb8af72021109917f73e443805d1b",
   "fileSizeBytes": 1739776,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
@@ -15,6 +15,7 @@
     "Manejo manual de redirects HTTP 301/302/303/307/308 en el updater.",
     "Release de prueba para validar el flujo completo del updater desde una version instalada.",
     "Prompt automatico mas visible: chequeo rapido al iniciar, globo de bandeja y ventana al frente.",
-    "Upgrade automatico: el instalador arranca solo desde el updater y reintenta reemplazar archivos bloqueados."
+    "Upgrade automatico: el instalador arranca solo desde el updater y reintenta reemplazar archivos bloqueados.",
+    "Release de prueba para validar upgrade automatico desde 1.0.6."
   ]
 }

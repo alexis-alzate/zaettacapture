@@ -936,6 +936,36 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.7
+
+Fecha: 2026-08-01.
+
+Motivo: release de prueba para validar el upgrade automatico desde una instalacion local `v1.0.6`.
+
+No se cambio la logica principal respecto a `v1.0.6`; se subio la version para que `latest.json` sea mayor que la version instalada y la app dispare el updater.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1739776 bytes
+SHA256: c720052fafbcaec395713ab17a9926458f0fb8af72021109917f73e443805d1b
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.7",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.7/ZaettaCaptureSetup.exe",
+  "sha256": "c720052fafbcaec395713ab17a9926458f0fb8af72021109917f73e443805d1b",
+  "fileSizeBytes": 1739776
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -1004,6 +1034,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.4` como release de prueba para validar el updater completo desde una instalacion anterior.
 - Se creo `v1.0.5` para que la deteccion automatica muestre un prompt mas visible: chequeo inmediato, globo de bandeja y ventana al frente.
 - Se creo `v1.0.6` para que el instalador arranque solo en modo `/upgrade` y reintente reemplazar archivos bloqueados.
+- Se creo `v1.0.7` como release de prueba para validar el upgrade automatico desde una instalacion `v1.0.6`.
 
 ### 2026-07-28
 
