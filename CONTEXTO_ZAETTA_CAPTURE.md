@@ -1009,6 +1009,53 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.9
+
+Fecha: 2026-08-01.
+
+Motivo: mitigacion por alerta de Bitdefender durante descarga del updater.
+
+Observacion:
+
+- Bitdefender puso en cuarentena el instalador descargado desde el updater.
+- La ruta detectada era `Pictures\\Zaetta Capture\\Updates\\ZaettaCaptureSetup-...exe`.
+- El chequeo de URL con Bitdefender marco el link de GitHub Releases como seguro.
+- Por tanto, el problema apunta a heuristica sobre el ejecutable local: `.exe` unsigned, autoextraible, que reemplaza procesos/archivos.
+
+Mitigacion aplicada:
+
+- `Paths.UpdatesDir` ya no usa `Pictures\\Zaetta Capture\\Updates`.
+- Ahora usa `%LOCALAPPDATA%\\Zaetta Capture\\Updates`.
+- Esto evita guardar instaladores ejecutables en una carpeta de usuario pensada para documentos/imagenes.
+
+Limitacion importante:
+
+- Esta mitigacion no reemplaza la solucion profesional.
+- Para distribucion real a clientes se necesita firmar el ejecutable/instalador con certificado de code signing o usar un instalador estandar firmado.
+- Tambien conviene enviar el falso positivo a Bitdefender cuando el binario final este estable.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1740800 bytes
+SHA256: 118c7626caff4f6faf5b7685da5451c2e87944817ae45de34e3d2c482e4e5f37
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.9",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.9/ZaettaCaptureSetup.exe",
+  "sha256": "118c7626caff4f6faf5b7685da5451c2e87944817ae45de34e3d2c482e4e5f37",
+  "fileSizeBytes": 1740800
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -1079,6 +1126,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.6` para que el instalador arranque solo en modo `/upgrade` y reintente reemplazar archivos bloqueados.
 - Se creo `v1.0.7` como release de prueba para validar el upgrade automatico desde una instalacion `v1.0.6`.
 - Se creo `v1.0.8` para reemplazar archivos puntuales durante upgrade y no depender de borrar toda la carpeta instalada.
+- Se creo `v1.0.9` para mover descargas del updater a `%LOCALAPPDATA%\\Zaetta Capture\\Updates` y documentar la alerta de Bitdefender.
 
 ### 2026-07-28
 
