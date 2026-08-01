@@ -1400,6 +1400,59 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.17
+
+Fecha: 2026-08-01.
+
+Motivo: conservar el atajo de captura elegido despues de una actualizacion.
+
+Problema:
+
+- Antes, el atajo solo vivia en memoria dentro de `TrayContext`.
+- Cuando el updater cerraba la app vieja y abria la nueva version, la app volvia a registrar `Impr Pant`.
+- Si el usuario habia elegido otro shortcut, por ejemplo `Ctrl + Shift + S`, se perdia despues del upgrade.
+
+Cambio:
+
+- Se agrego `Storage/HotkeyPreference.cs`.
+- `CapturePreferencesStore` ahora guarda tambien:
+  - `hotkeyKey`
+  - `hotkeyModifiers`
+- `TrayContext.RegisterSavedHotkey()` lee el atajo guardado al arrancar.
+- Si el atajo guardado se puede registrar, marca ese item en el menu.
+- Si el atajo guardado esta ocupado por Windows u otra app, hace fallback silencioso a `Impr Pant`.
+- `SetHotkey()` guarda el atajo cuando el usuario elige uno de los presets.
+- `CaptureCustomHotkey()` guarda el atajo personalizado cuando el usuario lo define.
+- El archivo `capture-preferences.txt` sigue siendo compatible con las preferencias anteriores.
+
+Decision tecnica:
+
+- Se reutilizo `capture-preferences.txt` para no crear otro archivo de configuracion.
+- La preferencia vive en `Paths.BaseDir`, por eso sobrevive a reinstalaciones y upgrades en AppData.
+- El fallback evita que la app arranque rota si el atajo guardado ya no esta disponible.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1745920 bytes
+SHA256: 1cef16c9d92c8980663cf183bebdbd9d2288c8221795079591f80718ec993c11
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.17",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.17/ZaettaCaptureSetup.exe",
+  "sha256": "1cef16c9d92c8980663cf183bebdbd9d2288c8221795079591f80718ec993c11",
+  "fileSizeBytes": 1745920
+}
+```
+
 ### Cierre de features del 2026-08-01
 
 Fecha: 2026-08-01, hora Colombia (`America/Bogota`).
@@ -1423,6 +1476,7 @@ Features y correcciones completadas hoy:
 - Instancia unica con `Mutex`: abrir varias veces ya no duplica iconos de bandeja.
 - Numeracion corregida: permite `10`, `11`, `12` y recalcula contador despues de `Undo`.
 - Deteccion mas agresiva de updates: cada 30 segundos al inicio y luego cada 5 minutos.
+- Atajo de captura persistente: el shortcut elegido se conserva despues de actualizar.
 
 Apuntes de estudio creados/actualizados:
 
@@ -1435,6 +1489,7 @@ Apuntes de estudio creados/actualizados:
 - `Mutex` para instancia unica.
 - Contador robusto calculado desde `ops`.
 - Scheduler de updates con checks rapidos, checks normales y snooze.
+- Persistencia del hotkey con `hotkeyKey` y `hotkeyModifiers`.
 
 Causa:
 
@@ -1514,6 +1569,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.14` para evitar multiples instancias y multiples iconos duplicados en la bandeja usando `Mutex`.
 - Se creo `v1.0.15` para corregir la numeracion: continua despues de 9 y `Undo`/`Esc` no rompen el contador.
 - Se creo `v1.0.16` para detectar actualizaciones de forma mas agresiva sin cerrar/abrir la app: checks cada 30 segundos al inicio y luego cada 5 minutos.
+- Se creo `v1.0.17` para persistir el atajo de captura elegido y conservarlo despues de actualizar.
 
 ### 2026-07-28
 

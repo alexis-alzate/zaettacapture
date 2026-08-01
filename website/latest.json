@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.16/ZaettaCaptureSetup.exe",
-  "sha256": "e3e457940141b7f09b543d498788283f71e19ac7bef36f8defd6d3c553e5e0db",
-  "fileSizeBytes": 1743872,
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.17/ZaettaCaptureSetup.exe",
+  "sha256": "1cef16c9d92c8980663cf183bebdbd9d2288c8221795079591f80718ec993c11",
+  "fileSizeBytes": 1745920,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -25,6 +25,7 @@
     "Toast de actualizacion mas visible: dura mas tiempo, se trae al frente y usa la pantalla donde esta el mouse.",
     "Instancia unica: abrir Zaetta Capture varias veces ya no crea iconos duplicados en la bandeja.",
     "Numeracion corregida: los marcadores siguen 10, 11, 12 y Undo/Esc no rompen el contador.",
-    "Actualizaciones mas agresivas: chequeos cada 30 segundos al iniciar y luego cada 5 minutos sin reiniciar la app."
+    "Actualizaciones mas agresivas: chequeos cada 30 segundos al iniciar y luego cada 5 minutos sin reiniciar la app.",
+    "El atajo de captura elegido se guarda y se conserva despues de actualizar."
   ]
 }

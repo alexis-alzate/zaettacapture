@@ -60,8 +60,7 @@ namespace ZaettaCaptureNative
             EnsureStartupWithWindows();
 
             hotKeyWindow = new HotKeyWindow(StartCapture);
-            hotKeyWindow.Register(Keys.PrintScreen, 0);
-            printScreenItem.Checked = true;
+            RegisterSavedHotkey();
             if (repeatLastAreaItem != null)
                 repeatLastAreaItem.Enabled = hasLastSelection;
 
@@ -119,11 +118,50 @@ namespace ZaettaCaptureNative
 
         private void SetHotkey(Keys key, uint modifiers, ToolStripMenuItem selected)
         {
+            SetHotkey(key, modifiers, selected, true);
+        }
+
+        private void SetHotkey(Keys key, uint modifiers, ToolStripMenuItem selected, bool save)
+        {
             if (!hotKeyWindow.Register(key, modifiers))
             {
                 MessageBox.Show("Ese atajo esta ocupado por Windows u otra aplicacion.", AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+            MarkHotkeyMenuSelection(selected);
+            if (save)
+                CapturePreferencesStore.SaveHotkey(key, modifiers);
+        }
+
+        private void RegisterSavedHotkey()
+        {
+            HotkeyPreference preference = CapturePreferencesStore.LoadHotkey();
+            ToolStripMenuItem selected = MenuItemForHotkey(preference.Key, preference.Modifiers);
+            if (hotKeyWindow.Register(preference.Key, preference.Modifiers))
+            {
+                MarkHotkeyMenuSelection(selected);
+                return;
+            }
+
+            hotKeyWindow.Register(Keys.PrintScreen, 0);
+            MarkHotkeyMenuSelection(printScreenItem);
+        }
+
+        private ToolStripMenuItem MenuItemForHotkey(Keys key, uint modifiers)
+        {
+            if (key == Keys.PrintScreen && modifiers == 0)
+                return printScreenItem;
+            if (key == Keys.S && modifiers == (HotKeyWindow.MOD_CONTROL | HotKeyWindow.MOD_SHIFT))
+                return ctrlShiftSItem;
+            if (key == Keys.S && modifiers == (HotKeyWindow.MOD_CONTROL | HotKeyWindow.MOD_ALT))
+                return ctrlAltSItem;
+
+            customHotkeyItem.Text = "Personalizado: " + FormatHotkey(key, modifiers);
+            return customHotkeyItem;
+        }
+
+        private void MarkHotkeyMenuSelection(ToolStripMenuItem selected)
+        {
             printScreenItem.Checked = false;
             ctrlShiftSItem.Checked = false;
             ctrlAltSItem.Checked = false;
@@ -142,12 +180,36 @@ namespace ZaettaCaptureNative
                     MessageBox.Show("Ese atajo esta ocupado por Windows u otra aplicacion.", AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                printScreenItem.Checked = false;
-                ctrlShiftSItem.Checked = false;
-                ctrlAltSItem.Checked = false;
-                customHotkeyItem.Checked = true;
                 customHotkeyItem.Text = "Personalizado: " + dialog.DisplayText;
+                MarkHotkeyMenuSelection(customHotkeyItem);
+                CapturePreferencesStore.SaveHotkey(dialog.SelectedKey, dialog.SelectedModifiers);
             }
+        }
+
+        private static string FormatHotkey(Keys key, uint modifiers)
+        {
+            System.Collections.Generic.List<string> parts = new System.Collections.Generic.List<string>();
+            if ((modifiers & HotKeyWindow.MOD_CONTROL) == HotKeyWindow.MOD_CONTROL)
+                parts.Add("Ctrl");
+            if ((modifiers & HotKeyWindow.MOD_SHIFT) == HotKeyWindow.MOD_SHIFT)
+                parts.Add("Shift");
+            if ((modifiers & HotKeyWindow.MOD_ALT) == HotKeyWindow.MOD_ALT)
+                parts.Add("Alt");
+            parts.Add(KeyName(key));
+            return string.Join(" + ", parts.ToArray());
+        }
+
+        private static string KeyName(Keys key)
+        {
+            if (key == Keys.PrintScreen)
+                return "Impr Pant";
+            if (key == Keys.Delete)
+                return "Suprimir";
+            if (key == Keys.Insert)
+                return "Insertar";
+            if (key == Keys.Space)
+                return "Espacio";
+            return key.ToString();
         }
 
         private void OpenHistory()
