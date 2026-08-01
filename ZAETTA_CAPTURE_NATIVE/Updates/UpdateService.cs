@@ -11,7 +11,7 @@ namespace ZaettaCaptureNative
 {
     internal static class UpdateService
     {
-        private const string ManifestUrl = "https://zaettasoftware.com/latest.json";
+        private const string ManifestUrl = "https://www.zaettasoftware.com/latest.json";
 
         public static UpdateInfo CheckForUpdate()
         {

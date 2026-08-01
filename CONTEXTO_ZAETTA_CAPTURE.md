@@ -591,7 +591,7 @@ Componentes implementados en la app:
 Detalle de codigo:
 
 - `Updates/UpdateInfo.cs` es un objeto simple de datos. Guarda `Version`, `DownloadUrl`, `Sha256`, `FileSizeBytes` y `Notes`. Se separo para que los formularios no tengan que entender el JSON.
-- `Updates/UpdateService.cs` contiene `ManifestUrl = "https://zaettasoftware.com/latest.json"`. Ese valor centraliza el punto publico que manda upgrades.
+- `Updates/UpdateService.cs` contiene `ManifestUrl = "https://www.zaettasoftware.com/latest.json"`. Se usa `www` directo para evitar el `308 Permanent Redirect` que Vercel devuelve desde el dominio apex.
 - `UpdateService.CheckForUpdate()` descarga el JSON, lo parsea, compara `AppInfo.Version` contra la version remota y devuelve `null` si no hay nada nuevo.
 - `UpdateService.VerifySha256()` calcula el SHA256 del instalador descargado. Si no coincide con `latest.json`, no se ejecuta el archivo.
 - `UpdatePromptForm.cs` es la ventana de decision. Existe para que la app no instale en silencio: el usuario ve version/notas y acepta o pospone.
@@ -607,6 +607,7 @@ Por que se tomo esta decision:
 - GitHub Releases es mejor para `.exe` porque mantiene assets por version y evita depender de Vercel para binarios.
 - SHA256 protege contra descargas corruptas o archivos que no correspondan al release esperado.
 - El aviso no aparece durante una captura porque interrumpiria justo el flujo principal de la app.
+- El updater debe consultar la URL final sin redirect siempre que sea posible. En .NET Framework, `WebClient` puede fallar con `308 Permanent Redirect`, por eso se usa `www.zaettasoftware.com/latest.json`.
 
 Por que GitHub Releases para instaladores:
 
@@ -765,6 +766,53 @@ Tamano: 1736704 bytes
 SHA256: 60e2ee927623b7fb3d7a50a70a918394be77edff812b57bb73c7c2cd464858ae
 ```
 
+### Release oficial v1.0.2
+
+Fecha: 2026-08-01.
+
+Motivo: corregir el error del updater al revisar actualizaciones.
+
+Bug observado:
+
+```text
+No se pudo revisar actualizaciones.
+The remote server returned an error: (308) Permanent Redirect.
+```
+
+Causa:
+
+- `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
+- Vercel redirige el dominio apex hacia `https://www.zaettasoftware.com/latest.json` con codigo `308`.
+- `WebClient` de .NET Framework no manejo bien ese redirect permanente.
+
+Solucion:
+
+- Cambiar `ManifestUrl` a `https://www.zaettasoftware.com/latest.json`.
+- Subir version interna a `1.0.2`.
+- Publicar nuevo release `v1.0.2`.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1736704 bytes
+SHA256: 7437e3d54407deea951fa22bc52fe85e09141f5023719f22b051d521fef40ed9
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.2",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.2/ZaettaCaptureSetup.exe",
+  "sha256": "7437e3d54407deea951fa22bc52fe85e09141f5023719f22b051d521fef40ed9",
+  "fileSizeBytes": 1736704
+}
+```
+
 Manifest esperado para publicar:
 
 ```json
@@ -794,6 +842,7 @@ Manifest esperado para publicar:
 - Se subio la version interna a `1.0.1`.
 - Se recompilo app e instalador con PowerShell/csc de Windows.
 - Se actualizo `website/latest.json` para apuntar al release `v1.0.1`.
+- Se corrigio el updater en `v1.0.2` para consultar `https://www.zaettasoftware.com/latest.json` y evitar el error `308 Permanent Redirect`.
 
 ### 2026-07-28
 
