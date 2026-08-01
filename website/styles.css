@@ -28,9 +28,23 @@ body {
   color: var(--text);
   font-family: "Segoe UI", Arial, sans-serif;
   background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.045), transparent 18rem),
     radial-gradient(circle at 18% 9%, rgba(224, 160, 20, 0.12), transparent 18rem),
     radial-gradient(circle at 85% 18%, rgba(255, 212, 71, 0.1), transparent 20rem),
     linear-gradient(180deg, #030303 0%, #050505 48%, #020202 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.012) 1px, transparent 1px);
+  background-size: 92px 92px;
+  mask-image: radial-gradient(circle at 50% 18%, black, transparent 72%);
 }
 
 a {
@@ -40,7 +54,7 @@ a {
 .topbar,
 main,
 .footer {
-  width: min(1420px, calc(100% - 72px));
+  width: min(1410px, calc(100% - 72px));
   margin: 0 auto;
 }
 
@@ -52,7 +66,7 @@ main,
   grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
   align-items: center;
   gap: 24px;
-  min-height: 88px;
+  min-height: 90px;
   border-bottom: 1px solid var(--line);
   background: rgba(2, 2, 2, 0.88);
   backdrop-filter: blur(16px);
@@ -68,8 +82,8 @@ main,
 }
 
 .brandmark-logo {
-  width: 54px;
-  height: 54px;
+  width: 58px;
+  height: 58px;
   object-fit: contain;
 }
 
@@ -147,11 +161,11 @@ main,
 
 .hero {
   display: grid;
-  grid-template-columns: minmax(420px, 0.9fr) minmax(520px, 1.1fr);
-  gap: clamp(42px, 6vw, 86px);
+  grid-template-columns: minmax(430px, 0.82fr) minmax(600px, 1.18fr);
+  gap: clamp(48px, 7vw, 96px);
   align-items: center;
-  min-height: calc(100vh - 88px);
-  padding: 44px 0 70px;
+  min-height: calc(100vh - 90px);
+  padding: 42px 0 72px;
 }
 
 .badge,
@@ -178,7 +192,7 @@ p {
 
 h1 {
   margin-bottom: 26px;
-  font-size: clamp(4rem, 7.4vw, 6.9rem);
+  font-size: clamp(4.4rem, 7.3vw, 6.95rem);
   line-height: 0.98;
   letter-spacing: 0;
 }
@@ -238,7 +252,7 @@ h1 span,
 
 .hero-visual {
   position: relative;
-  min-height: 560px;
+  min-height: 548px;
 }
 
 .app-window {
@@ -262,13 +276,9 @@ h1 span,
 }
 
 .mini-logo {
-  display: inline-grid;
-  place-items: center;
   width: 22px;
   height: 22px;
-  border: 1px solid var(--gold);
-  color: var(--gold-2);
-  font-weight: 900;
+  object-fit: contain;
 }
 
 .window-controls {
@@ -375,11 +385,21 @@ h1 span,
 }
 
 .preview-thumb {
+  display: grid;
+  place-items: center;
   height: 96px;
   margin-bottom: 18px;
   border: 1px solid rgba(43, 112, 255, 0.55);
   border-radius: 8px;
   background: linear-gradient(135deg, #072577, #236cff);
+}
+
+.preview-thumb div {
+  width: 70px;
+  height: 44px;
+  border: 8px solid rgba(112, 185, 255, 0.82);
+  border-radius: 999px 999px 999px 20px;
+  transform: rotate(-30deg);
 }
 
 .side-preview button {
@@ -402,7 +422,7 @@ h1 span,
 .floating-tools {
   position: absolute;
   left: 50%;
-  bottom: 64px;
+  bottom: 58px;
   display: grid;
   grid-template-columns: repeat(5, minmax(72px, 1fr));
   gap: 10px;
@@ -787,6 +807,30 @@ cite span {
   gap: 46px;
   padding: 42px 0 58px;
   border-top: 1px solid var(--line);
+}
+
+.socials {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.socials a {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  font-weight: 900;
+}
+
+.socials a:hover {
+  border-color: var(--gold-line);
+  color: var(--gold-2);
 }
 
 .footer h2 {
