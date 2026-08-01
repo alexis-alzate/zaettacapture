@@ -1495,6 +1495,51 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.19
+
+Fecha: 2026-08-01.
+
+Motivo: agregar un menu de configuracion tipo Lightshot desde la bandeja.
+
+Cambio:
+
+- Se agrego `App/SettingsForm.cs`.
+- El menu de bandeja ahora incluye `Opciones...`.
+- La ventana tiene pestañas:
+  - `General`: `Mantener posicion del area seleccionada`, `Abrir capturas con candado` e informacion de inicio en bandeja.
+  - `Atajo`: muestra el atajo actual, permite cambiarlo, y ofrece presets `Impr Pant`, `Ctrl Shift S`, `Ctrl Alt S`.
+- Al guardar, se actualizan las preferencias existentes en `capture-preferences.txt`.
+- Si se cambia el atajo, se registra inmediatamente y queda persistido para upgrades.
+- `TrayContext` ahora conserva `currentHotkeyKey` y `currentHotkeyModifiers` para mostrar el estado real en opciones.
+
+Decision tecnica:
+
+- Se conectaron solo opciones que ya tienen comportamiento real en la app.
+- No se agregaron toggles falsos para features no implementadas.
+- Se mantiene compatibilidad con el menu rapido de bandeja: las opciones directas siguen disponibles.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1750016 bytes
+SHA256: 794a854358b112af84f694f6a44d1ed7a05f743b883aad16d4b28f6b683e3358
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.19",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.19/ZaettaCaptureSetup.exe",
+  "sha256": "794a854358b112af84f694f6a44d1ed7a05f743b883aad16d4b28f6b683e3358",
+  "fileSizeBytes": 1750016
+}
+```
+
 ### Cierre de features del 2026-08-01
 
 Fecha: 2026-08-01, hora Colombia (`America/Bogota`).
@@ -1519,6 +1564,7 @@ Features y correcciones completadas hoy:
 - Numeracion corregida: permite `10`, `11`, `12` y recalcula contador despues de `Undo`.
 - Deteccion mas agresiva de updates: cada 30 segundos al inicio y luego cada 5 minutos.
 - Atajo de captura persistente: el shortcut elegido se conserva despues de actualizar.
+- Ventana `Opciones...` desde bandeja con configuracion general y atajo de captura.
 
 Apuntes de estudio creados/actualizados:
 
@@ -1532,6 +1578,7 @@ Apuntes de estudio creados/actualizados:
 - Contador robusto calculado desde `ops`.
 - Scheduler de updates con checks rapidos, checks normales y snooze.
 - Persistencia del hotkey con `hotkeyKey` y `hotkeyModifiers`.
+- `SettingsForm` como primera ventana centralizada de configuracion.
 
 Causa:
 
@@ -1613,6 +1660,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.16` para detectar actualizaciones de forma mas agresiva sin cerrar/abrir la app: checks cada 30 segundos al inicio y luego cada 5 minutos.
 - Se creo `v1.0.17` para persistir el atajo de captura elegido y conservarlo despues de actualizar.
 - Se creo `v1.0.18` para reforzar el toast bonito cuando el update se detecta automaticamente, no solo al usar `Buscar actualizaciones`.
+- Se creo `v1.0.19` para agregar una ventana `Opciones...` desde la bandeja, estilo configuracion de app de captura.
 
 ### 2026-07-28
 

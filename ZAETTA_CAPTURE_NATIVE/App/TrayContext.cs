@@ -26,6 +26,8 @@ namespace ZaettaCaptureNative
         private bool hasLastSelection;
         private bool keepLastSelectionPosition;
         private bool openLocked;
+        private Keys currentHotkeyKey = Keys.PrintScreen;
+        private uint currentHotkeyModifiers;
         private bool captureActive;
         private bool updateCheckRunning;
         private bool updatePromptOpen;
@@ -109,6 +111,7 @@ namespace ZaettaCaptureNative
             hotkeys.DropDownItems.Add("-");
             hotkeys.DropDownItems.Add(customHotkeyItem);
             menu.Items.Add(hotkeys);
+            menu.Items.Add("Opciones...", null, delegate { ShowSettings(); });
             menu.Items.Add("Abrir historial", null, delegate { OpenHistory(); });
             menu.Items.Add("Buscar actualizaciones", null, delegate { BeginUpdateCheck(true); });
             menu.Items.Add("Acerca de", null, delegate { ShowAbout(); });
@@ -130,6 +133,8 @@ namespace ZaettaCaptureNative
                 return;
             }
             MarkHotkeyMenuSelection(selected);
+            currentHotkeyKey = key;
+            currentHotkeyModifiers = modifiers;
             if (save)
                 CapturePreferencesStore.SaveHotkey(key, modifiers);
         }
@@ -141,11 +146,15 @@ namespace ZaettaCaptureNative
             if (hotKeyWindow.Register(preference.Key, preference.Modifiers))
             {
                 MarkHotkeyMenuSelection(selected);
+                currentHotkeyKey = preference.Key;
+                currentHotkeyModifiers = preference.Modifiers;
                 return;
             }
 
             hotKeyWindow.Register(Keys.PrintScreen, 0);
             MarkHotkeyMenuSelection(printScreenItem);
+            currentHotkeyKey = Keys.PrintScreen;
+            currentHotkeyModifiers = 0;
         }
 
         private ToolStripMenuItem MenuItemForHotkey(Keys key, uint modifiers)
@@ -183,6 +192,8 @@ namespace ZaettaCaptureNative
                 }
                 customHotkeyItem.Text = "Personalizado: " + dialog.DisplayText;
                 MarkHotkeyMenuSelection(customHotkeyItem);
+                currentHotkeyKey = dialog.SelectedKey;
+                currentHotkeyModifiers = dialog.SelectedModifiers;
                 CapturePreferencesStore.SaveHotkey(dialog.SelectedKey, dialog.SelectedModifiers);
             }
         }
@@ -216,6 +227,27 @@ namespace ZaettaCaptureNative
         private void OpenHistory()
         {
             HistoryService.Open();
+        }
+
+        private void ShowSettings()
+        {
+            using (SettingsForm dialog = new SettingsForm(keepLastSelectionPosition, openLocked, currentHotkeyKey, currentHotkeyModifiers))
+            {
+                if (dialog.ShowDialog() != DialogResult.OK)
+                    return;
+
+                keepLastSelectionPosition = dialog.KeepLastSelectionPosition;
+                openLocked = dialog.OpenLocked;
+                CapturePreferencesStore.SaveKeepLastSelectionPosition(keepLastSelectionPosition);
+                CapturePreferencesStore.SaveOpenLocked(openLocked);
+                if (keepLastSelectionPositionItem != null)
+                    keepLastSelectionPositionItem.Checked = keepLastSelectionPosition;
+                if (openLockedItem != null)
+                    openLockedItem.Checked = openLocked;
+
+                ToolStripMenuItem selected = MenuItemForHotkey(dialog.SelectedKey, dialog.SelectedModifiers);
+                SetHotkey(dialog.SelectedKey, dialog.SelectedModifiers, selected);
+            }
         }
 
         private void ToggleKeepLastSelectionPosition()
