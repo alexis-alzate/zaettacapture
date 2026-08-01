@@ -33,6 +33,7 @@ namespace ZaettaCaptureNative
         private DateTime updateSnoozedUntil = DateTime.MinValue;
         private string snoozedUpdateVersion;
         private UpdateInfo pendingUpdate;
+        private bool pendingUpdateAutomatic;
 
         public TrayContext()
         {
@@ -357,6 +358,7 @@ namespace ZaettaCaptureNative
                 return;
 
             pendingUpdate = info;
+            pendingUpdateAutomatic = !manual;
             ShowPendingUpdateIfReady();
         }
 
@@ -366,12 +368,20 @@ namespace ZaettaCaptureNative
                 return;
 
             UpdateInfo info = pendingUpdate;
+            bool automatic = pendingUpdateAutomatic;
             pendingUpdate = null;
+            pendingUpdateAutomatic = false;
             updatePromptOpen = true;
 
             try
             {
-                UpdateToastForm.ShowFor(info);
+                if (automatic)
+                {
+                    Application.DoEvents();
+                    Thread.Sleep(1200);
+                }
+
+                UpdateToastForm.ShowFor(info, automatic);
 
                 using (UpdatePromptForm prompt = new UpdatePromptForm(info))
                 {

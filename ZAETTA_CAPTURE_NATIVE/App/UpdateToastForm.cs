@@ -100,8 +100,15 @@ namespace ZaettaCaptureNative
 
         public static void ShowFor(UpdateInfo info)
         {
+            ShowFor(info, false);
+        }
+
+        public static void ShowFor(UpdateInfo info, bool automatic)
+        {
             using (UpdateToastForm toast = new UpdateToastForm(info))
             {
+                if (automatic)
+                    toast.closeTimer.Interval = 7000;
                 toast.Show();
                 while (!toast.IsDisposed && toast.Visible)
                 {

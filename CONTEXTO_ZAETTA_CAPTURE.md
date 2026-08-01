@@ -1453,6 +1453,48 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.18
+
+Fecha: 2026-08-01.
+
+Motivo: el toast bonito de actualizacion se veia al usar `Buscar actualizaciones`, pero podia no verse cuando el update era detectado automaticamente.
+
+Cambio:
+
+- `TrayContext` ahora guarda si el update pendiente vino de deteccion automatica con `pendingUpdateAutomatic`.
+- Si el update es automatico, antes de mostrar el toast ejecuta `Application.DoEvents()` y espera 1.2 segundos.
+- `UpdateToastForm.ShowFor(info, automatic)` permite modo automatico.
+- En modo automatico, el toast dura 7 segundos en vez de 5.
+- El flujo manual sigue igual.
+
+Decision tecnica:
+
+- En detecciones automaticas, especialmente al inicio de la app, Windows puede estar cambiando foco o la bandeja puede estar terminando de inicializar.
+- La pausa corta hace que el toast aparezca cuando la UI ya esta mas estable.
+- Mantenerlo mas tiempo ayuda a que el usuario lo alcance a ver antes del prompt grande.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1745920 bytes
+SHA256: f6ead3240bd5b8e84ff58f4939eb7ffcffca5b527fa4b1d2e70c8c9f2ecd2815
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.18",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.18/ZaettaCaptureSetup.exe",
+  "sha256": "f6ead3240bd5b8e84ff58f4939eb7ffcffca5b527fa4b1d2e70c8c9f2ecd2815",
+  "fileSizeBytes": 1745920
+}
+```
+
 ### Cierre de features del 2026-08-01
 
 Fecha: 2026-08-01, hora Colombia (`America/Bogota`).
@@ -1570,6 +1612,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.15` para corregir la numeracion: continua despues de 9 y `Undo`/`Esc` no rompen el contador.
 - Se creo `v1.0.16` para detectar actualizaciones de forma mas agresiva sin cerrar/abrir la app: checks cada 30 segundos al inicio y luego cada 5 minutos.
 - Se creo `v1.0.17` para persistir el atajo de captura elegido y conservarlo despues de actualizar.
+- Se creo `v1.0.18` para reforzar el toast bonito cuando el update se detecta automaticamente, no solo al usar `Buscar actualizaciones`.
 
 ### 2026-07-28
 
