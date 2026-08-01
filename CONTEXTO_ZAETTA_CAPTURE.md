@@ -779,6 +779,42 @@ No se pudo revisar actualizaciones.
 The remote server returned an error: (308) Permanent Redirect.
 ```
 
+### Release oficial v1.0.3
+
+Fecha: 2026-08-01.
+
+Motivo: blindar el updater para que no dependa del comportamiento automatico de redirects de `WebClient`.
+
+Cambio tecnico:
+
+- `UpdateService.CheckForUpdate()` dejo de usar `WebClient.DownloadString()` directamente.
+- Se agrego `DownloadStringFollowingRedirects()`, que usa `HttpWebRequest` con `AllowAutoRedirect = false`.
+- El codigo detecta manualmente `301`, `302`, `303`, `307` y `308`.
+- Si recibe `Location`, construye la URL final con `BuildRedirectUrl()` y reintenta hasta 5 veces.
+- Esto evita que un redirect `308 Permanent Redirect` rompa la revision de actualizaciones.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1738240 bytes
+SHA256: b5a94e0b194631a71e3c9d9e1c7099018c8c21367cf2d1863c18389f3886fce2
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.3",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.3/ZaettaCaptureSetup.exe",
+  "sha256": "b5a94e0b194631a71e3c9d9e1c7099018c8c21367cf2d1863c18389f3886fce2",
+  "fileSizeBytes": 1738240
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -843,6 +879,7 @@ Manifest esperado para publicar:
 - Se recompilo app e instalador con PowerShell/csc de Windows.
 - Se actualizo `website/latest.json` para apuntar al release `v1.0.1`.
 - Se corrigio el updater en `v1.0.2` para consultar `https://www.zaettasoftware.com/latest.json` y evitar el error `308 Permanent Redirect`.
+- Se reforzo el updater en `v1.0.3` con manejo manual de redirects HTTP `301/302/303/307/308`.
 
 ### 2026-07-28
 

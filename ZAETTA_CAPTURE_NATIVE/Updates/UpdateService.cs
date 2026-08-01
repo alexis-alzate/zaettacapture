@@ -17,22 +17,18 @@ namespace ZaettaCaptureNative
         {
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
 
-            using (WebClient client = new WebClient())
-            {
-                client.Headers[HttpRequestHeader.UserAgent] = AppInfo.Name + "/" + AppInfo.Version;
-                string json = client.DownloadString(ManifestUrl);
-                UpdateInfo info = ParseManifest(json);
+            string json = DownloadStringFollowingRedirects(ManifestUrl);
+            UpdateInfo info = ParseManifest(json);
 
-                if (info == null || !info.IsValid)
-                    return null;
+            if (info == null || !info.IsValid)
+                return null;
 
-                Version current;
-                Version remote;
-                if (!Version.TryParse(AppInfo.Version, out current) || !Version.TryParse(info.Version, out remote))
-                    return null;
+            Version current;
+            Version remote;
+            if (!Version.TryParse(AppInfo.Version, out current) || !Version.TryParse(info.Version, out remote))
+                return null;
 
-                return remote > current ? info : null;
-            }
+            return remote > current ? info : null;
         }
 
         public static string GetInstallerDownloadPath(UpdateInfo info)
@@ -54,6 +50,50 @@ namespace ZaettaCaptureNative
                 string actual = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
                 return string.Equals(actual, expectedHash.Trim().ToLowerInvariant(), StringComparison.OrdinalIgnoreCase);
             }
+        }
+
+        private static string DownloadStringFollowingRedirects(string url)
+        {
+            string currentUrl = url;
+
+            for (int attempt = 0; attempt < 5; attempt++)
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(currentUrl);
+                request.Method = "GET";
+                request.AllowAutoRedirect = false;
+                request.UserAgent = AppInfo.Name + "/" + AppInfo.Version;
+                request.Accept = "application/json,text/plain,*/*";
+
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    int status = (int)response.StatusCode;
+                    if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308)
+                    {
+                        string location = response.Headers["Location"];
+                        if (string.IsNullOrWhiteSpace(location))
+                            throw new WebException("El servidor redirigio sin entregar una URL de destino.");
+
+                        currentUrl = BuildRedirectUrl(currentUrl, location);
+                        continue;
+                    }
+
+                    using (Stream stream = response.GetResponseStream())
+                    using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
+                        return reader.ReadToEnd();
+                }
+            }
+
+            throw new WebException("Demasiadas redirecciones al consultar el manifest de actualizacion.");
+        }
+
+        private static string BuildRedirectUrl(string baseUrl, string location)
+        {
+            Uri redirect;
+            if (Uri.TryCreate(location, UriKind.Absolute, out redirect))
+                return redirect.ToString();
+
+            Uri baseUri = new Uri(baseUrl);
+            return new Uri(baseUri, location).ToString();
         }
 
         private static UpdateInfo ParseManifest(string json)
