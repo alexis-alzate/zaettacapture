@@ -886,6 +886,56 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.6
+
+Fecha: 2026-08-01.
+
+Motivo: corregir el flujo de upgrade para que el usuario no tenga que presionar `Instalar` y para reducir fallos por archivos bloqueados durante reemplazo.
+
+Bug observado:
+
+- El updater descargaba y abria el instalador, pero el instalador quedaba esperando click en `Instalar`.
+- Durante el upgrade aparecio `La instalacion fallo` con un error de acceso a archivos dentro de `%LOCALAPPDATA%\\Zaetta Capture`.
+
+Causa:
+
+- El instalador no distinguia entre instalacion manual y upgrade iniciado desde la app.
+- El updater abria el instalador y luego llamaba `Application.Exit()`, pero la app vieja podia seguir viva unos instantes mientras el instalador intentaba borrar la carpeta instalada.
+- Si el `.exe` anterior seguia cargado o la carpeta estaba bloqueada, `Directory.Delete(installDir, true)` fallaba.
+
+Solucion:
+
+- `UpdateProgressForm` ahora abre el instalador con argumento `/upgrade`.
+- Despues de abrir el instalador, el updater llama `Environment.Exit(0)` para cerrar el proceso viejo de forma inmediata.
+- `InstallerForm` recibe `upgradeMode`.
+- En `upgradeMode`, el boton muestra `Actualizando`, queda deshabilitado y el instalador llama `Install()` automaticamente en `Shown`.
+- `DeleteDirectoryWithRetry()` reintenta borrar la carpeta instalada hasta 8 veces.
+- Antes de cada intento se llama `StopRunningZaetta()`.
+- `StopRunningZaetta()` ahora intenta `CloseMainWindow()`, espera, y si el proceso sigue vivo usa `Kill()` con espera mas larga.
+- Si el upgrade termina bien, el instalador cierra solo despues de mostrar `Instalacion completada`.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1739776 bytes
+SHA256: 0a3604cea108ff743fb69334069703495f2d61941445f533e73a07ab414454b7
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.6",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.6/ZaettaCaptureSetup.exe",
+  "sha256": "0a3604cea108ff743fb69334069703495f2d61941445f533e73a07ab414454b7",
+  "fileSizeBytes": 1739776
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -953,6 +1003,7 @@ Manifest esperado para publicar:
 - Se reforzo el updater en `v1.0.3` con manejo manual de redirects HTTP `301/302/303/307/308`.
 - Se creo `v1.0.4` como release de prueba para validar el updater completo desde una instalacion anterior.
 - Se creo `v1.0.5` para que la deteccion automatica muestre un prompt mas visible: chequeo inmediato, globo de bandeja y ventana al frente.
+- Se creo `v1.0.6` para que el instalador arranque solo en modo `/upgrade` y reintente reemplazar archivos bloqueados.
 
 ### 2026-07-28
 

@@ -28,7 +28,8 @@ namespace ZaettaCaptureInstaller
                 InstallerForm.Uninstall(true);
                 return;
             }
-            Application.Run(new InstallerForm());
+            bool upgradeMode = args.Length > 0 && string.Equals(args[0], "/upgrade", StringComparison.OrdinalIgnoreCase);
+            Application.Run(new InstallerForm(upgradeMode));
         }
     }
 
@@ -39,13 +40,14 @@ namespace ZaettaCaptureInstaller
         private readonly FlatButton installButton;
         private readonly Label detail;
         private readonly Image backgroundGlow;
+        private readonly bool upgradeMode;
         private bool completed;
 
         private const string AppName = "Zaetta Capture";
         private const string ResourceName = "ZaettaApp";
         private const string LogoResourceName = "ZaettaLogo";
         private const string Publisher = "Victor Alexis Alzate Cortes";
-        private const string Version = "1.0.5";
+        private const string Version = "1.0.6";
 
         [DllImport("shell32.dll")]
         private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
@@ -53,8 +55,9 @@ namespace ZaettaCaptureInstaller
         private const uint SHCNE_ASSOCCHANGED = 0x08000000;
         private const uint SHCNF_IDLIST = 0x0000;
 
-        public InstallerForm()
+        public InstallerForm(bool upgradeMode)
         {
+            this.upgradeMode = upgradeMode;
             Text = "Instalador - Zaetta Capture";
             StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -94,7 +97,7 @@ namespace ZaettaCaptureInstaller
             Controls.Add(card);
 
             status = new Label();
-            status.Text = "Listo para instalar";
+            status.Text = upgradeMode ? "Actualizacion lista" : "Listo para instalar";
             status.ForeColor = Color.White;
             status.BackColor = card.BackColor;
             status.Font = new Font("Segoe UI", 12, FontStyle.Bold);
@@ -102,7 +105,9 @@ namespace ZaettaCaptureInstaller
             card.Controls.Add(status);
 
             detail = new Label();
-            detail.Text = "Se instalara la aplicacion, accesos directos e inicio con Windows.";
+            detail.Text = upgradeMode
+                ? "La actualizacion iniciara automaticamente."
+                : "Se instalara la aplicacion, accesos directos e inicio con Windows.";
             detail.ForeColor = Color.FromArgb(165, 184, 199);
             detail.BackColor = card.BackColor;
             detail.Font = new Font("Segoe UI", 9, FontStyle.Regular);
@@ -113,7 +118,7 @@ namespace ZaettaCaptureInstaller
             progress.SetBounds(18, 66, 468, 12);
             card.Controls.Add(progress);
 
-            installButton = new FlatButton("Instalar", true);
+            installButton = new FlatButton(upgradeMode ? "Actualizando" : "Instalar", true);
             installButton.SetBounds(370, 268, 150, 36);
             installButton.Click += delegate
             {
@@ -123,6 +128,12 @@ namespace ZaettaCaptureInstaller
                     Install();
             };
             Controls.Add(installButton);
+
+            if (upgradeMode)
+            {
+                installButton.Enabled = false;
+                Shown += delegate { BeginInvoke(new MethodInvoker(Install)); };
+            }
         }
 
         protected override void OnPaintBackground(PaintEventArgs e)
@@ -197,7 +208,7 @@ namespace ZaettaCaptureInstaller
                 CleanupLegacyInstallations();
                 string installDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppName);
                 if (Directory.Exists(installDir))
-                    Directory.Delete(installDir, true);
+                    DeleteDirectoryWithRetry(installDir);
                 Directory.CreateDirectory(installDir);
 
                 SetProgress(40, "Copiando aplicacion...", "Instalando Zaetta Capture en AppData.");
@@ -220,6 +231,11 @@ namespace ZaettaCaptureInstaller
                 installButton.Text = "Finalizar";
                 installButton.Enabled = true;
                 completed = true;
+                if (upgradeMode)
+                {
+                    System.Threading.Thread.Sleep(900);
+                    Close();
+                }
             }
             catch (Exception ex)
             {
@@ -228,6 +244,31 @@ namespace ZaettaCaptureInstaller
                 installButton.Text = "Reintentar";
                 installButton.Enabled = true;
             }
+        }
+
+        private static void DeleteDirectoryWithRetry(string path)
+        {
+            Exception lastError = null;
+
+            for (int attempt = 0; attempt < 8; attempt++)
+            {
+                try
+                {
+                    StopRunningZaetta();
+                    if (!Directory.Exists(path))
+                        return;
+
+                    Directory.Delete(path, true);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    lastError = ex;
+                    System.Threading.Thread.Sleep(350 + (attempt * 200));
+                }
+            }
+
+            throw lastError;
         }
 
         private void SetProgress(int value, string text, string detailText)
@@ -389,8 +430,20 @@ namespace ZaettaCaptureInstaller
                     {
                         if (process.Id == Process.GetCurrentProcess().Id)
                             continue;
-                        process.Kill();
-                        process.WaitForExit(2500);
+                        try
+                        {
+                            process.CloseMainWindow();
+                            process.WaitForExit(900);
+                        }
+                        catch
+                        {
+                        }
+
+                        if (!process.HasExited)
+                        {
+                            process.Kill();
+                            process.WaitForExit(6000);
+                        }
                     }
                     catch
                     {

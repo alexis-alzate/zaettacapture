@@ -121,8 +121,8 @@ namespace ZaettaCaptureNative
                 }
 
                 status.Text = "Abriendo instalador...";
-                Process.Start(new ProcessStartInfo(installerPath) { UseShellExecute = true });
-                Application.Exit();
+                Process.Start(new ProcessStartInfo(installerPath, "/upgrade") { UseShellExecute = true });
+                Environment.Exit(0);
             }
             catch (Exception ex)
             {
