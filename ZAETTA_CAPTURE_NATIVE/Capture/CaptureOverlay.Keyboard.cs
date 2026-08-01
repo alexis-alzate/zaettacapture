@@ -21,7 +21,7 @@ namespace ZaettaCaptureNative
         {
             if (e.KeyCode == Keys.Escape)
             {
-                if (activeTextBox != null)
+                if (activeTextBox != null || textEditing)
                 {
                     CancelTextEdit();
                     e.SuppressKeyPress = true;
@@ -33,12 +33,14 @@ namespace ZaettaCaptureNative
             }
             if (e.Control && e.KeyCode == Keys.C)
             {
+                CommitTextEdit();
                 CopyAndClose();
                 e.SuppressKeyPress = true;
                 return;
             }
             if (e.Control && e.KeyCode == Keys.S)
             {
+                CommitTextEdit();
                 SaveImage();
                 e.SuppressKeyPress = true;
                 return;
@@ -51,16 +53,53 @@ namespace ZaettaCaptureNative
             }
             if (e.Control && e.KeyCode == Keys.L)
             {
+                CommitTextEdit();
                 ToggleSelectionLock();
                 e.SuppressKeyPress = true;
                 return;
             }
-            if (activeTextBox == null && !e.Control && !e.Alt && !e.Shift && TryApplyToolShortcut(e.KeyCode))
+            if (textEditing)
+            {
+                if (e.KeyCode == Keys.Enter)
+                {
+                    CommitTextEdit();
+                    e.SuppressKeyPress = true;
+                    return;
+                }
+                if (e.KeyCode == Keys.Back)
+                {
+                    if (activeTextValue.Length > 0)
+                        activeTextValue = activeTextValue.Substring(0, activeTextValue.Length - 1);
+                    UpdateActiveTextBoundsForContent();
+                    StartActiveTextCaret();
+                    Invalidate();
+                    e.SuppressKeyPress = true;
+                    return;
+                }
+            }
+            if (activeTextBox == null && !textEditing && !e.Control && !e.Alt && !e.Shift && TryApplyToolShortcut(e.KeyCode))
             {
                 e.SuppressKeyPress = true;
                 return;
             }
             base.OnKeyDown(e);
+        }
+
+        protected override void OnKeyPress(KeyPressEventArgs e)
+        {
+            if (textEditing)
+            {
+                if (!char.IsControl(e.KeyChar))
+                {
+                    activeTextValue += e.KeyChar;
+                    UpdateActiveTextBoundsForContent();
+                    StartActiveTextCaret();
+                    Invalidate();
+                }
+                e.Handled = true;
+                return;
+            }
+            base.OnKeyPress(e);
         }
 
         private bool TryApplyToolShortcut(Keys key)

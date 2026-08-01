@@ -46,7 +46,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Icono en bandeja del sistema.
 - Click sobre el icono de bandeja para iniciar captura.
 - Menu de opciones desde el icono de bandeja.
-- Opcion chuleable `Iniciar con Windows` desde el menu de bandeja.
+- Inicio con Windows nativo: la app se registra sola para arrancar con el usuario y el instalador la abre inmediatamente en la bandeja.
 - Opcion chuleable `Mantener posicion del area seleccionada`, inspirada en Lightshot, para que cada captura nueva arranque usando el ultimo rectangulo si existe.
 - Opcion `Repetir ultima area` desde el menu de bandeja para forzar el ultimo rectangulo usado.
 - Opcion chuleable `Abrir capturas con candado` desde el menu de bandeja para usuarios que prefieren iniciar siempre en modo protegido.
@@ -73,9 +73,10 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Atajos globales con `RegisterHotKey`. Se retiro el hook global de bajo nivel para reducir falsos positivos de antivirus/Teams.
 - Bloqueo de capturas simultaneas para evitar overlays infinitos o capturas cada vez mas oscuras.
 - Persistencia local de la ultima area usada y de la preferencia `Mantener posicion del area seleccionada`; cuando esta chuleada, incluso el atajo normal abre el overlay con ese rectangulo marcado sobre una captura nueva.
-- Herramienta de texto.
+- Herramienta de texto con edicion directa sobre la captura, estilo Lightshot, sin caja grande de `TextBox`; el texto activo muestra un borde fino, crece con lo escrito y se puede mover arrastrando su borde.
 - Herramienta para mover elementos.
 - La herramienta `Mover` tambien puede mover la seleccion completa: clic en una anotacion mueve la anotacion; clic en espacio vacio dentro de la seleccion mueve todo el rectangulo y arrastra sus anotaciones.
+- Reseleccion de area dentro del mismo overlay: si ya hay una seleccion y el usuario arrastra fuera de ella, puede elegir otra area o pantalla sin cerrar la captura.
 - Herramientas de dibujo.
 - Flechas con cabeza agrandada mediante `AdjustableArrowCap` para que se vean mas claras en evidencias.
 - Ajuste de color para figuras y trazos.
@@ -87,7 +88,7 @@ La version Python fue util para prototipar, pero la version nativa se siente mas
 - Instalador `.exe` con barra de progreso.
 - Instalador con logo oficial embebido como recurso `ZaettaLogo`.
 - Acceso directo en escritorio.
-- Inicio automatico con Windows registrado por el instalador para que la app quede disponible en bandeja despues de reiniciar el equipo.
+- Inicio automatico con Windows registrado por el instalador y reforzado por la app al abrir; debe quedar disponible en bandeja inmediatamente despues de instalar y tambien despues de reiniciar el equipo.
 - Instalacion local en `%LOCALAPPDATA%`.
 - Reemplazo/limpieza de versiones anteriores durante instalacion.
 - Diagnostico de arranque: si la app falla al iniciar, muestra un mensaje y escribe `Pictures\Zaetta Capture\startup-error.log`.
@@ -121,8 +122,9 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - Al copiar, no debe abrir ventana de guardar.
 - Al copiar, no debe quedar ninguna ventana flotante activa.
 - Al hacer clic derecho sobre la captura sin candado activo, debe copiar sin abrir el menu contextual de Windows.
+- Al arrastrar fuera de una seleccion ya creada, debe iniciar una nueva seleccion dentro del mismo overlay, sin cerrar la captura.
 - Si el usuario cancela, debe cerrar todo y devolver el control normal del mouse.
-- Si el candado esta activo, clic izquierdo fuera de la seleccion no debe cerrar el capturador.
+- Clic izquierdo sostenido y arrastre fuera de la seleccion debe permitir reseleccionar otra area sin cerrar el capturador.
 - Si el candado esta apagado, clic derecho dentro de la seleccion debe copiar y cerrar rapido.
 - Si el candado esta activo, clic derecho no debe copiar de inmediato: debe abrir un menu contextual propio de Zaetta con acciones como Copiar, Guardar, Desbloquear y Cancelar.
 - Aunque el candado este activo, boton Copiar y `Ctrl + C` deben copiar y cerrar.
@@ -132,14 +134,18 @@ Las herramientas mas usadas deben estar visibles o cerca del area seleccionada. 
 - El objetivo del candado es permitir que el usuario mantenga la seleccion visible mientras interactua accidentalmente por fuera del rectangulo, sin perder el recorte que ya tenia listo.
 - El programa debe sentirse inmediato; la seleccion no puede tener lag perceptible.
 - El instalador debe sobreescribir versiones anteriores y evitar que queden varias copias con nombres distintos.
-- El instalador debe dejar activado `Iniciar con Windows` por defecto para el usuario actual. La app no debe requerir permisos de administrador para esto.
-- La opcion `Iniciar con Windows` debe poder apagarse o prenderse desde el menu de bandeja.
+- El instalador debe registrar siempre el inicio con Windows para el usuario actual. La app no debe requerir permisos de administrador para esto.
+- `Iniciar con Windows` no debe ser una opcion visible: es comportamiento nativo de la app.
+- Al terminar la instalacion, el instalador debe lanzar el ejecutable instalado para que el icono aparezca de una vez en la bandeja.
 - Al activar captura, el usuario debe poder seleccionar cualquier monitor conectado, incluso si el mouse estaba inicialmente en otro monitor. Por eso `StartCapture` debe usar el escritorio virtual completo.
 - En equipos con monitores a 125%, 150% o escalas mixtas, la app debe activar DPI awareness antes de crear ventanas; de lo contrario Windows puede virtualizar coordenadas y copiar una zona incorrecta.
 - No se deben abrir multiples overlays al mantener presionado `Impr Pant` o al disparar varias veces el atajo. `TrayContext.captureActive` bloquea una nueva captura hasta que el overlay actual cierre.
 - Si `Mantener posicion del area seleccionada` esta chuleado, cualquier captura nueva debe usar la ultima area guardada si existe, incluso cuando se active con atajo normal.
 - Si `Mantener posicion del area seleccionada` esta deschuleado, una captura normal debe iniciar desde cero.
 - `Repetir ultima area` fuerza el uso de la ultima area aunque la opcion automatica este desactivada.
+- Mientras una captura este abierta, arrastrar fuera de la seleccion actual inicia una nueva seleccion sin cerrar el overlay. Esto permite cambiar de decision varias veces, incluso entre monitores, hasta que el usuario copie, guarde o cancele manualmente.
+- Si la reseleccion nueva es demasiado pequena, se restaura la seleccion anterior para evitar perderla por un clic accidental.
+- Cuando una reseleccion valida reemplaza el area anterior, las anotaciones previas se limpian porque pertenecian al recorte anterior.
 - La ultima area se guarda en `Pictures\Zaetta Capture\last-selection.txt` como `x,y,width,height`.
 - Las preferencias de captura se guardan en `Pictures\Zaetta Capture\capture-preferences.txt`.
 - Formato actual de preferencias:
@@ -224,8 +230,8 @@ Archivos relacionados:
 
 Comportamiento esperado:
 
-- Desbloqueado: clic izquierdo fuera de la seleccion cierra/cancela la captura.
-- Bloqueado: clic izquierdo fuera de la seleccion no cierra la captura.
+- Desbloqueado o bloqueado: arrastrar fuera de la seleccion actual inicia una nueva seleccion sin cerrar el overlay.
+- Si el usuario solo hace un clic accidental fuera de la seleccion y no crea un area valida, se restaura la seleccion anterior.
 - Si `Abrir capturas con candado` esta chuleado en bandeja, toda nueva captura inicia bloqueada.
 - Si `Abrir capturas con candado` esta deschuleado, toda nueva captura inicia desbloqueada.
 - Desbloqueado: clic derecho dentro de la seleccion copia y cierra.
@@ -241,6 +247,64 @@ Comportamiento esperado:
 - Bloqueado o desbloqueado: `Ctrl + L` alterna el candado sin cerrar.
 - `Esc` y boton `X` siguen funcionando como cancelacion manual.
 
+### Reseleccion de area
+
+La reseleccion vive dentro de `CaptureOverlay` y permite cambiar de decision sin cerrar la captura. El objetivo es imitar el flujo de Lightshot: mientras el usuario no copie, guarde o cancele manualmente, puede seleccionar otra zona o incluso otra pantalla desde el mismo overlay.
+
+Archivos relacionados:
+
+- `Capture/CaptureOverlay.cs`: campos `reselecting` y `previousSelectionBeforeReselect`.
+- `Capture/CaptureOverlay.Input.cs`: si ya hay seleccion y el usuario arrastra fuera del rectangulo, inicia reseleccion en lugar de cerrar.
+- `Capture/CaptureOverlay.Interaction.cs`: metodo `BeginReselect(Point point)`, encargado de preparar el overlay para seleccionar de nuevo.
+- `Capture/CaptureOverlay.Rendering.cs`: durante la reseleccion oculta anotaciones viejas para que no se pinten encima de la nueva area.
+
+Comportamiento esperado:
+
+- Con una seleccion activa, arrastrar fuera del rectangulo inicia una nueva seleccion.
+- La nueva seleccion puede estar en cualquier monitor porque el overlay cubre el escritorio virtual completo.
+- Si la nueva seleccion mide al menos `10 x 10`, reemplaza la seleccion anterior.
+- Si la nueva seleccion es demasiado pequena, se restaura la seleccion anterior para proteger contra clics accidentales.
+- Al confirmar una nueva seleccion valida, se limpian las anotaciones anteriores porque pertenecian al recorte previo.
+- El usuario puede repetir este flujo todas las veces que quiera hasta ejecutar Copiar, Guardar, `Esc` o boton `X`.
+- `Ctrl + C`, boton Copiar y clic derecho sin candado siguen cerrando despues de copiar.
+
+### Texto estilo Lightshot
+
+La herramienta de texto ya no depende de una caja blanca grande de WinForms. Cuando el usuario elige `T` y hace clic dentro de la seleccion, el overlay entra en modo de edicion directa y pinta el texto encima de la captura.
+
+Archivos relacionados:
+
+- `Capture/CaptureOverlay.cs`: campos `textEditing`, `activeTextPoint`, `activeTextBounds`, `movingActiveText`, `activeTextMoveOffset`, `activeTextSize` y `activeTextValue`.
+- `Capture/CaptureOverlay.Text.cs`: metodos para iniciar, medir, mover, redimensionar visualmente y confirmar el texto activo.
+- `Capture/CaptureOverlay.Input.cs`: eventos de mouse para detectar el borde del texto activo, cambiar el cursor a mover y arrastrar el texto sin usar la herramienta `Mover`.
+- `Capture/CaptureOverlay.Keyboard.cs`: escritura directa, `Backspace`, `Enter` para confirmar y `Esc` para cancelar.
+- `Capture/CaptureOverlay.Rendering.cs`: dibuja el texto activo, el cursor de escritura translucido y el borde de seleccion tipo recorte.
+
+Comportamiento esperado:
+
+- Con la herramienta `T`, un clic dentro de la captura abre una seleccion de texto fina, no una caja grande.
+- El usuario escribe directamente sobre la captura.
+- El borde del texto activo usa una mezcla parecida al borde del recorte: sombra oscura, linea clara y punteado, para que se vea fuerte pero siga siendo liviano.
+- El cursor de escritura parpadea como una barra fina blanca/gris translucida dentro del rectangulo activo; no hereda el color elegido para el texto y no debe salirse de la seleccion de texto.
+- Al acercar el mouse al borde del texto activo, el cursor cambia a `SizeAll`.
+- Al arrastrar desde ese borde, se mueve el texto activo dentro de la seleccion.
+- Al hacer clic fuera del texto activo, se confirma el texto actual y puede empezar otro texto si la herramienta `T` sigue activa.
+- `Enter` confirma el texto.
+- `Esc` cancela el texto activo sin agregarlo a la captura.
+- `Ctrl + C`, `Ctrl + S`, `Ctrl + L` y clic derecho confirman primero el texto activo para no perder lo escrito.
+- `Shift + rueda del mouse` mientras el texto esta activo aumenta o reduce el tamano antes de confirmar.
+- Despues de confirmar, el texto queda como una anotacion normal y se puede mover con la herramienta `Mover`.
+
+Detalle de codigo:
+
+- `BeginTextEdit(Point location)` prepara el estado temporal del texto: limpia una edicion anterior, fija el punto inicial dentro de la seleccion, crea el rectangulo activo y enfoca el overlay para recibir teclado.
+- `UpdateActiveTextBoundsForContent()` mide el texto con `Graphics.MeasureString` y ajusta el rectangulo para que crezca con el contenido sin salirse del area capturada.
+- `StartActiveTextCaret()` activa un timer liviano para alternar la visibilidad del cursor de escritura.
+- `HitTestActiveTextBorder(Point point)` detecta si el mouse esta cerca de la raya del rectangulo; esa zona activa el cursor de mover.
+- `MoveActiveTextTo(Point requestedTopLeft)` usa `ClampBoundsTopLeft` para mover el rectangulo sin dejar que se salga de la captura.
+- `CommitTextEdit()` convierte el texto temporal en un `DrawOp` de tipo `Tool.Text`.
+- `CancelTextEdit()` borra el texto temporal si el usuario cancela con `Esc`.
+
 `ZAETTA_CAPTURE_NATIVE/InstallerZaettaFinal.cs`
 
 Contiene:
@@ -249,6 +313,7 @@ Contiene:
 - Copia del ejecutable final.
 - Creacion de acceso directo.
 - Registro de inicio automatico con Windows para el usuario actual.
+- Lanzamiento automatico de Zaetta Capture al terminar la instalacion para dejarla activa en bandeja.
 - Limpieza/reemplazo de versiones anteriores.
 - Barra de progreso.
 - Mensajes de exito o error.
@@ -424,6 +489,119 @@ Si hay que corregir el instalador, tocar solo `InstallerZaettaFinal.cs`.
 
 Si hay que cambiar branding/icono, el logo fuente oficial esta en `ZAETTA_CAPTURE/logo_oficial.png` y el icono que se embebe en los ejecutables es `ZAETTA_CAPTURE/zaetta_icon.ico`. Para regenerar el ICO desde el PNG se puede usar `tools/make-ico.ps1`; el script recorta el canvas alrededor de la placa y la Z para que el icono se lea mejor en bandeja y accesos directos pequenos.
 
+### Sitio web y dominio
+
+Dominio comprado: `zaettasoftware.com`.
+
+Proveedor del dominio: DreamHost.
+
+Estado importante: por ahora se compro el dominio, no necesariamente un alojamiento web. El dominio es la direccion publica; el hosting es el servidor donde viven `index.html`, el instalador y `latest.json`.
+
+Primera version del sitio:
+
+- Carpeta local: `website/`.
+- Pagina principal: `website/index.html`.
+- Estilos: `website/styles.css`.
+- Logo publico: `website/assets/logo_oficial.png`.
+- Instalador publico: `website/downloads/ZaettaCaptureSetup.exe`.
+- Manifiesto para futuras actualizaciones: `website/latest.json`.
+
+URLs esperadas al publicar:
+
+- `https://zaettasoftware.com/`
+- `https://zaettasoftware.com/downloads/ZaettaCaptureSetup.exe`
+- `https://zaettasoftware.com/latest.json`
+
+`latest.json` no actualiza la app por si solo. Es el contrato que podra leer una futura funcion interna de Zaetta Capture para saber version disponible, URL de descarga, hash y notas.
+
+Opciones para alojar la pagina y los upgrades:
+
+- Contratar hosting en DreamHost y subir la carpeta `website/` alli.
+- Usar un hosting estatico externo como Cloudflare Pages, GitHub Pages, Netlify o Vercel y apuntar el DNS del dominio desde DreamHost.
+- Usar almacenamiento publico para descargas y JSON, siempre que entregue URLs HTTPS estables.
+
+Decision pendiente: elegir donde se alojaran realmente los archivos publicos. Sin hosting, el dominio todavia no puede servir la pagina ni mandar upgrades.
+
+### Arquitectura propuesta de upgrades
+
+Decision propuesta:
+
+- DreamHost: conserva el dominio `zaettasoftware.com` y administra DNS.
+- Vercel: aloja la pagina publica y el archivo `latest.json`.
+- GitHub Releases: aloja los instaladores `.exe` de cada version.
+- Zaetta Capture: contiene la logica interna para consultar updates, pedir confirmacion, descargar, validar y ejecutar el instalador.
+
+Flujo esperado:
+
+```text
+Zaetta Capture esta en bandeja
+    ↓
+consulta https://zaettasoftware.com/latest.json
+    ↓
+compara version remota contra AppInfo.Version
+    ↓
+si hay version nueva y no hay captura activa, muestra aviso
+    ↓
+usuario acepta
+    ↓
+descarga instalador desde GitHub Releases con barra de progreso
+    ↓
+valida SHA256
+    ↓
+ejecuta el instalador
+    ↓
+cierra la app vieja
+    ↓
+el instalador reemplaza archivos
+    ↓
+abre la nueva version en bandeja
+```
+
+Regla de experiencia:
+
+- No interrumpir una captura activa.
+- Si `captureActive == true`, posponer el aviso de update hasta que el overlay se cierre.
+- El update debe mostrarse cuando el usuario no este en mitad de una captura.
+- La descarga debe mostrar progreso visible.
+- El instalador descargado debe validarse con SHA256 antes de ejecutarse.
+- Si el hash no coincide, cancelar el update y mostrar alerta.
+
+Contrato esperado para `latest.json`:
+
+```json
+{
+  "version": "1.0.1",
+  "downloadUrl": "https://github.com/USUARIO/REPO/releases/download/v1.0.1/ZaettaCaptureSetup.exe",
+  "sha256": "...",
+  "mandatory": false,
+  "notes": [
+    "Mejoras de texto estilo Lightshot",
+    "Correcciones del instalador"
+  ]
+}
+```
+
+Componentes futuros en la app:
+
+- `UpdateService.cs`: consulta `latest.json`, compara versiones, descarga instalador y valida hash.
+- `UpdatePromptForm.cs`: mensaje para aceptar o posponer update.
+- `UpdateProgressForm.cs`: ventana con barra de progreso durante descarga/validacion.
+- Integracion en `TrayContext.cs`: check programado de updates y bloqueo si `captureActive` esta activo.
+
+Por que GitHub Releases para instaladores:
+
+- Mantiene historial por version.
+- Permite adjuntar el instalador como asset de cada release.
+- Evita meter binarios pesados en Vercel.
+- Deja Vercel enfocado en pagina, dominio y manifiesto.
+
+Por que Vercel para pagina/manifest:
+
+- Ya es el flujo conocido.
+- Sirve estaticos facilmente.
+- Permite conectar `zaettasoftware.com` por DNS desde DreamHost.
+- `latest.json` queda en una URL propia de la marca.
+
 Si la app no aparece en bandeja al ejecutarse, revisar primero:
 
 1. La flecha de iconos ocultos de Windows.
@@ -466,8 +644,8 @@ Si la app no aparece en bandeja al ejecutarse, revisar primero:
 - Se cambio `capture-preferences.txt` a formato de llaves (`keepLastSelectionPosition`, `openLocked`) manteniendo compatibilidad con el formato legacy de un solo valor.
 - Se mantuvo el cierre normal al copiar con boton Copiar o `Ctrl + C`, incluso cuando el candado esta activo.
 - Se agrego inicio automatico con Windows mediante registro `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
-- Se agrego opcion de bandeja `Iniciar con Windows` para activar/desactivar ese comportamiento.
-- El instalador ahora activa el inicio con Windows por defecto y limpia entradas antiguas de inicio automatico durante instalacion/desinstalacion.
+- El inicio con Windows queda como comportamiento nativo: la opcion visible de bandeja fue retirada y la app asegura el registro al arrancar.
+- El instalador ahora activa el inicio con Windows, lanza la app al finalizar para dejarla en bandeja y limpia entradas antiguas durante instalacion/desinstalacion.
 - Se recompilo la app y el instalador.
 - Se incrusto `ZAETTA_CAPTURE/logo_oficial.png` como recurso `ZaettaLogo` en el instalador.
 - El instalador quedo nuevamente alrededor de 1.7 MB por incluir el logo oficial nitido.
@@ -494,6 +672,8 @@ Si la app no aparece en bandeja al ejecutarse, revisar primero:
 - Se reintrodujo el glow/difuminado de la Z como fondo pintado directamente en el formulario y ubicado fuera del texto, para dar profundidad sin tapar titulo/subtitulo.
 - Se acerco la Z/icono del titulo al texto, dibujandola por encima del label para que funcione mejor como la Z de "Zaetta", y se elimino el blur por pixel calculado al abrir el instalador para mejorar el tiempo de arranque.
 - Se cambio la paleta visual de la app principal de cyan/azul a negro/dorado: acentos globales, Z de la barra, botones activos, hover y menus.
+- Se implemento reseleccion de area dentro del overlay: arrastrar fuera del rectangulo actual permite seleccionar otra zona/pantalla sin cerrar la captura; una reseleccion invalida restaura el rectangulo anterior.
+- Se cambio la herramienta de texto para editar directamente sobre la captura con previsualizacion y caret dibujados en el overlay, evitando la caja grande visualmente pesada.
 - Se corrigio `Ctrl + Z` para que al deshacer una anotacion tambien se limpien seleccion y estados de mover/redimensionar, evitando contornos fantasma.
 - Se subieron estos cambios a GitHub.
 

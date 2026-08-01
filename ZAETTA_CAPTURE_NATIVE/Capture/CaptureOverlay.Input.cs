@@ -14,9 +14,10 @@ namespace ZaettaCaptureNative
             if (Capture)
                 return;
 
-            bool hadDragState = movingOp != null || movingSelection || resizingOp != null || resizingSelection;
+            bool hadDragState = movingOp != null || movingSelection || movingActiveText || resizingOp != null || resizingSelection;
             movingOp = null;
             movingSelection = false;
+            movingActiveText = false;
             resizingOp = null;
             resizeHandleIndex = -1;
             resizingSelection = false;
@@ -64,6 +65,8 @@ namespace ZaettaCaptureNative
                 leftButtonDown = true;
             if (e.Button == MouseButtons.Right && HasSelection())
             {
+                if (textEditing)
+                    CommitTextEdit();
                 BeginRightCopy(this, e.Location);
                 return;
             }
@@ -78,6 +81,26 @@ namespace ZaettaCaptureNative
                 Invalidate();
                 return;
             }
+            if (textEditing)
+            {
+                if (HitTestActiveTextBorder(e.Location))
+                {
+                    movingActiveText = true;
+                    activeTextMoveOffset = new Point(e.X - activeTextBounds.Left, e.Y - activeTextBounds.Top);
+                    Capture = true;
+                    Cursor = Cursors.SizeAll;
+                    Invalidate();
+                    return;
+                }
+
+                if (HitTestActiveText(e.Location))
+                {
+                    Cursor = Cursors.IBeam;
+                    return;
+                }
+
+                CommitTextEdit();
+            }
             selectionResizeHandleIndex = HitTestSelectionHandle(e.Location);
             if (selectionResizeHandleIndex >= 0)
             {
@@ -91,8 +114,7 @@ namespace ZaettaCaptureNative
             }
             if (!selection.Contains(e.Location))
             {
-                if (!selectionLocked)
-                    Close();
+                BeginReselect(e.Location);
                 return;
             }
             if (tool == Tool.Move)
@@ -155,6 +177,15 @@ namespace ZaettaCaptureNative
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
+            if (textEditing)
+            {
+                if ((ModifierKeys & Keys.Shift) == Keys.Shift)
+                    AdjustActiveTextSize(e.Delta > 0 ? 2 : -2);
+                else
+                    base.OnMouseWheel(e);
+                return;
+            }
+
             bool leftPressed = leftButtonDown || (Control.MouseButtons & MouseButtons.Left) == MouseButtons.Left;
             if (!drawing || !leftPressed)
             {
@@ -192,6 +223,12 @@ namespace ZaettaCaptureNative
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
+            if (movingActiveText)
+            {
+                MoveActiveTextTo(new Point(e.X - activeTextMoveOffset.X, e.Y - activeTextMoveOffset.Y));
+                Invalidate();
+                return;
+            }
             if (resizingSelection && selectionResizeHandleIndex >= 0)
             {
                 ResizeSelection(selectionResizeHandleIndex, e.Location);
@@ -221,6 +258,16 @@ namespace ZaettaCaptureNative
             {
                 int handle = HitTestResizeHandle(selectedOp, e.Location);
                 Cursor = handle >= 0 ? ResizeCursor(handle) : (HitTestOp(e.Location) != null ? Cursors.SizeAll : Cursors.Default);
+                return;
+            }
+            if (textEditing)
+            {
+                if (HitTestActiveTextBorder(e.Location))
+                    Cursor = Cursors.SizeAll;
+                else if (HitTestActiveText(e.Location))
+                    Cursor = Cursors.IBeam;
+                else
+                    Cursor = Cursors.Default;
                 return;
             }
             if (HasSelection() && !selecting && !drawing)
@@ -266,6 +313,14 @@ namespace ZaettaCaptureNative
                 Invalidate();
                 return;
             }
+            if (movingActiveText)
+            {
+                movingActiveText = false;
+                Capture = false;
+                Cursor = Cursors.IBeam;
+                Invalidate();
+                return;
+            }
             if (resizingOp != null)
             {
                 resizingOp = null;
@@ -296,12 +351,32 @@ namespace ZaettaCaptureNative
             {
                 selecting = false;
                 current = e.Location;
-                selection = Normalize(start, current);
-                if (selection.Width < 10 || selection.Height < 10)
+                Rectangle nextSelection = Normalize(start, current);
+                if (nextSelection.Width < 10 || nextSelection.Height < 10)
                 {
+                    if (reselecting && previousSelectionBeforeReselect.Width > 0 && previousSelectionBeforeReselect.Height > 0)
+                    {
+                        selection = previousSelectionBeforeReselect;
+                        reselecting = false;
+                        Capture = false;
+                        ShowToolbars();
+                        Invalidate();
+                        return;
+                    }
                     Close();
                     return;
                 }
+                selection = nextSelection;
+                if (reselecting)
+                {
+                    ops.Clear();
+                    selectedOp = null;
+                    movingOp = null;
+                    resizingOp = null;
+                    resizeHandleIndex = -1;
+                    reselecting = false;
+                }
+                Capture = false;
                 ShowToolbars();
                 Invalidate();
                 return;

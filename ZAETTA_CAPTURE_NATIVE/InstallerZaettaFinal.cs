@@ -213,7 +213,10 @@ namespace ZaettaCaptureInstaller
                 RegisterUninstallEntry(installDir, appPath, installerPath);
                 SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
 
-                SetProgress(100, "Instalacion completada", "Zaetta Capture quedo listo para usar.");
+                SetProgress(90, "Iniciando Zaetta Capture...", "Abriendo la aplicacion en la bandeja del sistema.");
+                LaunchInstalledApp(appPath, installDir);
+
+                SetProgress(100, "Instalacion completada", "Zaetta Capture quedo activo en la bandeja del sistema.");
                 installButton.Text = "Finalizar";
                 installButton.Enabled = true;
                 completed = true;
@@ -445,6 +448,14 @@ namespace ZaettaCaptureInstaller
             {
                 key.SetValue(AppName, "\"" + appPath + "\"");
             }
+        }
+
+        private static void LaunchInstalledApp(string appPath, string workingDir)
+        {
+            ProcessStartInfo info = new ProcessStartInfo(appPath);
+            info.WorkingDirectory = workingDir;
+            info.UseShellExecute = true;
+            Process.Start(info);
         }
 
         private static void RemoveStartupEntries()

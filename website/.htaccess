@@ -1,0 +1,10 @@
+AddType application/json .json
+AddType application/octet-stream .exe
+
+<Files "latest.json">
+  Header set Cache-Control "no-store, max-age=0"
+</Files>
+
+<FilesMatch "\.exe$">
+  Header set Content-Disposition "attachment"
+</FilesMatch>

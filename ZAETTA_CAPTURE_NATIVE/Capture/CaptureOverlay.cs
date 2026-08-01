@@ -16,6 +16,8 @@ namespace ZaettaCaptureNative
         private Point current;
         private Point drawStart;
         private bool selecting;
+        private bool reselecting;
+        private Rectangle previousSelectionBeforeReselect;
         private bool drawing;
         private Tool tool = Tool.Arrow;
         private Color color = Color.FromArgb(255, 59, 48);
@@ -25,6 +27,15 @@ namespace ZaettaCaptureNative
         private Panel bottomToolbar;
         private Panel sideToolbar;
         private TextBox activeTextBox;
+        private bool textEditing;
+        private Point activeTextPoint;
+        private Rectangle activeTextBounds;
+        private bool movingActiveText;
+        private Point activeTextMoveOffset;
+        private int activeTextSize = 18;
+        private bool activeTextCaretVisible = true;
+        private Timer activeTextCaretTimer;
+        private string activeTextValue = "";
         private DrawOp selectedOp;
         private DrawOp movingOp;
         private bool movingSelection;
@@ -120,6 +131,11 @@ namespace ZaettaCaptureNative
             {
                 dimmedScreenshot.Dispose();
                 screenshot.Dispose();
+                if (activeTextCaretTimer != null)
+                {
+                    activeTextCaretTimer.Stop();
+                    activeTextCaretTimer.Dispose();
+                }
                 HideToolbars();
             }
             base.Dispose(disposing);

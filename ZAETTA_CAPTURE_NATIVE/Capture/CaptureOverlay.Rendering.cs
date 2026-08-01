@@ -17,11 +17,16 @@ namespace ZaettaCaptureNative
             if ((selecting || HasSelection()) && box.Width > 0 && box.Height > 0)
             {
                 g.DrawImage(screenshot, box, box, GraphicsUnit.Pixel);
-                foreach (DrawOp op in ops)
-                    DrawOpOnOverlay(g, op);
+                if (!selecting)
+                {
+                    foreach (DrawOp op in ops)
+                        DrawOpOnOverlay(g, op);
+                }
                 if (drawing && tool != Tool.Pencil && tool != Tool.Highlight)
                     DrawOpOnOverlay(g, new DrawOp { Tool = tool, A = ClampToSelection(drawStart), B = ClampToSelection(current), Color = color, Width = tool == Tool.Pixelate ? pixelIntensity : drawWidth });
-                DrawSelectedOpHandles(g);
+                DrawActiveTextEdit(g);
+                if (!selecting)
+                    DrawSelectedOpHandles(g);
                 DrawSelectionBorder(g, box);
                 DrawHandles(g, box);
                 DrawSizeLabel(g, box);
@@ -66,6 +71,46 @@ namespace ZaettaCaptureNative
                 }
                 else if (op.Tool == Tool.Pixelate)
                     DrawPixelated(g, Normalize(op.A, op.B), op.Width);
+            }
+        }
+
+        private void DrawActiveTextEdit(Graphics g)
+        {
+            if (!textEditing)
+                return;
+
+            string preview = activeTextValue ?? "";
+            using (Font font = new Font("Segoe UI", activeTextSize, FontStyle.Bold))
+            using (SolidBrush brush = new SolidBrush(color))
+            using (Pen caret = new Pen(Color.FromArgb(205, 245, 245, 245), 1))
+            using (Pen shadow = new Pen(Color.FromArgb(90, 0, 0, 0), 2))
+            using (Pen light = new Pen(Color.FromArgb(220, 245, 245, 245), 1))
+            using (Pen dash = new Pen(Color.FromArgb(155, 35, 35, 35), 1))
+            {
+                Rectangle border = new Rectangle(activeTextBounds.Left, activeTextBounds.Top, Math.Max(1, activeTextBounds.Width - 1), Math.Max(1, activeTextBounds.Height - 1));
+                shadow.Alignment = PenAlignment.Inset;
+                light.Alignment = PenAlignment.Inset;
+                dash.Alignment = PenAlignment.Inset;
+                dash.DashPattern = new float[] { 2, 2 };
+
+                g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                g.DrawRectangle(shadow, border);
+                g.DrawRectangle(light, border);
+                g.DrawRectangle(dash, border);
+
+                GraphicsState state = g.Save();
+                g.SetClip(activeTextBounds);
+                g.DrawString(preview, font, brush, activeTextPoint);
+                SizeF size = g.MeasureString(preview.Length == 0 ? " " : preview, font);
+                if (activeTextCaretVisible)
+                {
+                    float caretX = activeTextPoint.X + (preview.Length == 0 ? 1 : size.Width - 4);
+                    caretX = Math.Min(activeTextBounds.Right - ActiveTextPadding, Math.Max(activeTextBounds.Left + ActiveTextPadding, caretX));
+                    float top = Math.Max(activeTextBounds.Top + 3, activeTextPoint.Y + 3);
+                    float bottom = Math.Min(activeTextBounds.Bottom - 3, activeTextPoint.Y + Math.Max(20, size.Height - 3));
+                    g.DrawLine(caret, caretX, top, caretX, bottom);
+                }
+                g.Restore(state);
             }
         }
 

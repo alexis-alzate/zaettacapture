@@ -15,7 +15,6 @@ namespace ZaettaCaptureNative
         private ToolStripMenuItem repeatLastAreaItem;
         private ToolStripMenuItem keepLastSelectionPositionItem;
         private ToolStripMenuItem openLockedItem;
-        private ToolStripMenuItem startupWithWindowsItem;
         private Rectangle lastSelection;
         private bool hasLastSelection;
         private bool keepLastSelectionPosition;
@@ -42,8 +41,7 @@ namespace ZaettaCaptureNative
             openLocked = CapturePreferencesStore.LoadOpenLocked();
             if (openLockedItem != null)
                 openLockedItem.Checked = openLocked;
-            if (startupWithWindowsItem != null)
-                startupWithWindowsItem.Checked = StartupService.IsEnabled();
+            EnsureStartupWithWindows();
 
             hotKeyWindow = new HotKeyWindow(StartCapture);
             hotKeyWindow.Register(Keys.PrintScreen, 0);
@@ -82,10 +80,6 @@ namespace ZaettaCaptureNative
             openLockedItem.Checked = false;
             openLockedItem.CheckOnClick = true;
             menu.Items.Add(openLockedItem);
-            startupWithWindowsItem = new ToolStripMenuItem("Iniciar con Windows", null, delegate { ToggleStartupWithWindows(); });
-            startupWithWindowsItem.Checked = false;
-            startupWithWindowsItem.CheckOnClick = true;
-            menu.Items.Add(startupWithWindowsItem);
             var hotkeys = new ToolStripMenuItem("Atajo de captura");
             printScreenItem = new ToolStripMenuItem("Impr Pant", null, delegate { SetHotkey(Keys.PrintScreen, 0, printScreenItem); });
             ctrlShiftSItem = new ToolStripMenuItem("Ctrl + Shift + S", null, delegate { SetHotkey(Keys.S, HotKeyWindow.MOD_CONTROL | HotKeyWindow.MOD_SHIFT, ctrlShiftSItem); });
@@ -154,16 +148,15 @@ namespace ZaettaCaptureNative
             CapturePreferencesStore.SaveOpenLocked(openLocked);
         }
 
-        private void ToggleStartupWithWindows()
+        private void EnsureStartupWithWindows()
         {
             try
             {
-                StartupService.SetEnabled(startupWithWindowsItem.Checked);
+                StartupService.SetEnabled(true);
             }
             catch (Exception ex)
             {
-                startupWithWindowsItem.Checked = StartupService.IsEnabled();
-                MessageBox.Show("No se pudo cambiar el inicio con Windows.\n\n" + ex.Message, AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                StartupDiagnostics.Log(ex);
             }
         }
 

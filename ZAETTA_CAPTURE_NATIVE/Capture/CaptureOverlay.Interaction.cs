@@ -82,6 +82,29 @@ namespace ZaettaCaptureNative
                 OffsetOp(op, dx, dy);
         }
 
+        private void BeginReselect(Point point)
+        {
+            CommitTextEdit();
+            previousSelectionBeforeReselect = selection;
+            selection = Rectangle.Empty;
+            selectedOp = null;
+            movingOp = null;
+            movingSelection = false;
+            resizingOp = null;
+            resizeHandleIndex = -1;
+            resizingSelection = false;
+            selectionResizeHandleIndex = -1;
+            pendingRightCopy = false;
+            selecting = true;
+            reselecting = true;
+            start = point;
+            current = point;
+            HideToolbars();
+            Capture = true;
+            Cursor = Cursors.Cross;
+            Invalidate();
+        }
+
         private Point ClampSelectionTopLeft(Point requestedTopLeft)
         {
             int maxX = Math.Max(0, Width - Math.Max(1, selection.Width));

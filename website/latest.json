@@ -1,0 +1,14 @@
+{
+  "product": "Zaetta Capture",
+  "version": "1.0",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://zaettasoftware.com/downloads/ZaettaCaptureSetup.exe",
+  "sha256": "8b571227d196cd58f90a04b9a34862602b908b670ed7e4566fe12ca25539a570",
+  "fileSizeBytes": 1723904,
+  "notes": [
+    "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
+    "Reseleccion de area sin cerrar la captura.",
+    "Inicio con Windows nativo y arranque automatico en bandeja tras instalar.",
+    "Pixelado real con intensidad ajustable."
+  ]
+}
