@@ -1,9 +1,9 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.13/ZaettaCaptureSetup.exe",
-  "sha256": "41adebd4ddcf02c2c8da3b009b2d405ed2abc6278a77dfd04601a964eb481da8",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.14/ZaettaCaptureSetup.exe",
+  "sha256": "eb6c4415d22e7809e9ab0e61694a74f34fe814315114e009c63b9d247cb24204",
   "fileSizeBytes": 1742848,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
@@ -22,6 +22,7 @@
     "Upgrade menos agresivo: no mata procesos ni limpia instalaciones legacy durante actualizacion automatica.",
     "Globo de bandeja restaurado antes de abrir la ventana de actualizacion.",
     "Toast propio tipo Windows cerca de la bandeja antes de abrir el asistente de actualizacion.",
-    "Toast de actualizacion mas visible: dura mas tiempo, se trae al frente y usa la pantalla donde esta el mouse."
+    "Toast de actualizacion mas visible: dura mas tiempo, se trae al frente y usa la pantalla donde esta el mouse.",
+    "Instancia unica: abrir Zaetta Capture varias veces ya no crea iconos duplicados en la bandeja."
   ]
 }

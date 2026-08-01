@@ -1239,6 +1239,54 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.14
+
+Fecha: 2026-08-01.
+
+Motivo: corregir el bug donde abrir Zaetta Capture varias veces creaba varios iconos en la bandeja del sistema.
+
+Problema:
+
+- `Program.Main()` ejecutaba siempre `Application.Run(new TrayContext())`.
+- Cada instancia nueva creaba su propio `NotifyIcon`.
+- Windows mostraba varios iconos de Zaetta en la bandeja si el usuario abria el acceso directo varias veces.
+
+Cambio:
+
+- Se agrego `using System.Threading;` en `App/Program.cs`.
+- Al inicio de `Main()` se crea un `Mutex` nombrado: `Local\\ZaettaCaptureNative`.
+- Si el mutex ya existe, significa que Zaetta Capture ya esta corriendo y la nueva instancia sale inmediatamente con `return`.
+- Si el mutex se crea por primera vez, la app continua y abre `TrayContext`.
+- En `finally`, el mutex se libera y se destruye al salir.
+
+Decision tecnica:
+
+- `Mutex` es apropiado para una app WinForms de bandeja porque bloquea instancias duplicadas a nivel de sistema/usuario.
+- Se uso prefijo `Local\\` para limitarlo a la sesion actual de Windows.
+- No se muestra ventana de advertencia al abrir una segunda instancia; simplemente se evita crear otro icono.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1742848 bytes
+SHA256: eb6c4415d22e7809e9ab0e61694a74f34fe814315114e009c63b9d247cb24204
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.14",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.14/ZaettaCaptureSetup.exe",
+  "sha256": "eb6c4415d22e7809e9ab0e61694a74f34fe814315114e009c63b9d247cb24204",
+  "fileSizeBytes": 1742848
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
