@@ -815,6 +815,36 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.4
+
+Fecha: 2026-08-01.
+
+Motivo: release de prueba para validar el flujo real del updater desde una instalacion `v1.0.3`.
+
+No se cambio la logica principal respecto a `v1.0.3`; se subio la version para que `latest.json` sea mayor que la version instalada y asi la app muestre el prompt de actualizacion.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1738240 bytes
+SHA256: 16bda5ad5a0ed0a9ea2efc269ebf1eff2fc21bdc4e94d4629050a1f239bbaa92
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.4",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.4/ZaettaCaptureSetup.exe",
+  "sha256": "16bda5ad5a0ed0a9ea2efc269ebf1eff2fc21bdc4e94d4629050a1f239bbaa92",
+  "fileSizeBytes": 1738240
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -880,6 +910,7 @@ Manifest esperado para publicar:
 - Se actualizo `website/latest.json` para apuntar al release `v1.0.1`.
 - Se corrigio el updater en `v1.0.2` para consultar `https://www.zaettasoftware.com/latest.json` y evitar el error `308 Permanent Redirect`.
 - Se reforzo el updater en `v1.0.3` con manejo manual de redirects HTTP `301/302/303/307/308`.
+- Se creo `v1.0.4` como release de prueba para validar el updater completo desde una instalacion anterior.
 
 ### 2026-07-28
 
