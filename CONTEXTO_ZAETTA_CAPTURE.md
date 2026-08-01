@@ -1104,6 +1104,47 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.11
+
+Fecha: 2026-08-01.
+
+Motivo: restaurar el mensaje/globo de bandeja relacionado con actualizaciones.
+
+Problema:
+
+- El globo seguia existiendo en codigo, pero se mostraba justo antes de abrir el prompt `TopMost`.
+- Windows podia ocultarlo o no dejarlo visible suficiente tiempo.
+
+Cambio:
+
+- `TrayContext.ShowPendingUpdateIfReady()` ahora configura `BalloonTipIcon = ToolTipIcon.Info`.
+- El texto del globo indica que la actualizacion esta lista y que se abrira el asistente.
+- `ShowBalloonTip()` sube a 10 segundos.
+- Se ejecuta `Application.DoEvents()` y una espera corta de 1.8 segundos antes de abrir el prompt.
+- Con esto el usuario vuelve a ver primero el mensaje de bandeja y luego la ventana de actualizacion.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1740800 bytes
+SHA256: ed815efdf95f23d1b0cab7c85d51e70868584205a53154c3988fda9b5e6e3b95
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.11",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.11/ZaettaCaptureSetup.exe",
+  "sha256": "ed815efdf95f23d1b0cab7c85d51e70868584205a53154c3988fda9b5e6e3b95",
+  "fileSizeBytes": 1740800
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -1176,6 +1217,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.8` para reemplazar archivos puntuales durante upgrade y no depender de borrar toda la carpeta instalada.
 - Se creo `v1.0.9` para mover descargas del updater a `%LOCALAPPDATA%\\Zaetta Capture\\Updates` y documentar la alerta de Bitdefender.
 - Se creo `v1.0.10` para que el upgrade automatico sea menos agresivo ante Bitdefender: no mata procesos ni limpia instalaciones legacy.
+- Se creo `v1.0.11` para restaurar el globo de bandeja antes de abrir la ventana de actualizacion.
 
 ### 2026-07-28
 

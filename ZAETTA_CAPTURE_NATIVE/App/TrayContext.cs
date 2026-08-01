@@ -300,8 +300,11 @@ namespace ZaettaCaptureNative
             try
             {
                 tray.BalloonTipTitle = "Actualizacion disponible";
-                tray.BalloonTipText = "Zaetta Capture " + info.Version + " esta listo para instalar.";
-                tray.ShowBalloonTip(8000);
+                tray.BalloonTipText = "Zaetta Capture " + info.Version + " esta listo para instalar. Se abrira el asistente de actualizacion.";
+                tray.BalloonTipIcon = ToolTipIcon.Info;
+                tray.ShowBalloonTip(10000);
+                Application.DoEvents();
+                Thread.Sleep(1800);
 
                 using (UpdatePromptForm prompt = new UpdatePromptForm(info))
                 {
