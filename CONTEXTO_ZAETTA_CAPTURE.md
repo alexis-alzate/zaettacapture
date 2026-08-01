@@ -1196,6 +1196,49 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.13
+
+Fecha: 2026-08-01.
+
+Motivo: el toast de `v1.0.12` existia, pero en prueba real el usuario no lo vio. Se reforzo para que sea mas facil de notar y para generar una version mayor que permita probar el updater desde una instalacion `1.0.12`.
+
+Cambio:
+
+- `UpdateToastForm` ahora permanece visible 5 segundos antes de hacer fade-out.
+- Al mostrarse ejecuta `BringToFront()` y `Activate()`.
+- La posicion usa `Screen.FromPoint(Cursor.Position).WorkingArea` en vez de `Screen.PrimaryScreen`, para aparecer en la pantalla donde el usuario esta trabajando.
+- Se agrego un borde gris fino para que la tarjeta blanca se lea mejor sobre fondos claros.
+- `AppInfo.Version` sube a `1.0.13`.
+- `website/latest.json` apunta al release `v1.0.13`.
+
+Decision tecnica:
+
+- El problema no estaba en la deteccion del update, sino en que la notificacion podia pasar desapercibida.
+- Hacerla durar mas y traerla al frente mejora la prueba visual sin cambiar el flujo de seguridad del updater.
+- Se publico una version nueva porque el updater solo se dispara si `latest.json` tiene una version mayor que la instalada.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1742848 bytes
+SHA256: 41adebd4ddcf02c2c8da3b009b2d405ed2abc6278a77dfd04601a964eb481da8
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.13",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.13/ZaettaCaptureSetup.exe",
+  "sha256": "41adebd4ddcf02c2c8da3b009b2d405ed2abc6278a77dfd04601a964eb481da8",
+  "fileSizeBytes": 1742848
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.

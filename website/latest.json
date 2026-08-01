@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.12/ZaettaCaptureSetup.exe",
-  "sha256": "64c41905a46ddddfcdb85e44905352cf0539b31df997a5a0357137a9d771a6bf",
-  "fileSizeBytes": 1742336,
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.13/ZaettaCaptureSetup.exe",
+  "sha256": "41adebd4ddcf02c2c8da3b009b2d405ed2abc6278a77dfd04601a964eb481da8",
+  "fileSizeBytes": 1742848,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -21,6 +21,7 @@
     "Descargas de updater movidas a AppData local para evitar guardar instaladores en Pictures.",
     "Upgrade menos agresivo: no mata procesos ni limpia instalaciones legacy durante actualizacion automatica.",
     "Globo de bandeja restaurado antes de abrir la ventana de actualizacion.",
-    "Toast propio tipo Windows cerca de la bandeja antes de abrir el asistente de actualizacion."
+    "Toast propio tipo Windows cerca de la bandeja antes de abrir el asistente de actualizacion.",
+    "Toast de actualizacion mas visible: dura mas tiempo, se trae al frente y usa la pantalla donde esta el mouse."
   ]
 }

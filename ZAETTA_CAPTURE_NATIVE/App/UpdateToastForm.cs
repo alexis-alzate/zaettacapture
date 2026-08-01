@@ -19,7 +19,7 @@ namespace ZaettaCaptureNative
             ForeColor = Color.FromArgb(28, 38, 48);
             Font = new Font("Segoe UI", 9f);
             ClientSize = new Size(470, 122);
-            Opacity = 0.97;
+            Opacity = 0.98;
 
             Panel iconBand = new Panel();
             iconBand.BackColor = Color.FromArgb(245, 245, 245);
@@ -65,7 +65,7 @@ namespace ZaettaCaptureNative
             Controls.Add(hint);
 
             closeTimer = new Timer();
-            closeTimer.Interval = 2600;
+            closeTimer.Interval = 5000;
             closeTimer.Tick += delegate
             {
                 closeTimer.Stop();
@@ -87,6 +87,8 @@ namespace ZaettaCaptureNative
             Shown += delegate
             {
                 PositionNearTray();
+                BringToFront();
+                Activate();
                 closeTimer.Start();
             };
             FormClosed += delegate
@@ -111,9 +113,16 @@ namespace ZaettaCaptureNative
 
         private void PositionNearTray()
         {
-            Rectangle workArea = Screen.PrimaryScreen.WorkingArea;
+            Rectangle workArea = Screen.FromPoint(Cursor.Position).WorkingArea;
             Left = workArea.Right - Width - 18;
             Top = workArea.Bottom - Height - 18;
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            using (Pen border = new Pen(Color.FromArgb(218, 218, 218), 1))
+                e.Graphics.DrawRectangle(border, 0, 0, Width - 1, Height - 1);
         }
 
         private static Bitmap LoadAppIconBitmap()
