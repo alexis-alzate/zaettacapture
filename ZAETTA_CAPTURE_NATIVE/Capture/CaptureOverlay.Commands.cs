@@ -49,6 +49,8 @@ namespace ZaettaCaptureNative
             if (resizingOp == removed)
                 resizingOp = null;
             resizeHandleIndex = -1;
+            if (removed.Tool == Tool.Number)
+                RefreshNextNumberValue();
             Invalidate();
         }
     }

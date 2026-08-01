@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.14/ZaettaCaptureSetup.exe",
-  "sha256": "eb6c4415d22e7809e9ab0e61694a74f34fe814315114e009c63b9d247cb24204",
-  "fileSizeBytes": 1742848,
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.15/ZaettaCaptureSetup.exe",
+  "sha256": "f0cd4ecea583a698a05c740ebba88e3e38cfc23db04bfb1e5452152a8b7c1427",
+  "fileSizeBytes": 1743360,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -23,6 +23,7 @@
     "Globo de bandeja restaurado antes de abrir la ventana de actualizacion.",
     "Toast propio tipo Windows cerca de la bandeja antes de abrir el asistente de actualizacion.",
     "Toast de actualizacion mas visible: dura mas tiempo, se trae al frente y usa la pantalla donde esta el mouse.",
-    "Instancia unica: abrir Zaetta Capture varias veces ya no crea iconos duplicados en la bandeja."
+    "Instancia unica: abrir Zaetta Capture varias veces ya no crea iconos duplicados en la bandeja.",
+    "Numeracion corregida: los marcadores siguen 10, 11, 12 y Undo/Esc no rompen el contador."
   ]
 }

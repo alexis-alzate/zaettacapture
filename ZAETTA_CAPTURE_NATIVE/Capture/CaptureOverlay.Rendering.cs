@@ -59,14 +59,19 @@ namespace ZaettaCaptureNative
                 }
                 else if (op.Tool == Tool.Number)
                 {
-                    int size = Math.Max(24, op.Width);
-                    Rectangle circle = new Rectangle(op.A.X - size / 2, op.A.Y - size / 2, size, size);
                     using (SolidBrush fill = new SolidBrush(op.Color))
-                    using (Font font = new Font("Segoe UI", Math.Max(10, size / 2), FontStyle.Bold))
                     using (StringFormat format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
                     {
-                        g.FillEllipse(fill, circle);
-                        g.DrawString(op.Text ?? "", font, Brushes.White, circle, format);
+                        string numberText = op.Text ?? "";
+                        int baseSize = Math.Max(24, op.Width);
+                        using (Font font = new Font("Segoe UI", Math.Max(10, baseSize / 2), FontStyle.Bold))
+                        {
+                            SizeF measured = g.MeasureString(numberText, font);
+                            int size = Math.Max(baseSize, (int)Math.Ceiling(Math.Max(measured.Width, measured.Height)) + 12);
+                            Rectangle circle = new Rectangle(op.A.X - size / 2, op.A.Y - size / 2, size, size);
+                            g.FillEllipse(fill, circle);
+                            g.DrawString(numberText, font, Brushes.White, circle, format);
+                        }
                     }
                 }
                 else if (op.Tool == Tool.Pixelate)

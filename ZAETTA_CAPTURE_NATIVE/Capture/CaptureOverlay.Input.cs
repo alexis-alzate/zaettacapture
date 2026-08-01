@@ -158,6 +158,7 @@ namespace ZaettaCaptureNative
             }
             if (tool == Tool.Number)
             {
+                RefreshNextNumberValue();
                 ops.Add(new DrawOp { Tool = Tool.Number, A = e.Location, Text = counterValue.ToString(), Color = color, Width = Math.Max(18, drawWidth * 5) });
                 counterValue++;
                 Invalidate();
@@ -370,6 +371,7 @@ namespace ZaettaCaptureNative
                 if (reselecting)
                 {
                     ops.Clear();
+                    RefreshNextNumberValue();
                     selectedOp = null;
                     movingOp = null;
                     resizingOp = null;

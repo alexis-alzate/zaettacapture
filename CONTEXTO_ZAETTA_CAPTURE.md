@@ -1287,6 +1287,57 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.15
+
+Fecha: 2026-08-01.
+
+Motivo: corregir bug de numeracion en la herramienta `Numero`.
+
+Problemas reportados:
+
+- Al llegar a `9`, los numeros podian reiniciarse o repetirse.
+- El usuario necesitaba poder seguir con `10`, `11`, `12`, etc.
+- Al usar `Undo`, el siguiente numero podia quedar incorrecto.
+- Al presionar `Esc` intentando descartar una accion, el conteo podia quedar reiniciado o trabado.
+
+Cambio:
+
+- Se agrego `Capture/CaptureOverlay.Numbering.cs`.
+- Se agrego `GetNextNumberValue()` para calcular el siguiente numero leyendo todos los marcadores `Tool.Number` existentes en `ops`.
+- Se agrego `RefreshNextNumberValue()` para actualizar `counterValue` desde el estado real del overlay.
+- En `CaptureOverlay.Input.cs`, antes de crear un nuevo marcador, se llama `RefreshNextNumberValue()`.
+- En `CaptureOverlay.Commands.cs`, cuando `Undo()` elimina un marcador numerado, se vuelve a recalcular el siguiente numero.
+- Cuando una reseleccion valida limpia todas las anotaciones con `ops.Clear()`, el contador vuelve a `1` porque ya no quedan numeros en la captura actual.
+- En `CaptureOverlay.Rendering.cs`, el circulo del marcador crece segun el texto medido para que `10`, `11`, `100` no queden apretados.
+
+Decision tecnica:
+
+- El contador ya no depende de incrementar/decrementar a ciegas.
+- La fuente de verdad ahora es la lista `ops`, es decir, los numeros que realmente existen en pantalla.
+- Esto hace que `Undo`, reseleccion y futuras operaciones no dejen el contador en un estado fantasma.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1743360 bytes
+SHA256: f0cd4ecea583a698a05c740ebba88e3e38cfc23db04bfb1e5452152a8b7c1427
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.15",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.15/ZaettaCaptureSetup.exe",
+  "sha256": "f0cd4ecea583a698a05c740ebba88e3e38cfc23db04bfb1e5452152a8b7c1427",
+  "fileSizeBytes": 1743360
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
