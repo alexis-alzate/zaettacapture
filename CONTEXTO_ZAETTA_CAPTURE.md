@@ -674,6 +674,47 @@ Notas:
 - No se deben borrar los registros `NS` de DreamHost.
 - Si existen otros registros `A` para `@` o `CNAME/A` para `www`, pueden entrar en conflicto y deben revisarse.
 
+### Release oficial v1.0
+
+Fecha: 2026-08-01.
+
+Se creo el release oficial en GitHub:
+
+```text
+Release: v1.0
+Titulo: Zaetta Capture v1.0
+URL: https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0
+Asset: ZaettaCaptureSetup.exe
+Tamano: 1723904 bytes
+SHA256: 8b571227d196cd58f90a04b9a34862602b908b670ed7e4566fe12ca25539a570
+```
+
+URL publica del instalador versionado:
+
+```text
+https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0/ZaettaCaptureSetup.exe
+```
+
+`website/latest.json` quedo apuntando a ese asset de GitHub Releases:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0/ZaettaCaptureSetup.exe",
+  "sha256": "8b571227d196cd58f90a04b9a34862602b908b670ed7e4566fe12ca25539a570",
+  "fileSizeBytes": 1723904
+}
+```
+
+Validaciones realizadas:
+
+- `gh release view v1.0` confirmo release publicado, no draft, no prerelease.
+- El asset `ZaettaCaptureSetup.exe` aparece con estado `uploaded`.
+- `curl -I -L` contra la URL del asset respondio `200` despues del redirect de GitHub.
+- `https://zaettasoftware.com/latest.json` respondio con el `downloadUrl` de GitHub Releases.
+
 Si la app no aparece en bandeja al ejecutarse, revisar primero:
 
 1. La flecha de iconos ocultos de Windows.
