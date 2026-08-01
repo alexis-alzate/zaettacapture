@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.4/ZaettaCaptureSetup.exe",
-  "sha256": "16bda5ad5a0ed0a9ea2efc269ebf1eff2fc21bdc4e94d4629050a1f239bbaa92",
-  "fileSizeBytes": 1738240,
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.5/ZaettaCaptureSetup.exe",
+  "sha256": "0ae78dc5515911d9d3ed642ff1027eebc5017d5afdd06e632f00ab8910a2f4e2",
+  "fileSizeBytes": 1738752,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -13,6 +13,7 @@
     "Actualizador interno: revisa latest.json, descarga desde GitHub Releases con progreso y valida SHA256.",
     "Correccion del manifest de updates para evitar el redirect 308 del dominio apex.",
     "Manejo manual de redirects HTTP 301/302/303/307/308 en el updater.",
-    "Release de prueba para validar el flujo completo del updater desde una version instalada."
+    "Release de prueba para validar el flujo completo del updater desde una version instalada.",
+    "Prompt automatico mas visible: chequeo rapido al iniciar, globo de bandeja y ventana al frente."
   ]
 }

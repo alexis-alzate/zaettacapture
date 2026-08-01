@@ -52,13 +52,14 @@ namespace ZaettaCaptureNative
             if (openLockedItem != null)
                 openLockedItem.Checked = openLocked;
             EnsureStartupWithWindows();
-            ScheduleUpdateChecks();
 
             hotKeyWindow = new HotKeyWindow(StartCapture);
             hotKeyWindow.Register(Keys.PrintScreen, 0);
             printScreenItem.Checked = true;
             if (repeatLastAreaItem != null)
                 repeatLastAreaItem.Enabled = hasLastSelection;
+
+            ScheduleUpdateChecks();
         }
 
         private static Icon LoadTrayIcon()
@@ -225,7 +226,7 @@ namespace ZaettaCaptureNative
         private void ScheduleUpdateChecks()
         {
             updateTimer = new System.Windows.Forms.Timer();
-            updateTimer.Interval = 15000;
+            updateTimer.Interval = 5000;
             updateTimer.Tick += delegate
             {
                 if (firstUpdateTick)
@@ -237,6 +238,7 @@ namespace ZaettaCaptureNative
                 BeginUpdateCheck(false);
             };
             updateTimer.Start();
+            PostToUi(delegate { BeginUpdateCheck(false); });
         }
 
         private void BeginUpdateCheck(bool manual)
@@ -297,6 +299,10 @@ namespace ZaettaCaptureNative
 
             try
             {
+                tray.BalloonTipTitle = "Actualizacion disponible";
+                tray.BalloonTipText = "Zaetta Capture " + info.Version + " esta listo para instalar.";
+                tray.ShowBalloonTip(8000);
+
                 using (UpdatePromptForm prompt = new UpdatePromptForm(info))
                 {
                     if (prompt.ShowDialog() == DialogResult.OK)

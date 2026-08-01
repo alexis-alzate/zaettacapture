@@ -25,6 +25,8 @@ namespace ZaettaCaptureNative
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
+            ShowInTaskbar = true;
+            TopMost = true;
             ClientSize = new Size(440, 230);
             BackColor = Ui.Bg;
             ForeColor = Ui.Text;
@@ -57,7 +59,14 @@ namespace ZaettaCaptureNative
             Controls.Add(status);
             Controls.Add(progress);
             Controls.Add(cancelButton);
-            Shown += delegate { StartDownload(); };
+            Shown += delegate
+            {
+                WindowState = FormWindowState.Normal;
+                BringToFront();
+                Activate();
+                Focus();
+                StartDownload();
+            };
             FormClosing += OnFormClosing;
         }
 

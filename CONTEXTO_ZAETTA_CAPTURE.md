@@ -845,6 +845,47 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.5
+
+Fecha: 2026-08-01.
+
+Motivo: hacer que el aviso de actualizacion aparezca automaticamente y sea mas visible, sin depender de que el usuario use `Buscar actualizaciones`.
+
+Cambios:
+
+- `TrayContext.ScheduleUpdateChecks()` ahora lanza un chequeo automatico apenas se inicializa la bandeja.
+- El primer timer baja de 15 segundos a 5 segundos.
+- Si se detecta update, `TrayContext.ShowPendingUpdateIfReady()` muestra un globo de bandeja con la version disponible.
+- `UpdatePromptForm` ahora usa `TopMost = true`, `ShowInTaskbar = true`, `BringToFront()` y `Activate()` al mostrarse.
+- `UpdateProgressForm` tambien usa `TopMost = true`, `ShowInTaskbar = true`, `BringToFront()` y `Activate()` para que la descarga no quede escondida.
+
+Regla importante:
+
+- Si hay una captura activa, el prompt no invade el overlay; queda pendiente hasta cerrar la captura.
+- Si no hay captura activa, el aviso debe aparecer al frente automaticamente cuando el updater detecte una version mayor.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1738752 bytes
+SHA256: 0ae78dc5515911d9d3ed642ff1027eebc5017d5afdd06e632f00ab8910a2f4e2
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.5",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.5/ZaettaCaptureSetup.exe",
+  "sha256": "0ae78dc5515911d9d3ed642ff1027eebc5017d5afdd06e632f00ab8910a2f4e2",
+  "fileSizeBytes": 1738752
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -911,6 +952,7 @@ Manifest esperado para publicar:
 - Se corrigio el updater en `v1.0.2` para consultar `https://www.zaettasoftware.com/latest.json` y evitar el error `308 Permanent Redirect`.
 - Se reforzo el updater en `v1.0.3` con manejo manual de redirects HTTP `301/302/303/307/308`.
 - Se creo `v1.0.4` como release de prueba para validar el updater completo desde una instalacion anterior.
+- Se creo `v1.0.5` para que la deteccion automatica muestre un prompt mas visible: chequeo inmediato, globo de bandeja y ventana al frente.
 
 ### 2026-07-28
 
