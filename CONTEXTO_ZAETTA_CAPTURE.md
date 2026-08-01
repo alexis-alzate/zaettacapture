@@ -602,6 +602,78 @@ Por que Vercel para pagina/manifest:
 - Permite conectar `zaettasoftware.com` por DNS desde DreamHost.
 - `latest.json` queda en una URL propia de la marca.
 
+### Despliegue inicial en Vercel y DNS DreamHost
+
+Fecha: 2026-08-01.
+
+Se valido que el repo `alexis-alzate/zaettacapture` ya estaba en GitHub y se creo un proyecto en Vercel usando:
+
+```text
+Repository: alexis-alzate/zaettacapture
+Branch: main
+Root Directory: website
+Application Preset: Other
+Build Command: vacio/default
+Output Directory: default
+```
+
+Decision importante:
+
+- Se uso `Root Directory: website` porque `index.html`, `styles.css`, `latest.json` y `downloads/` viven dentro de esa carpeta.
+- Si se dejaba `Root Directory: ./`, Vercel iba a mirar la raiz del repo y podia no publicar la pagina correcta.
+
+Dominio en Vercel:
+
+- Se agrego `zaettasoftware.com`.
+- Vercel tambien creo/configuro `www.zaettasoftware.com`.
+- Se dejo chuleada la opcion recomendada de redirigir apex a `www`, por eso Vercel mostro `308` hacia `www.zaettasoftware.com`.
+
+Registros DNS pedidos por Vercel y cargados en DreamHost:
+
+```text
+Type: A
+Name/Host: @
+Value/Apunta a: 216.198.79.1
+TTL: predeterminado
+```
+
+```text
+Type: CNAME
+Name/Host: www
+Value/Apunta a: b6f74b7a12af6643.vercel-dns-017.com
+TTL: predeterminado
+```
+
+Pantalla correcta en DreamHost:
+
+- Se mantuvieron los nameservers de DreamHost.
+- No se cambio a "nameservers de otro host".
+- Se entro a la seccion `DNS`.
+- Se uso `Agregar Registro`.
+- Los registros quedaron bajo `Registros Personalizados`.
+
+Estado observado:
+
+- DreamHost mostro "Enviando Registros" / "Actualizando DNS".
+- Esto significa que los registros quedaron en proceso de aplicacion.
+- Despues de terminar en DreamHost, se debe volver a Vercel y presionar `Refresh` en los dominios.
+
+Validaciones esperadas:
+
+```text
+https://zaettasoftware.com/
+https://www.zaettasoftware.com/
+https://zaettasoftware.com/latest.json
+https://zaettasoftware.com/downloads/ZaettaCaptureSetup.exe
+```
+
+Notas:
+
+- La propagacion DNS puede tardar desde minutos hasta varias horas.
+- Si Vercel sigue mostrando "Invalid Configuration" justo despues de guardar DNS, no necesariamente esta mal; puede ser propagacion.
+- No se deben borrar los registros `NS` de DreamHost.
+- Si existen otros registros `A` para `@` o `CNAME/A` para `www`, pueden entrar en conflicto y deben revisarse.
+
 Si la app no aparece en bandeja al ejecutarse, revisar primero:
 
 1. La flecha de iconos ocultos de Windows.
