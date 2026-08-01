@@ -45,7 +45,7 @@ namespace ZaettaCaptureInstaller
         private const string ResourceName = "ZaettaApp";
         private const string LogoResourceName = "ZaettaLogo";
         private const string Publisher = "Victor Alexis Alzate Cortes";
-        private const string Version = "1.0";
+        private const string Version = "1.0.1";
 
         [DllImport("shell32.dll")]
         private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);

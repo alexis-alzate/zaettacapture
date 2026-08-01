@@ -10,5 +10,6 @@ namespace ZaettaCaptureNative
             AppInfo.Name
         );
         public static readonly string HistoryDir = Path.Combine(BaseDir, "Historial");
+        public static readonly string UpdatesDir = Path.Combine(BaseDir, "Updates");
     }
 }

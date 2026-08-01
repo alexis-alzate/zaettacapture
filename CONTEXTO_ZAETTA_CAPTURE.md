@@ -503,16 +503,16 @@ Primera version del sitio:
 - Pagina principal: `website/index.html`.
 - Estilos: `website/styles.css`.
 - Logo publico: `website/assets/logo_oficial.png`.
-- Instalador publico: `website/downloads/ZaettaCaptureSetup.exe`.
-- Manifiesto para futuras actualizaciones: `website/latest.json`.
+- Manifiesto de actualizaciones: `website/latest.json`.
+- Boton de descarga: apunta al asset versionado en GitHub Releases.
 
 URLs esperadas al publicar:
 
 - `https://zaettasoftware.com/`
-- `https://zaettasoftware.com/downloads/ZaettaCaptureSetup.exe`
 - `https://zaettasoftware.com/latest.json`
+- `https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.1/ZaettaCaptureSetup.exe`
 
-`latest.json` no actualiza la app por si solo. Es el contrato que podra leer una futura funcion interna de Zaetta Capture para saber version disponible, URL de descarga, hash y notas.
+`latest.json` no actualiza la app por si solo. Es el contrato que lee `UpdateService` dentro de Zaetta Capture para saber version disponible, URL de descarga, hash y notas.
 
 Opciones para alojar la pagina y los upgrades:
 
@@ -520,7 +520,7 @@ Opciones para alojar la pagina y los upgrades:
 - Usar un hosting estatico externo como Cloudflare Pages, GitHub Pages, Netlify o Vercel y apuntar el DNS del dominio desde DreamHost.
 - Usar almacenamiento publico para descargas y JSON, siempre que entregue URLs HTTPS estables.
 
-Decision pendiente: elegir donde se alojaran realmente los archivos publicos. Sin hosting, el dominio todavia no puede servir la pagina ni mandar upgrades.
+Decision tomada: el dominio queda en DreamHost, la pagina y `latest.json` quedan en Vercel, y los instaladores versionados quedan en GitHub Releases.
 
 ### Arquitectura propuesta de upgrades
 
@@ -581,12 +581,32 @@ Contrato esperado para `latest.json`:
 }
 ```
 
-Componentes futuros en la app:
+Componentes implementados en la app:
 
 - `UpdateService.cs`: consulta `latest.json`, compara versiones, descarga instalador y valida hash.
 - `UpdatePromptForm.cs`: mensaje para aceptar o posponer update.
 - `UpdateProgressForm.cs`: ventana con barra de progreso durante descarga/validacion.
 - Integracion en `TrayContext.cs`: check programado de updates y bloqueo si `captureActive` esta activo.
+
+Detalle de codigo:
+
+- `Updates/UpdateInfo.cs` es un objeto simple de datos. Guarda `Version`, `DownloadUrl`, `Sha256`, `FileSizeBytes` y `Notes`. Se separo para que los formularios no tengan que entender el JSON.
+- `Updates/UpdateService.cs` contiene `ManifestUrl = "https://zaettasoftware.com/latest.json"`. Ese valor centraliza el punto publico que manda upgrades.
+- `UpdateService.CheckForUpdate()` descarga el JSON, lo parsea, compara `AppInfo.Version` contra la version remota y devuelve `null` si no hay nada nuevo.
+- `UpdateService.VerifySha256()` calcula el SHA256 del instalador descargado. Si no coincide con `latest.json`, no se ejecuta el archivo.
+- `UpdatePromptForm.cs` es la ventana de decision. Existe para que la app no instale en silencio: el usuario ve version/notas y acepta o pospone.
+- `UpdateProgressForm.cs` descarga con `WebClient.DownloadFileAsync`, actualiza la barra de progreso, valida hash y abre el instalador con `Process.Start`.
+- `TrayContext.ScheduleUpdateChecks()` programa una revision inicial despues de abrir la app y luego revisiones cada 6 horas.
+- `TrayContext.BeginUpdateCheck()` corre la consulta en `ThreadPool` para no congelar la bandeja ni la UI.
+- `TrayContext.ShowPendingUpdateIfReady()` evita mostrar el aviso si hay una captura activa. Si el usuario esta capturando, guarda `pendingUpdate` y espera a que cierre el overlay.
+
+Por que se tomo esta decision:
+
+- El dominio propio da una URL estable y de marca para `latest.json`.
+- Vercel entrega el JSON rapidamente y redeploya cada cambio que subamos a GitHub.
+- GitHub Releases es mejor para `.exe` porque mantiene assets por version y evita depender de Vercel para binarios.
+- SHA256 protege contra descargas corruptas o archivos que no correspondan al release esperado.
+- El aviso no aparece durante una captura porque interrumpiria justo el flujo principal de la app.
 
 Por que GitHub Releases para instaladores:
 
@@ -619,7 +639,7 @@ Output Directory: default
 
 Decision importante:
 
-- Se uso `Root Directory: website` porque `index.html`, `styles.css`, `latest.json` y `downloads/` viven dentro de esa carpeta.
+- Se uso `Root Directory: website` porque `index.html`, `styles.css`, `latest.json` y los assets publicos viven dentro de esa carpeta.
 - Si se dejaba `Root Directory: ./`, Vercel iba a mirar la raiz del repo y podia no publicar la pagina correcta.
 
 Dominio en Vercel:
@@ -721,7 +741,59 @@ Si la app no aparece en bandeja al ejecutarse, revisar primero:
 2. `Pictures\Zaetta Capture\startup-error.log`.
 3. Compatibilidad de metodos .NET Framework si el build fue generado con Mono.
 
+### Release oficial v1.0.1
+
+Fecha: 2026-08-01.
+
+Objetivo: publicar la primera version con actualizador interno.
+
+Cambios principales:
+
+- `AppInfo.Version` subio a `1.0.1` para que la app pueda comparar contra `latest.json`.
+- `InstallerZaettaFinal.Version` subio a `1.0.1` para que el instalador muestre e instale la misma version que la app.
+- Se agregaron `Updates/UpdateInfo.cs` y `Updates/UpdateService.cs`.
+- Se agregaron `App/UpdatePromptForm.cs` y `App/UpdateProgressForm.cs`.
+- `TrayContext.cs` ahora revisa actualizaciones en segundo plano, agrega menu `Buscar actualizaciones` y pospone avisos si hay captura activa.
+- `Paths.cs` ahora expone `UpdatesDir`, usado para descargar instaladores en `Pictures\Zaetta Capture\Updates`.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo web: website/downloads/ZaettaCaptureSetup.exe
+Tamano: 1736704 bytes
+SHA256: 60e2ee927623b7fb3d7a50a70a918394be77edff812b57bb73c7c2cd464858ae
+```
+
+Manifest esperado para publicar:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.1",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.1/ZaettaCaptureSetup.exe",
+  "sha256": "60e2ee927623b7fb3d7a50a70a918394be77edff812b57bb73c7c2cd464858ae",
+  "fileSizeBytes": 1736704
+}
+```
+
 ## 16. Ultimos cambios registrados
+
+### 2026-08-01
+
+- Se implemento el actualizador interno de Zaetta Capture.
+- Se agrego consulta a `https://zaettasoftware.com/latest.json`.
+- Se agrego comparacion de version remota contra `AppInfo.Version`.
+- Se agrego ventana para aceptar o posponer la actualizacion.
+- Se agrego ventana de descarga con barra de progreso.
+- Se agrego validacion SHA256 antes de ejecutar el instalador descargado.
+- Se agrego carpeta local `Pictures\Zaetta Capture\Updates` para guardar instaladores temporales de upgrade.
+- Se agrego menu de bandeja `Buscar actualizaciones`.
+- Si hay una captura activa, el aviso de update queda pendiente hasta cerrar el overlay.
+- Se subio la version interna a `1.0.1`.
+- Se recompilo app e instalador con PowerShell/csc de Windows.
+- Se actualizo `website/latest.json` para apuntar al release `v1.0.1`.
 
 ### 2026-07-28
 

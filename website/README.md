@@ -2,61 +2,62 @@
 
 Sitio estatico inicial para `zaettasoftware.com`.
 
-Nota importante: por ahora `zaettasoftware.com` es un dominio comprado en DreamHost. Un dominio no aloja archivos por si solo; falta definir hosting para publicar esta carpeta.
+Arquitectura actual: DreamHost conserva el dominio/DNS, Vercel aloja esta carpeta como sitio estatico y GitHub Releases aloja los instaladores `.exe`.
 
 ## Archivos
 
 - `index.html`: pagina principal de descarga.
 - `styles.css`: estilos visuales.
 - `assets/logo_oficial.png`: logo oficial usado en la pagina.
-- `downloads/ZaettaCaptureSetup.exe`: instalador publico.
-- `latest.json`: manifiesto para una futura funcion de autoactualizacion.
-- `.htaccess`: reglas para servir `latest.json` sin cache largo y tratar `.exe` como descarga.
+- `latest.json`: manifiesto que lee el actualizador interno de Zaetta Capture.
+- `.htaccess`: reglas utiles si alguna vez se publica en Apache/DreamHost.
 
 ## Publicacion
 
-Si se contrata hosting en DreamHost, subir el contenido de esta carpeta al directorio web del dominio, normalmente:
+Vercel debe apuntar al root directory:
 
 ```text
-zaettasoftware.com/
+website
 ```
 
 La estructura publica esperada queda:
 
 ```text
 https://zaettasoftware.com/
-https://zaettasoftware.com/downloads/ZaettaCaptureSetup.exe
 https://zaettasoftware.com/latest.json
 ```
 
-Sube tambien `.htaccess`; algunos clientes FTP lo ocultan por empezar con punto.
-
-Si se usa otro hosting estatico, subir esta misma carpeta a ese proveedor y luego apuntar el DNS del dominio desde DreamHost.
+El boton de descarga y `latest.json` apuntan al asset versionado en GitHub Releases.
 
 ## DNS
 
 Si DreamHost tambien administra el hosting, normalmente basta con apuntar el dominio al hosting desde el panel de DreamHost.
 
-Si el sitio se aloja en otro servicio, el DNS de DreamHost debe apuntar al proveedor externo con registros `A`, `AAAA` o `CNAME`, segun indique ese proveedor.
+Registros usados para Vercel:
+
+```text
+A      @      216.198.79.1
+CNAME  www    b6f74b7a12af6643.vercel-dns-017.com
+```
 
 ## Releases y upgrades
 
 El instalador versionado debe vivir en GitHub Releases.
 
-Release inicial:
+Release actual:
 
 ```text
-Tag: v1.0
-Title: Zaetta Capture v1.0
+Tag: v1.0.1
+Title: Zaetta Capture v1.0.1
 Asset: ZaettaCaptureSetup.exe
-SHA256: 8b571227d196cd58f90a04b9a34862602b908b670ed7e4566fe12ca25539a570
-Size: 1723904 bytes
+SHA256: 60e2ee927623b7fb3d7a50a70a918394be77edff812b57bb73c7c2cd464858ae
+Size: 1736704 bytes
 ```
 
 URL esperada del asset:
 
 ```text
-https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0/ZaettaCaptureSetup.exe
+https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.1/ZaettaCaptureSetup.exe
 ```
 
-`latest.json` debe apuntar a esa URL para que la futura app updater descargue desde GitHub Releases y no desde Vercel.
+`latest.json` debe apuntar a esa URL para que el updater descargue desde GitHub Releases y no desde Vercel.

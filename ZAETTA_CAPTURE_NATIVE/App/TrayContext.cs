@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ZaettaCaptureNative
@@ -8,6 +9,7 @@ namespace ZaettaCaptureNative
     {
         private readonly NotifyIcon tray;
         private readonly HotKeyWindow hotKeyWindow;
+        private readonly Control uiMarshal;
         private ToolStripMenuItem printScreenItem;
         private ToolStripMenuItem ctrlShiftSItem;
         private ToolStripMenuItem ctrlAltSItem;
@@ -15,14 +17,22 @@ namespace ZaettaCaptureNative
         private ToolStripMenuItem repeatLastAreaItem;
         private ToolStripMenuItem keepLastSelectionPositionItem;
         private ToolStripMenuItem openLockedItem;
+        private System.Windows.Forms.Timer updateTimer;
         private Rectangle lastSelection;
         private bool hasLastSelection;
         private bool keepLastSelectionPosition;
         private bool openLocked;
         private bool captureActive;
+        private bool updateCheckRunning;
+        private bool updatePromptOpen;
+        private bool firstUpdateTick = true;
+        private UpdateInfo pendingUpdate;
 
         public TrayContext()
         {
+            uiMarshal = new Control();
+            uiMarshal.CreateControl();
+
             tray = new NotifyIcon();
             tray.Icon = LoadTrayIcon();
             tray.Text = AppInfo.Name;
@@ -42,6 +52,7 @@ namespace ZaettaCaptureNative
             if (openLockedItem != null)
                 openLockedItem.Checked = openLocked;
             EnsureStartupWithWindows();
+            ScheduleUpdateChecks();
 
             hotKeyWindow = new HotKeyWindow(StartCapture);
             hotKeyWindow.Register(Keys.PrintScreen, 0);
@@ -92,6 +103,7 @@ namespace ZaettaCaptureNative
             hotkeys.DropDownItems.Add(customHotkeyItem);
             menu.Items.Add(hotkeys);
             menu.Items.Add("Abrir historial", null, delegate { OpenHistory(); });
+            menu.Items.Add("Buscar actualizaciones", null, delegate { BeginUpdateCheck(true); });
             menu.Items.Add("Acerca de", null, delegate { ShowAbout(); });
             menu.Items.Add("-");
             menu.Items.Add("Salir", null, delegate { ExitThread(); });
@@ -189,6 +201,7 @@ namespace ZaettaCaptureNative
                             repeatLastAreaItem.Enabled = true;
                     }
                     captureActive = false;
+                    ShowPendingUpdateIfReady();
                 };
                 overlay.Show();
             }
@@ -209,11 +222,113 @@ namespace ZaettaCaptureNative
             );
         }
 
+        private void ScheduleUpdateChecks()
+        {
+            updateTimer = new System.Windows.Forms.Timer();
+            updateTimer.Interval = 15000;
+            updateTimer.Tick += delegate
+            {
+                if (firstUpdateTick)
+                {
+                    firstUpdateTick = false;
+                    updateTimer.Interval = 6 * 60 * 60 * 1000;
+                }
+
+                BeginUpdateCheck(false);
+            };
+            updateTimer.Start();
+        }
+
+        private void BeginUpdateCheck(bool manual)
+        {
+            if (updateCheckRunning)
+                return;
+
+            updateCheckRunning = true;
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                UpdateInfo info = null;
+                Exception error = null;
+
+                try
+                {
+                    info = UpdateService.CheckForUpdate();
+                }
+                catch (Exception ex)
+                {
+                    error = ex;
+                    StartupDiagnostics.Log(ex);
+                }
+
+                PostToUi(delegate { HandleUpdateCheckResult(info, error, manual); });
+            });
+        }
+
+        private void HandleUpdateCheckResult(UpdateInfo info, Exception error, bool manual)
+        {
+            updateCheckRunning = false;
+
+            if (error != null)
+            {
+                if (manual)
+                    MessageBox.Show("No se pudo revisar actualizaciones.\n\n" + error.Message, AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (info == null)
+            {
+                if (manual)
+                    MessageBox.Show("Ya tienes la ultima version instalada.", AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            pendingUpdate = info;
+            ShowPendingUpdateIfReady();
+        }
+
+        private void ShowPendingUpdateIfReady()
+        {
+            if (captureActive || pendingUpdate == null || updatePromptOpen)
+                return;
+
+            UpdateInfo info = pendingUpdate;
+            pendingUpdate = null;
+            updatePromptOpen = true;
+
+            try
+            {
+                using (UpdatePromptForm prompt = new UpdatePromptForm(info))
+                {
+                    if (prompt.ShowDialog() == DialogResult.OK)
+                    {
+                        using (UpdateProgressForm progress = new UpdateProgressForm(info))
+                            progress.ShowDialog();
+                    }
+                }
+            }
+            finally
+            {
+                updatePromptOpen = false;
+            }
+        }
+
+        private void PostToUi(MethodInvoker action)
+        {
+            if (!uiMarshal.IsDisposed && uiMarshal.IsHandleCreated)
+                uiMarshal.BeginInvoke(action);
+        }
+
         protected override void ExitThreadCore()
         {
+            if (updateTimer != null)
+            {
+                updateTimer.Stop();
+                updateTimer.Dispose();
+            }
             hotKeyWindow.Dispose();
             tray.Visible = false;
             tray.Dispose();
+            uiMarshal.Dispose();
             base.ExitThreadCore();
         }
     }
