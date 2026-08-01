@@ -47,7 +47,7 @@ namespace ZaettaCaptureInstaller
         private const string ResourceName = "ZaettaApp";
         private const string LogoResourceName = "ZaettaLogo";
         private const string Publisher = "Victor Alexis Alzate Cortes";
-        private const string Version = "1.0.9";
+        private const string Version = "1.0.10";
 
         [DllImport("shell32.dll")]
         private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
@@ -205,15 +205,18 @@ namespace ZaettaCaptureInstaller
             try
             {
                 SetProgress(10, "Preparando instalacion...", "Validando carpeta local de instalacion.");
-                CleanupLegacyInstallations();
+                if (upgradeMode)
+                    WaitForRunningZaettaToExit();
+                else
+                    CleanupLegacyInstallations();
                 string installDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppName);
                 Directory.CreateDirectory(installDir);
 
                 SetProgress(40, "Copiando aplicacion...", "Instalando Zaetta Capture en AppData.");
                 string appPath = Path.Combine(installDir, AppName + ".exe");
-                ExtractResourceWithRetry(ResourceName, appPath);
+                ExtractResourceWithRetry(ResourceName, appPath, !upgradeMode);
                 string installerPath = Path.Combine(installDir, "Zaetta Capture Installer.exe");
-                CopyFileWithRetry(Application.ExecutablePath, installerPath);
+                CopyFileWithRetry(Application.ExecutablePath, installerPath, !upgradeMode);
 
                 SetProgress(72, "Registrando aplicacion...", "Creando accesos directos y registro de Windows.");
                 CreateShortcut(appPath, installDir);
@@ -269,15 +272,15 @@ namespace ZaettaCaptureInstaller
             throw lastError;
         }
 
-        private static void ExtractResourceWithRetry(string resourceName, string targetPath)
+        private static void ExtractResourceWithRetry(string resourceName, string targetPath, bool allowProcessKill)
         {
             string tempPath = targetPath + ".new";
             DeleteFileQuietly(tempPath);
             ExtractResource(resourceName, tempPath);
-            ReplaceFileWithRetry(tempPath, targetPath);
+            ReplaceFileWithRetry(tempPath, targetPath, allowProcessKill);
         }
 
-        private static void CopyFileWithRetry(string sourcePath, string targetPath)
+        private static void CopyFileWithRetry(string sourcePath, string targetPath, bool allowProcessKill)
         {
             if (string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(targetPath), StringComparison.OrdinalIgnoreCase))
                 return;
@@ -285,10 +288,10 @@ namespace ZaettaCaptureInstaller
             string tempPath = targetPath + ".new";
             DeleteFileQuietly(tempPath);
             File.Copy(sourcePath, tempPath, true);
-            ReplaceFileWithRetry(tempPath, targetPath);
+            ReplaceFileWithRetry(tempPath, targetPath, allowProcessKill);
         }
 
-        private static void ReplaceFileWithRetry(string sourcePath, string targetPath)
+        private static void ReplaceFileWithRetry(string sourcePath, string targetPath, bool allowProcessKill)
         {
             Exception lastError = null;
 
@@ -296,7 +299,10 @@ namespace ZaettaCaptureInstaller
             {
                 try
                 {
-                    StopRunningZaetta();
+                    if (allowProcessKill)
+                        StopRunningZaetta();
+                    else
+                        WaitForRunningZaettaToExit();
                     DeleteOrMoveOldFile(targetPath);
                     File.Move(sourcePath, targetPath);
                     return;
@@ -310,6 +316,40 @@ namespace ZaettaCaptureInstaller
 
             DeleteFileQuietly(sourcePath);
             throw lastError;
+        }
+
+        private static void WaitForRunningZaettaToExit()
+        {
+            string[] processNames =
+            {
+                "Zaetta Capture",
+                "Zaetta Capture Final",
+                "Zaetta Capture Native"
+            };
+
+            for (int attempt = 0; attempt < 12; attempt++)
+            {
+                bool anyRunning = false;
+                foreach (string processName in processNames)
+                {
+                    foreach (Process process in Process.GetProcessesByName(processName))
+                    {
+                        try
+                        {
+                            if (process.Id != Process.GetCurrentProcess().Id && !process.HasExited)
+                                anyRunning = true;
+                        }
+                        catch
+                        {
+                        }
+                    }
+                }
+
+                if (!anyRunning)
+                    return;
+
+                System.Threading.Thread.Sleep(500);
+            }
         }
 
         private static void DeleteOrMoveOldFile(string path)

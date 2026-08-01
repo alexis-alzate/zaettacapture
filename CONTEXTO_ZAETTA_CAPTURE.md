@@ -1056,6 +1056,54 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.10
+
+Fecha: 2026-08-01.
+
+Motivo: reducir comportamiento agresivo detectado por Bitdefender Advanced Threat Defense.
+
+Observacion:
+
+- Bitdefender mostro bloqueos en `Advanced Threat Defense` para el instalador y la app.
+- Ese modulo mira comportamiento, no solo firma/hash/URL.
+- Acciones como matar procesos, ejecutar un `.exe` descargado y reemplazar binarios en AppData son sensibles si el binario no esta firmado.
+
+Mitigacion aplicada:
+
+- En modo `/upgrade`, el instalador ya no ejecuta `CleanupLegacyInstallations()`.
+- En modo `/upgrade`, el instalador ya no llama `StopRunningZaetta()` con `Kill()`.
+- Se agrego `WaitForRunningZaettaToExit()`, que solo espera a que la app vieja salga.
+- `ExtractResourceWithRetry()` y `CopyFileWithRetry()` reciben `allowProcessKill`.
+- En instalacion manual se mantiene el comportamiento de limpieza.
+- En upgrade automatico se evita matar procesos y se limita el reemplazo a archivos puntuales.
+
+Limitacion:
+
+- Esto baja el riesgo heuristico, pero no garantiza que Bitdefender deje de bloquear un instalador unsigned.
+- Para distribucion publica se necesita certificado de code signing y/o reporte de falso positivo al proveedor de antivirus.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1740800 bytes
+SHA256: fb5d50871dc9de4fe427301d59a6c5f968215cf87a978363297ce6523a2d0c02
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.10",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.10/ZaettaCaptureSetup.exe",
+  "sha256": "fb5d50871dc9de4fe427301d59a6c5f968215cf87a978363297ce6523a2d0c02",
+  "fileSizeBytes": 1740800
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -1127,6 +1175,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.7` como release de prueba para validar el upgrade automatico desde una instalacion `v1.0.6`.
 - Se creo `v1.0.8` para reemplazar archivos puntuales durante upgrade y no depender de borrar toda la carpeta instalada.
 - Se creo `v1.0.9` para mover descargas del updater a `%LOCALAPPDATA%\\Zaetta Capture\\Updates` y documentar la alerta de Bitdefender.
+- Se creo `v1.0.10` para que el upgrade automatico sea menos agresivo ante Bitdefender: no mata procesos ni limpia instalaciones legacy.
 
 ### 2026-07-28
 
