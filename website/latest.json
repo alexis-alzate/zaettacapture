@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.11/ZaettaCaptureSetup.exe",
-  "sha256": "ed815efdf95f23d1b0cab7c85d51e70868584205a53154c3988fda9b5e6e3b95",
-  "fileSizeBytes": 1740800,
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.12/ZaettaCaptureSetup.exe",
+  "sha256": "64c41905a46ddddfcdb85e44905352cf0539b31df997a5a0357137a9d771a6bf",
+  "fileSizeBytes": 1742336,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -20,6 +20,7 @@
     "Upgrade mas robusto: reemplazo archivo por archivo sin borrar toda la carpeta instalada.",
     "Descargas de updater movidas a AppData local para evitar guardar instaladores en Pictures.",
     "Upgrade menos agresivo: no mata procesos ni limpia instalaciones legacy durante actualizacion automatica.",
-    "Globo de bandeja restaurado antes de abrir la ventana de actualizacion."
+    "Globo de bandeja restaurado antes de abrir la ventana de actualizacion.",
+    "Toast propio tipo Windows cerca de la bandeja antes de abrir el asistente de actualizacion."
   ]
 }

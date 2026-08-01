@@ -1145,6 +1145,57 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.12
+
+Fecha: 2026-08-01.
+
+Motivo: reemplazar el globo clasico por una notificacion visual tipo Windows toast, similar a la tarjeta blanca que aparece encima de la bandeja.
+
+Problema:
+
+- `NotifyIcon.ShowBalloonTip()` depende del estilo y la configuracion de notificaciones de Windows.
+- En algunos equipos puede verse como globo antiguo, ocultarse rapido o no parecerse a la notificacion blanca esperada.
+- El usuario queria recuperar el aviso visual que sale cerca de la bandeja, antes de la ventana grande de actualizacion.
+
+Cambio:
+
+- Se agrego `App/UpdateToastForm.cs`.
+- `UpdateToastForm` crea una ventana borderless, blanca, `TopMost`, sin aparecer en la barra de tareas.
+- La tarjeta se posiciona en la esquina inferior derecha usando `Screen.PrimaryScreen.WorkingArea`.
+- El lado izquierdo muestra una franja clara con el icono oficial extraido desde `Application.ExecutablePath`.
+- El cuerpo muestra titulo, version detectada y el texto `Abriendo asistente...`.
+- Tiene boton `x` para cerrarla manualmente.
+- Usa dos timers: uno mantiene el aviso visible un momento y otro hace fade-out antes de cerrar.
+- `TrayContext.ShowPendingUpdateIfReady()` ya no llama `ShowBalloonTip`; ahora llama `UpdateToastForm.ShowFor(info)` y despues abre `UpdatePromptForm`.
+
+Decision tecnica:
+
+- Se hizo un formulario propio para que el look no dependa de Windows ni de la configuracion del centro de notificaciones.
+- El prompt invasivo se mantiene igual porque es el paso donde el usuario acepta la actualizacion y luego se descarga el instalador.
+- El toast solo cumple el rol visual previo: avisar de manera elegante que la actualizacion fue detectada.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1742336 bytes
+SHA256: 64c41905a46ddddfcdb85e44905352cf0539b31df997a5a0357137a9d771a6bf
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.12",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.12/ZaettaCaptureSetup.exe",
+  "sha256": "64c41905a46ddddfcdb85e44905352cf0539b31df997a5a0357137a9d771a6bf",
+  "fileSizeBytes": 1742336
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -1218,6 +1269,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.9` para mover descargas del updater a `%LOCALAPPDATA%\\Zaetta Capture\\Updates` y documentar la alerta de Bitdefender.
 - Se creo `v1.0.10` para que el upgrade automatico sea menos agresivo ante Bitdefender: no mata procesos ni limpia instalaciones legacy.
 - Se creo `v1.0.11` para restaurar el globo de bandeja antes de abrir la ventana de actualizacion.
+- Se creo `v1.0.12` para reemplazar el globo clasico por un toast propio tipo Windows cerca de la bandeja.
 
 ### 2026-07-28
 
