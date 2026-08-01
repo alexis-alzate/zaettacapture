@@ -966,6 +966,49 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.8
+
+Fecha: 2026-08-01.
+
+Motivo: corregir el fallo persistente de acceso a `%LOCALAPPDATA%\\Zaetta Capture` durante el upgrade.
+
+Bug observado:
+
+- El instalador `v1.0.7` ya arrancaba solo, pero seguia fallando con `The process cannot access the file...`.
+- El punto fragil era borrar toda la carpeta instalada con `Directory.Delete(installDir, true)`.
+
+Solucion:
+
+- En `Install()` ya no se borra toda la carpeta `installDir`.
+- Se crea la carpeta si no existe con `Directory.CreateDirectory(installDir)`.
+- `ExtractResourceWithRetry()` extrae la app embebida a un archivo temporal `.new`.
+- `CopyFileWithRetry()` copia el instalador actual a un archivo temporal `.new`.
+- `ReplaceFileWithRetry()` reemplaza cada archivo puntual con hasta 10 reintentos.
+- `DeleteOrMoveOldFile()` intenta borrar el archivo viejo; si no puede, lo renombra con extension `.old`.
+- Esta estrategia evita que un bloqueo de carpeta completa tumbe todo el upgrade.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1740800 bytes
+SHA256: 51723302f3c2b091aa9cdd4530a2112545c0f9b137ff339af67214dd2631ef8f
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.8",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.8/ZaettaCaptureSetup.exe",
+  "sha256": "51723302f3c2b091aa9cdd4530a2112545c0f9b137ff339af67214dd2631ef8f",
+  "fileSizeBytes": 1740800
+}
+```
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -1035,6 +1078,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.5` para que la deteccion automatica muestre un prompt mas visible: chequeo inmediato, globo de bandeja y ventana al frente.
 - Se creo `v1.0.6` para que el instalador arranque solo en modo `/upgrade` y reintente reemplazar archivos bloqueados.
 - Se creo `v1.0.7` como release de prueba para validar el upgrade automatico desde una instalacion `v1.0.6`.
+- Se creo `v1.0.8` para reemplazar archivos puntuales durante upgrade y no depender de borrar toda la carpeta instalada.
 
 ### 2026-07-28
 

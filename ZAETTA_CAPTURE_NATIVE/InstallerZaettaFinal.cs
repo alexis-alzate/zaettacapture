@@ -47,7 +47,7 @@ namespace ZaettaCaptureInstaller
         private const string ResourceName = "ZaettaApp";
         private const string LogoResourceName = "ZaettaLogo";
         private const string Publisher = "Victor Alexis Alzate Cortes";
-        private const string Version = "1.0.7";
+        private const string Version = "1.0.8";
 
         [DllImport("shell32.dll")]
         private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
@@ -207,15 +207,13 @@ namespace ZaettaCaptureInstaller
                 SetProgress(10, "Preparando instalacion...", "Validando carpeta local de instalacion.");
                 CleanupLegacyInstallations();
                 string installDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppName);
-                if (Directory.Exists(installDir))
-                    DeleteDirectoryWithRetry(installDir);
                 Directory.CreateDirectory(installDir);
 
                 SetProgress(40, "Copiando aplicacion...", "Instalando Zaetta Capture en AppData.");
                 string appPath = Path.Combine(installDir, AppName + ".exe");
-                ExtractResource(ResourceName, appPath);
+                ExtractResourceWithRetry(ResourceName, appPath);
                 string installerPath = Path.Combine(installDir, "Zaetta Capture Installer.exe");
-                File.Copy(Application.ExecutablePath, installerPath, true);
+                CopyFileWithRetry(Application.ExecutablePath, installerPath);
 
                 SetProgress(72, "Registrando aplicacion...", "Creando accesos directos y registro de Windows.");
                 CreateShortcut(appPath, installDir);
@@ -269,6 +267,87 @@ namespace ZaettaCaptureInstaller
             }
 
             throw lastError;
+        }
+
+        private static void ExtractResourceWithRetry(string resourceName, string targetPath)
+        {
+            string tempPath = targetPath + ".new";
+            DeleteFileQuietly(tempPath);
+            ExtractResource(resourceName, tempPath);
+            ReplaceFileWithRetry(tempPath, targetPath);
+        }
+
+        private static void CopyFileWithRetry(string sourcePath, string targetPath)
+        {
+            if (string.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(targetPath), StringComparison.OrdinalIgnoreCase))
+                return;
+
+            string tempPath = targetPath + ".new";
+            DeleteFileQuietly(tempPath);
+            File.Copy(sourcePath, tempPath, true);
+            ReplaceFileWithRetry(tempPath, targetPath);
+        }
+
+        private static void ReplaceFileWithRetry(string sourcePath, string targetPath)
+        {
+            Exception lastError = null;
+
+            for (int attempt = 0; attempt < 10; attempt++)
+            {
+                try
+                {
+                    StopRunningZaetta();
+                    DeleteOrMoveOldFile(targetPath);
+                    File.Move(sourcePath, targetPath);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    lastError = ex;
+                    System.Threading.Thread.Sleep(450 + (attempt * 250));
+                }
+            }
+
+            DeleteFileQuietly(sourcePath);
+            throw lastError;
+        }
+
+        private static void DeleteOrMoveOldFile(string path)
+        {
+            if (!File.Exists(path))
+                return;
+
+            try
+            {
+                File.SetAttributes(path, FileAttributes.Normal);
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                File.Delete(path);
+                return;
+            }
+            catch
+            {
+            }
+
+            string oldPath = path + "." + DateTime.Now.ToString("yyyyMMddHHmmss") + ".old";
+            File.Move(path, oldPath);
+        }
+
+        private static void DeleteFileQuietly(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                    File.Delete(path);
+            }
+            catch
+            {
+            }
         }
 
         private void SetProgress(int value, string text, string detailText)
