@@ -34,7 +34,7 @@ namespace ZaettaCaptureNative
             version.Size = new Size(380, 24);
 
             Label body = new Label();
-            body.Text = "Zaetta Capture puede descargar el instalador oficial, validar el archivo y abrir la actualizacion.";
+            body.Text = "Presiona Actualizar una vez. Zaetta descargara, validara, cerrara la version anterior y abrira la nueva automaticamente.";
             body.ForeColor = Color.FromArgb(210, 226, 232);
             body.Location = new Point(30, 96);
             body.Size = new Size(380, 44);

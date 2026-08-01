@@ -7,6 +7,10 @@ namespace ZaettaCaptureNative
 {
     internal sealed class TrayContext : ApplicationContext
     {
+        private const int StartupUpdateCheckIntervalMs = 30 * 1000;
+        private const int NormalUpdateCheckIntervalMs = 5 * 60 * 1000;
+        private const int StartupFastCheckCount = 20;
+        private const int UpdateSnoozeMinutes = 30;
         private readonly NotifyIcon tray;
         private readonly HotKeyWindow hotKeyWindow;
         private readonly Control uiMarshal;
@@ -25,7 +29,9 @@ namespace ZaettaCaptureNative
         private bool captureActive;
         private bool updateCheckRunning;
         private bool updatePromptOpen;
-        private bool firstUpdateTick = true;
+        private int startupFastChecksRemaining = StartupFastCheckCount;
+        private DateTime updateSnoozedUntil = DateTime.MinValue;
+        private string snoozedUpdateVersion;
         private UpdateInfo pendingUpdate;
 
         public TrayContext()
@@ -226,13 +232,14 @@ namespace ZaettaCaptureNative
         private void ScheduleUpdateChecks()
         {
             updateTimer = new System.Windows.Forms.Timer();
-            updateTimer.Interval = 5000;
+            updateTimer.Interval = StartupUpdateCheckIntervalMs;
             updateTimer.Tick += delegate
             {
-                if (firstUpdateTick)
+                if (startupFastChecksRemaining > 0)
                 {
-                    firstUpdateTick = false;
-                    updateTimer.Interval = 6 * 60 * 60 * 1000;
+                    startupFastChecksRemaining--;
+                    if (startupFastChecksRemaining == 0)
+                        updateTimer.Interval = NormalUpdateCheckIntervalMs;
                 }
 
                 BeginUpdateCheck(false);
@@ -284,6 +291,9 @@ namespace ZaettaCaptureNative
                 return;
             }
 
+            if (!manual && IsUpdateSnoozed(info))
+                return;
+
             pendingUpdate = info;
             ShowPendingUpdateIfReady();
         }
@@ -308,12 +318,32 @@ namespace ZaettaCaptureNative
                         using (UpdateProgressForm progress = new UpdateProgressForm(info))
                             progress.ShowDialog();
                     }
+                    else
+                    {
+                        SnoozeUpdate(info);
+                    }
                 }
             }
             finally
             {
                 updatePromptOpen = false;
             }
+        }
+
+        private bool IsUpdateSnoozed(UpdateInfo info)
+        {
+            return info != null
+                && string.Equals(snoozedUpdateVersion, info.Version, StringComparison.OrdinalIgnoreCase)
+                && DateTime.UtcNow < updateSnoozedUntil;
+        }
+
+        private void SnoozeUpdate(UpdateInfo info)
+        {
+            if (info == null)
+                return;
+
+            snoozedUpdateVersion = info.Version;
+            updateSnoozedUntil = DateTime.UtcNow.AddMinutes(UpdateSnoozeMinutes);
         }
 
         private void PostToUi(MethodInvoker action)

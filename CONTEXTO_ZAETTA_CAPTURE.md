@@ -1338,6 +1338,104 @@ Manifest esperado:
 }
 ```
 
+### Release oficial v1.0.16
+
+Fecha: 2026-08-01.
+
+Motivo: hacer que Zaetta Capture detecte actualizaciones sin que el usuario tenga que cerrar y abrir la app.
+
+Objetivo de experiencia:
+
+- El usuario solo debe presionar `Actualizar` una vez.
+- Despues de eso, la app descarga, valida, cierra la version vieja, abre el instalador en modo `/upgrade` y levanta la nueva version.
+- No debe aparecer un paso adicional de `Instalar` iniciado manualmente por el usuario.
+- La app debe detectar releases nuevos mientras sigue viva en bandeja.
+
+Cambio:
+
+- `TrayContext.ScheduleUpdateChecks()` ya no deja el timer en 6 horas despues del primer chequeo.
+- Al iniciar, la app revisa cada 30 segundos durante 20 ciclos.
+- Eso equivale a 10 minutos de deteccion agresiva al abrir o al iniciar Windows.
+- Despues de ese periodo, revisa cada 5 minutos.
+- El boton `Buscar actualizaciones` sigue existiendo para forzar una revision manual.
+- Si el usuario presiona `Mas tarde`, la version detectada queda en pausa por 30 minutos con `SnoozeUpdate()`.
+- Si hay captura activa (`captureActive == true`), el aviso sigue esperando hasta que el overlay se cierre.
+- `UpdatePromptForm` ahora explica mejor el flujo: presionar `Actualizar` una vez y dejar que Zaetta haga el resto.
+
+Constantes agregadas en `TrayContext.cs`:
+
+```c#
+private const int StartupUpdateCheckIntervalMs = 30 * 1000;
+private const int NormalUpdateCheckIntervalMs = 5 * 60 * 1000;
+private const int StartupFastCheckCount = 20;
+private const int UpdateSnoozeMinutes = 30;
+```
+
+Decision tecnica:
+
+- Revisar cada 30 segundos para siempre seria innecesario.
+- Revisar agresivo solo al inicio ayuda a detectar updates recientes sin castigar tanto red/manifest.
+- Cada 5 minutos despues del arranque mantiene la app sensible a nuevos releases sin depender de reiniciar.
+- `Mas tarde` necesita pausa para que la ventana no vuelva a molestar al usuario cada pocos minutos.
+
+Instalador generado:
+
+```text
+Archivo local: INSTALADOR_ZAETTA_CAPTURE_FINAL.exe
+Archivo publico: ZaettaCaptureSetup.exe
+Tamano: 1743872 bytes
+SHA256: e3e457940141b7f09b543d498788283f71e19ac7bef36f8defd6d3c553e5e0db
+```
+
+Manifest esperado:
+
+```json
+{
+  "product": "Zaetta Capture",
+  "version": "1.0.16",
+  "releasedAt": "2026-08-01",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.16/ZaettaCaptureSetup.exe",
+  "sha256": "e3e457940141b7f09b543d498788283f71e19ac7bef36f8defd6d3c553e5e0db",
+  "fileSizeBytes": 1743872
+}
+```
+
+### Cierre de features del 2026-08-01
+
+Fecha: 2026-08-01, hora Colombia (`America/Bogota`).
+
+Features y correcciones completadas hoy:
+
+- Dominio `zaettasoftware.com` conectado a Vercel con DNS desde DreamHost.
+- Sitio publico de Zaetta Capture publicado en `https://www.zaettasoftware.com`.
+- `latest.json` publico funcionando como manifest de actualizaciones.
+- GitHub Releases funcionando como almacenamiento de instaladores versionados.
+- Updater interno agregado: consulta manifest, compara version, descarga instalador, valida SHA256 y abre upgrade.
+- Manejo de redirect `308` hacia `www.zaettasoftware.com`.
+- Manejo manual de redirects `301/302/303/307/308`.
+- Prompt automatico de update al frente.
+- Instalador en modo `/upgrade` automatico, sin que el usuario tenga que presionar `Instalar`.
+- Reemplazo de archivos mas robusto durante upgrade.
+- Descargas movidas a `%LOCALAPPDATA%\\Zaetta Capture\\Updates`.
+- Upgrade menos agresivo ante antivirus: no mata procesos ni limpia legacy durante update automatico.
+- Toast propio tipo Windows para avisar update cerca de la bandeja.
+- Toast mas visible: dura mas, se trae al frente y aparece en la pantalla activa.
+- Instancia unica con `Mutex`: abrir varias veces ya no duplica iconos de bandeja.
+- Numeracion corregida: permite `10`, `11`, `12` y recalcula contador despues de `Undo`.
+- Deteccion mas agresiva de updates: cada 30 segundos al inicio y luego cada 5 minutos.
+
+Apuntes de estudio creados/actualizados:
+
+- Arquitectura Vercel + GitHub Releases + DreamHost.
+- Updater interno y validacion SHA256.
+- Redirects HTTP y por que afectan a .NET Framework.
+- Modo `/upgrade` del instalador.
+- Antivirus/Bitdefender y necesidad futura de firma digital.
+- Toast propio en WinForms.
+- `Mutex` para instancia unica.
+- Contador robusto calculado desde `ops`.
+- Scheduler de updates con checks rapidos, checks normales y snooze.
+
 Causa:
 
 - `UpdateService` estaba consultando `https://zaettasoftware.com/latest.json`.
@@ -1412,6 +1510,10 @@ Manifest esperado para publicar:
 - Se creo `v1.0.10` para que el upgrade automatico sea menos agresivo ante Bitdefender: no mata procesos ni limpia instalaciones legacy.
 - Se creo `v1.0.11` para restaurar el globo de bandeja antes de abrir la ventana de actualizacion.
 - Se creo `v1.0.12` para reemplazar el globo clasico por un toast propio tipo Windows cerca de la bandeja.
+- Se creo `v1.0.13` para hacer mas visible el toast de actualizacion: 5 segundos, al frente y en la pantalla activa.
+- Se creo `v1.0.14` para evitar multiples instancias y multiples iconos duplicados en la bandeja usando `Mutex`.
+- Se creo `v1.0.15` para corregir la numeracion: continua despues de 9 y `Undo`/`Esc` no rompen el contador.
+- Se creo `v1.0.16` para detectar actualizaciones de forma mas agresiva sin cerrar/abrir la app: checks cada 30 segundos al inicio y luego cada 5 minutos.
 
 ### 2026-07-28
 
