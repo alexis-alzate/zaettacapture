@@ -14,6 +14,7 @@ Capturador de pantalla interno tipo Lightshot, desarrollado para uso operativo.
 - `ZAETTA_CAPTURE_NATIVE/Legacy/`: editor anterior conservado como referencia.
 - `ZAETTA_CAPTURE/`: recursos e iconos.
 - `CONTEXTO_ZAETTA_CAPTURE.md`: contexto completo para retomar desarrollo.
+- `APUNTES_ESTUDIO_ZAETTA_CAPTURE.md`: guia simple para estudiar la app por componentes, flujos, conceptos C# y bitacora por horas.
 
 ## Funciones clave
 

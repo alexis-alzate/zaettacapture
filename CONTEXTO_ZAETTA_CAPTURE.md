@@ -1,5 +1,21 @@
 # Contexto de Trabajo - Zaetta Capture
 
+## Guia de estudio separada
+
+Para aprender la app sin leer toda la bitacora tecnica, usar primero:
+
+- `APUNTES_ESTUDIO_ZAETTA_CAPTURE.md`
+
+Ese archivo explica Zaetta Capture por niveles:
+
+- mapa simple de la app
+- inventario de componentes
+- flujos principales
+- diccionario C# con ejemplos reales
+- bitacora del 2026-08-01 con horas de commits
+
+Este `CONTEXTO_ZAETTA_CAPTURE.md` queda como memoria completa del proyecto, mas larga y tecnica.
+
 ## 1. Que es Zaetta Capture
 
 Zaetta Capture es una aplicacion de escritorio independiente para capturar pantalla, editar la evidencia y copiarla rapido al portapapeles.
