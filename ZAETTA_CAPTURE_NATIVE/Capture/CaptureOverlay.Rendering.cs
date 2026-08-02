@@ -24,6 +24,7 @@ namespace ZaettaCaptureNative
                 }
                 if (drawing && tool != Tool.Pencil && tool != Tool.Highlight)
                     DrawOpOnOverlay(g, new DrawOp { Tool = tool, A = ClampToSelection(drawStart), B = ClampToSelection(current), Color = color, Width = tool == Tool.Pixelate ? pixelIntensity : drawWidth });
+                DrawPixelIntensityHud(g);
                 DrawActiveTextEdit(g);
                 if (!selecting)
                     DrawSelectedOpHandles(g);
@@ -123,6 +124,54 @@ namespace ZaettaCaptureNative
         {
             rect.Intersect(selection);
             Pixelation.Draw(g, screenshot, rect, rect, intensity);
+        }
+
+        private void DrawPixelIntensityHud(Graphics g)
+        {
+            Rectangle target = Rectangle.Empty;
+            int intensity = pixelIntensity;
+
+            if (drawing && tool == Tool.Pixelate)
+            {
+                target = Normalize(drawStart, current);
+                intensity = pixelIntensity;
+            }
+            else if (selectedOp != null && selectedOp.Tool == Tool.Pixelate)
+            {
+                target = Normalize(selectedOp.A, selectedOp.B);
+                intensity = selectedOp.Width;
+            }
+            else if (tool == Tool.Pixelate && HasSelection())
+            {
+                target = selection;
+                intensity = pixelIntensity;
+            }
+
+            target.Intersect(selection);
+            if (target.Width <= 0 || target.Height <= 0)
+                return;
+
+            string label = "Pixelado " + Pixelation.ToPercent(intensity) + "%";
+            using (Font font = new Font("Segoe UI", 9, FontStyle.Bold))
+            using (SolidBrush bg = new SolidBrush(Color.FromArgb(238, 18, 18, 18)))
+            using (SolidBrush accent = new SolidBrush(Color.FromArgb(255, 224, 164, 30)))
+            using (SolidBrush fg = new SolidBrush(Color.White))
+            using (Pen border = new Pen(Color.FromArgb(190, 224, 164, 30), 1))
+            {
+                SizeF size = g.MeasureString(label, font);
+                int width = (int)Math.Ceiling(size.Width) + 22;
+                int height = 24;
+                int left = Math.Min(Math.Max(target.Left, selection.Left), Math.Max(selection.Left, selection.Right - width));
+                int top = target.Top - height - 8;
+                if (top < selection.Top)
+                    top = Math.Min(target.Bottom + 8, selection.Bottom - height);
+
+                Rectangle labelRect = new Rectangle(left, top, width, height);
+                g.FillRectangle(bg, labelRect);
+                g.DrawRectangle(border, labelRect);
+                g.FillRectangle(accent, labelRect.Left, labelRect.Bottom - 3, width, 3);
+                g.DrawString(label, font, fg, labelRect.Left + 10, labelRect.Top + 4);
+            }
         }
 
         private Bitmap RenderCrop()

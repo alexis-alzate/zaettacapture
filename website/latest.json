@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.23/ZaettaCaptureSetup.exe",
-  "sha256": "edde7172928882fd1434f1e435e5b4e126cc46a16e55867dddc124f2b8dea7e5",
-  "fileSizeBytes": 1754112,
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.24/ZaettaCaptureSetup.exe",
+  "sha256": "be6a350fbf416f8261d818074e2a0ae04c6cc56b54d8de19bf7bf39ca981270c",
+  "fileSizeBytes": 1755136,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -34,6 +34,8 @@
     "Pixelador con rango maximo ampliado: mantiene intensidad inicial 12 y permite subir hasta 70 para ocultar mas fuerte.",
     "Updater mas robusto: intenta manifest en dominio principal, Vercel y GitHub Raw, y muestra diagnostico claro si Windows bloquea el socket.",
     "Diagnostico de update reforzado: si el dominio abre en navegador pero Zaetta no conecta, el mensaje indica revisar permisos del ejecutable en Firewall, Bitdefender, VPN o reglas de red.",
-    "Log de diagnostico acumulado: startup-error.log conserva varios errores para ver todos los intentos de fallback."
+    "Log de diagnostico acumulado: startup-error.log conserva varios errores para ver todos los intentos de fallback.",
+    "Pixelador con HUD de porcentaje: muestra Pixelado 0%-100% al dibujar o ajustar el efecto.",
+    "Ajuste de pixelado mas claro: el valor se queda en minimo/maximo y no vuelve a cero al pasar el limite."
   ]
 }

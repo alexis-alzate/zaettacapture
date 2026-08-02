@@ -1050,6 +1050,40 @@ Aprendizaje clave:
 - Un updater no debe intentar evadir seguridad local.
 - Lo correcto es diagnosticar claro, usar HTTPS, validar SHA256, y mas adelante firmar digitalmente el ejecutable para reducir falsos positivos.
 
+### 9:32 PM a 9:36 PM aprox. - Pixelador con indicador de porcentaje
+
+Idea:
+
+- Cuando se usa el pixelador, mostrar un numerito para saber que tan fuerte esta el efecto.
+- El usuario piensa en porcentaje, no en valores internos como `4`, `12` o `70`.
+
+Que se cambio:
+
+- `Pixelation.cs` ahora tiene `ToPercent(int intensity)`.
+- Ese metodo convierte el rango interno:
+  - `MinIntensity = 4` -> `0%`.
+  - `MaxIntensity = 70` -> `100%`.
+- `CaptureOverlay.Rendering.cs` dibuja un HUD con texto tipo `Pixelado 45%`.
+- `CaptureOverlay.Tools.cs` permite que `+` y `-` ajusten el pixelado seleccionado, no solo el proximo pixelado.
+
+Decision:
+
+- No conviene que el nivel vuelva a cero automaticamente al pasar el maximo.
+- Es mejor que se quede en `100%`, porque asi no parece bug.
+- Si baja hasta el minimo, se queda en `0%`.
+
+Aprendizaje clave:
+
+- El valor tecnico real sigue viviendo en `DrawOp.Width`.
+- El porcentaje es solo una traduccion visual para el usuario.
+- Esta separacion es buena: el codigo trabaja con valores precisos y la interfaz muestra algo facil de entender.
+
+Release:
+
+- `v1.0.24`
+- SHA256: `be6a350fbf416f8261d818074e2a0ae04c6cc56b54d8de19bf7bf39ca981270c`
+- Tamano: `1755136` bytes.
+
 ## 6. Como usar estos apuntes
 
 Si quieres pedir una feature nueva:

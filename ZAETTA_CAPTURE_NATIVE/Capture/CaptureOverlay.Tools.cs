@@ -251,7 +251,12 @@ namespace ZaettaCaptureNative
         private void Thinner()
         {
             if (tool == Tool.Pixelate)
-                AdjustPixelIntensity(-2);
+            {
+                if (selectedOp != null && selectedOp.Tool == Tool.Pixelate)
+                    AdjustSelectedPixelIntensity(-2);
+                else
+                    AdjustPixelIntensity(-2);
+            }
             else
                 AdjustDrawWidth(-1);
             Invalidate();
@@ -260,7 +265,12 @@ namespace ZaettaCaptureNative
         private void Thicker()
         {
             if (tool == Tool.Pixelate)
-                AdjustPixelIntensity(2);
+            {
+                if (selectedOp != null && selectedOp.Tool == Tool.Pixelate)
+                    AdjustSelectedPixelIntensity(2);
+                else
+                    AdjustPixelIntensity(2);
+            }
             else
                 AdjustDrawWidth(1);
             Invalidate();
@@ -274,6 +284,12 @@ namespace ZaettaCaptureNative
         private void AdjustPixelIntensity(int delta)
         {
             pixelIntensity = Pixelation.ClampIntensity(pixelIntensity + delta);
+        }
+
+        private void AdjustSelectedPixelIntensity(int delta)
+        {
+            selectedOp.Width = Pixelation.ClampIntensity(selectedOp.Width + delta);
+            pixelIntensity = selectedOp.Width;
         }
     }
 }

@@ -15,6 +15,16 @@ namespace ZaettaCaptureNative
             return Math.Max(MinIntensity, Math.Min(MaxIntensity, value));
         }
 
+        public static int ToPercent(int intensity)
+        {
+            int clamped = ClampIntensity(intensity);
+            float range = MaxIntensity - MinIntensity;
+            if (range <= 0)
+                return 100;
+
+            return (int)Math.Round(((clamped - MinIntensity) / range) * 100f);
+        }
+
         public static void Draw(Graphics g, Bitmap source, Rectangle sourceRect, Rectangle destRect, int intensity)
         {
             sourceRect.Intersect(new Rectangle(0, 0, source.Width, source.Height));

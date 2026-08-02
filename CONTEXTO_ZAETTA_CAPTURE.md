@@ -1778,6 +1778,42 @@ Decision:
 - La app debe diagnosticar bien el problema y decirle al usuario que permita el ejecutable instalado.
 - Para pruebas locales con Bitdefender, se puede permitir temporalmente la ruta de Zaetta; para distribuir profesionalmente, el siguiente paso real es firma digital de codigo.
 
+#### Pixelador - HUD de porcentaje y ajuste sin reinicio visual
+
+Fecha y hora: 2026-08-01, 9:32 PM a 9:36 PM Colombia (`America/Bogota`).
+
+Objetivo:
+
+- Que al usar o ajustar el pixelador aparezca un indicador visual tipo `Pixelado 45%`.
+- Que el usuario sepa en que nivel va sin adivinar por la apariencia.
+- Que el ajuste no parezca bugueado al llegar al limite.
+
+Decision de comportamiento:
+
+- El pixelador no debe ciclar a cero automaticamente al pasar el maximo.
+- El valor queda limitado entre `Pixelation.MinIntensity` y `Pixelation.MaxIntensity`.
+- Si llega al maximo, se queda en `100%`.
+- Si llega al minimo, se queda en `0%`.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/Editing/Pixelation.cs`: se agrego `ToPercent(int intensity)` para convertir el valor interno del pixelador a porcentaje de usuario.
+- `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.Rendering.cs`: se agrego `DrawPixelIntensityHud(Graphics g)` para dibujar el indicador visual sobre o cerca del area pixelada.
+- `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.Tools.cs`: los botones `+` y `-` ahora ajustan el pixelado seleccionado si hay uno activo; si no, ajustan la intensidad del proximo pixelado.
+
+Por que:
+
+- `DrawOp.Width` guarda la intensidad real del pixelador.
+- El usuario no deberia tener que saber que internamente el rango es `4` a `70`.
+- El porcentaje traduce ese rango tecnico a una lectura clara: `0%` a `100%`.
+
+Release:
+
+- Version: `v1.0.24`.
+- Instalador: `https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.24/ZaettaCaptureSetup.exe`.
+- SHA256: `be6a350fbf416f8261d818074e2a0ae04c6cc56b54d8de19bf7bf39ca981270c`.
+- Tamano: `1755136` bytes.
+
 ### 2026-07-28
 
 - Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.
