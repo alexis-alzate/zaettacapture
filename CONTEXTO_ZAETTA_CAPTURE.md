@@ -1701,7 +1701,7 @@ Comportamiento esperado:
 
 #### v1.0.21 - Pixelador con maximo mas fuerte
 
-Fecha: 2026-08-01, hora aproximada 20:55 Colombia.
+Fecha y hora: 2026-08-01, 8:55 PM aprox. Colombia (`America/Bogota`).
 
 Archivos tocados:
 

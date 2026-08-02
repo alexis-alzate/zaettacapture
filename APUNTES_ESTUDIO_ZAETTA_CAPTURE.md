@@ -967,7 +967,7 @@ Que representa:
 
 - La landing se acerca mas a la imagen de referencia: header, hero, mockup, footer y microdetalles.
 
-### 20:55 - Pixelador con maximo mas fuerte
+### 8:55 PM aprox. - Pixelador con maximo mas fuerte
 
 Commit:
 
