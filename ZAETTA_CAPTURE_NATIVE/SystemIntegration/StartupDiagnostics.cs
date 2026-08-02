@@ -10,9 +10,9 @@ namespace ZaettaCaptureNative
             try
             {
                 Directory.CreateDirectory(Paths.BaseDir);
-                File.WriteAllText(
+                File.AppendAllText(
                     Path.Combine(Paths.BaseDir, "startup-error.log"),
-                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + Environment.NewLine + ex
+                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + Environment.NewLine + ex + Environment.NewLine + Environment.NewLine
                 );
             }
             catch

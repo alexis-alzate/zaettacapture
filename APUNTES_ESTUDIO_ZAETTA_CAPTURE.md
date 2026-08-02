@@ -1020,6 +1020,36 @@ Aprendizaje clave:
 - El navegador y Zaetta Capture son procesos distintos; Firewall/Bitdefender puede permitir uno y bloquear el otro.
 - Para un updater robusto conviene tener fallback y diagnosticos claros.
 
+### 9:20 PM aprox. - Diagnostico mas claro cuando Windows bloquea Zaetta
+
+Release:
+
+- `v1.0.23`
+
+Que se comprobo:
+
+- Desde PowerShell, `https://www.zaettasoftware.com/latest.json` respondio `STATUS=200`.
+- Eso confirma que el dominio, Vercel y el JSON estaban bien.
+- El problema seguia en el proceso `Zaetta Capture.exe`, porque Windows/Bitdefender podia bloquear solo esa app.
+
+Que se cambio:
+
+- `TrayContext.cs` ahora reconoce mas casos de error de conexion:
+  - `SocketError.AccessDenied`.
+  - `WebExceptionStatus.ConnectFailure`.
+  - textos del sistema como `forbidden by its access permissions`.
+- `StartupDiagnostics.cs` ahora usa `AppendAllText` para que `startup-error.log` no borre el intento anterior.
+
+Por que se hizo:
+
+- Antes el usuario podia ver solo `Unable to connect to the remote server`, que no explica nada.
+- Ahora el mensaje debe apuntar directo a revisar permisos del `.exe` en Firewall, Bitdefender, VPN o reglas de red.
+
+Aprendizaje clave:
+
+- Un updater no debe intentar evadir seguridad local.
+- Lo correcto es diagnosticar claro, usar HTTPS, validar SHA256, y mas adelante firmar digitalmente el ejecutable para reducir falsos positivos.
+
 ## 6. Como usar estos apuntes
 
 Si quieres pedir una feature nueva:

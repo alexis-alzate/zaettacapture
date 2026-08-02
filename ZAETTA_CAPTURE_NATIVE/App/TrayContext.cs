@@ -428,22 +428,43 @@ namespace ZaettaCaptureNative
 
         private static string BuildUpdateErrorMessage(Exception error)
         {
+            bool connectionFailure = false;
             Exception current = error;
             while (current != null)
             {
+                System.Net.WebException web = current as System.Net.WebException;
+                if (web != null && web.Status == System.Net.WebExceptionStatus.ConnectFailure)
+                    connectionFailure = true;
+
                 System.Net.Sockets.SocketException socket = current as System.Net.Sockets.SocketException;
                 if (socket != null && socket.SocketErrorCode == System.Net.Sockets.SocketError.AccessDenied)
-                {
-                    return "Windows bloqueo la conexion de Zaetta Capture al servidor de actualizaciones.\n\n" +
-                        "Revisa Firewall, Bitdefender, VPN o proteccion de amenazas y permite:\n" +
-                        Application.ExecutablePath + "\n\n" +
-                        "Detalle tecnico: " + socket.Message;
-                }
+                    return BuildBlockedUpdateConnectionMessage(socket.Message);
+
+                string message = current.Message ?? string.Empty;
+                if (message.IndexOf("forbidden by its access permissions", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return BuildBlockedUpdateConnectionMessage(message);
 
                 current = current.InnerException;
             }
 
+            if (connectionFailure)
+            {
+                return "Zaetta Capture no pudo abrir conexion HTTPS hacia el servidor de actualizaciones.\n\n" +
+                    "El dominio funciona en el navegador, asi que revisa Firewall, Bitdefender, VPN o reglas de red para permitir:\n" +
+                    Application.ExecutablePath + "\n\n" +
+                    "Detalle tecnico: " + error.Message;
+            }
+
             return error.Message;
+        }
+
+        private static string BuildBlockedUpdateConnectionMessage(string detail)
+        {
+            return "Windows bloqueo la conexion de Zaetta Capture al servidor de actualizaciones.\n\n" +
+                "El dominio funciona, pero el proceso de la app no tiene permiso para salir por HTTPS.\n" +
+                "Permite esta ruta en Firewall, Bitdefender, VPN o proteccion de amenazas:\n" +
+                Application.ExecutablePath + "\n\n" +
+                "Detalle tecnico: " + detail;
         }
 
         private bool IsUpdateSnoozed(UpdateInfo info)

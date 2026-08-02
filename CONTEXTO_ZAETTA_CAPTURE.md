@@ -1748,6 +1748,36 @@ Decision:
 - Si Windows bloquea todas las conexiones del `.exe`, el mensaje ya no queda generico; explica que se debe revisar Firewall, Bitdefender, VPN o proteccion de amenazas.
 - Como el updater instalado antes de `v1.0.22` no tiene fallback, puede ser necesario instalar manualmente `v1.0.22` una vez desde la web.
 
+#### v1.0.23 - Diagnostico reforzado para bloqueo local de red
+
+Fecha y hora: 2026-08-01, 9:20 PM aprox. Colombia (`America/Bogota`).
+
+Problema observado:
+
+- El usuario seguia viendo `No se pudo revisar actualizaciones` con `Unable to connect to the remote server`.
+- Se valido desde PowerShell que `https://www.zaettasoftware.com/latest.json` respondia `STATUS=200`.
+- El ejecutable instalado en `%LOCALAPPDATA%\\Zaetta Capture\\Zaetta Capture.exe` coincidia con el build local generado a las 9:09 PM.
+- El log seguia mostrando bloqueo de socket hacia IP de Vercel (`216.198.79.65:443`).
+
+Interpretacion:
+
+- La web, el DNS y el manifest estaban correctos.
+- El fallo estaba en permisos de red del proceso `Zaetta Capture.exe`, no en el servidor.
+- Si el navegador abre el JSON pero la app no, el caso mas probable es una regla local de Windows Firewall, Bitdefender, VPN o proteccion de amenazas aplicada al ejecutable.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/App/TrayContext.cs`: `BuildUpdateErrorMessage` ahora detecta tambien `WebExceptionStatus.ConnectFailure` y mensajes del sistema como `forbidden by its access permissions`, no solo `SocketError.AccessDenied`.
+- `ZAETTA_CAPTURE_NATIVE/SystemIntegration/StartupDiagnostics.cs`: el log paso de `WriteAllText` a `AppendAllText` para conservar varios errores y ver todos los intentos de fallback.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`: version interna subida a `1.0.23`.
+- `website/latest.json`, `website/index.html` y `website/README.md`: referencias publicas actualizadas a `v1.0.23`.
+
+Decision:
+
+- No se intenta saltar el antivirus ni el firewall; eso seria incorrecto para una app distribuible.
+- La app debe diagnosticar bien el problema y decirle al usuario que permita el ejecutable instalado.
+- Para pruebas locales con Bitdefender, se puede permitir temporalmente la ruta de Zaetta; para distribuir profesionalmente, el siguiente paso real es firma digital de codigo.
+
 ### 2026-07-28
 
 - Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.
