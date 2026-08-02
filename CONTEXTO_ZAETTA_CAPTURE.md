@@ -1679,6 +1679,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.19` para agregar una ventana `Opciones...` desde la bandeja, estilo configuracion de app de captura.
 - Se creo `v1.0.20` para pulir el frente de `Opciones...`: se retiro el `TabControl` blanco nativo, se agrego navegacion lateral oscura/dorada y se simplifico el menu de bandeja para dejar solo acciones importantes.
 - Se preparo `v1.0.21` para ampliar el rango maximo del pixelador: `MaxIntensity = 70`, manteniendo `DefaultIntensity = 12` para que el pixelado no arranque exagerado.
+- Se preparo `v1.0.22` para reforzar el updater ante bloqueos de red: ahora intenta varias URLs de manifest y muestra un diagnostico claro si Windows/Firewall/Bitdefender bloquea el socket.
 
 #### v1.0.20 - Opciones mas limpias y menu de bandeja menos cargado
 
@@ -1715,6 +1716,37 @@ Decision:
 - No se subio `DefaultIntensity` porque el usuario confirmo que esta bien arrancar en `12`.
 - Se subio el maximo para permitir un pixelado mas fuerte cuando sea necesario ocultar informacion sensible.
 - Aprendizaje clave: `MaxIntensity` controla el techo; `DefaultIntensity` controla el arranque.
+
+#### v1.0.22 - Updater con fallback y diagnostico de socket bloqueado
+
+Fecha y hora: 2026-08-01, 9:09 PM aprox. Colombia (`America/Bogota`).
+
+Problema observado:
+
+- La URL `https://www.zaettasoftware.com/latest.json` abria correctamente en el navegador.
+- Zaetta Capture mostraba `Unable to connect to the remote server`.
+- El log `Pictures\\Zaetta Capture\\startup-error.log` mostro:
+  - `SocketException`
+  - `An attempt was made to access a socket in a way forbidden by its access permissions`
+  - destino `216.198.79.1:443`
+
+Interpretacion:
+
+- El dominio y Vercel estaban funcionando.
+- El bloqueo venia del entorno Windows para el proceso de Zaetta Capture: Firewall, Bitdefender, VPN o regla de red.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/Updates/UpdateService.cs`: `ManifestUrl` unico se reemplazo por `ManifestUrls`, con fallback en dominio principal, Vercel y GitHub Raw.
+- `ZAETTA_CAPTURE_NATIVE/App/TrayContext.cs`: el error manual de update ahora detecta `SocketError.AccessDenied` y muestra un mensaje claro para permitir el `.exe` en firewall/antivirus.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`: version interna subida a `1.0.22`.
+- `website/latest.json`: manifest actualizado para publicar `v1.0.22`.
+
+Decision:
+
+- Si Vercel o su IP quedan bloqueados, el updater puede intentar otra fuente del mismo manifest.
+- Si Windows bloquea todas las conexiones del `.exe`, el mensaje ya no queda generico; explica que se debe revisar Firewall, Bitdefender, VPN o proteccion de amenazas.
+- Como el updater instalado antes de `v1.0.22` no tiene fallback, puede ser necesario instalar manualmente `v1.0.22` una vez desde la web.
 
 ### 2026-07-28
 

@@ -367,7 +367,7 @@ namespace ZaettaCaptureNative
             if (error != null)
             {
                 if (manual)
-                    MessageBox.Show("No se pudo revisar actualizaciones.\n\n" + error.Message, AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("No se pudo revisar actualizaciones.\n\n" + BuildUpdateErrorMessage(error), AppInfo.Name, MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -424,6 +424,26 @@ namespace ZaettaCaptureNative
             {
                 updatePromptOpen = false;
             }
+        }
+
+        private static string BuildUpdateErrorMessage(Exception error)
+        {
+            Exception current = error;
+            while (current != null)
+            {
+                System.Net.Sockets.SocketException socket = current as System.Net.Sockets.SocketException;
+                if (socket != null && socket.SocketErrorCode == System.Net.Sockets.SocketError.AccessDenied)
+                {
+                    return "Windows bloqueo la conexion de Zaetta Capture al servidor de actualizaciones.\n\n" +
+                        "Revisa Firewall, Bitdefender, VPN o proteccion de amenazas y permite:\n" +
+                        Application.ExecutablePath + "\n\n" +
+                        "Detalle tecnico: " + socket.Message;
+                }
+
+                current = current.InnerException;
+            }
+
+            return error.Message;
         }
 
         private bool IsUpdateSnoozed(UpdateInfo info)

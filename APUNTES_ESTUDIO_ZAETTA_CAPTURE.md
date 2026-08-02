@@ -989,6 +989,37 @@ Que se aprendio:
 - `DefaultIntensity` es el valor inicial cuando se crea un pixelado nuevo.
 - Cambiar solo el maximo no altera el arranque; solo permite llegar mas lejos con `+`, scroll o ajuste sobre la anotacion.
 
+### 9:09 PM aprox. - Updater con fallback y mejor diagnostico
+
+Release:
+
+- `v1.0.22`
+
+Que paso:
+
+- El navegador podia abrir `https://www.zaettasoftware.com/latest.json`.
+- Zaetta Capture no podia revisar updates y mostraba `Unable to connect to the remote server`.
+- El log mostro `SocketError.AccessDenied` contra `216.198.79.1:443`.
+
+Que significa:
+
+- No era un problema del JSON ni del dominio.
+- Windows estaba bloqueando el socket para el proceso de Zaetta Capture, probablemente por firewall, antivirus, VPN o regla de red.
+
+Que se cambio:
+
+- `UpdateService.cs` ahora intenta varias URLs para `latest.json`:
+  - `https://www.zaettasoftware.com/latest.json`
+  - `https://zaettacapture.vercel.app/latest.json`
+  - `https://raw.githubusercontent.com/alexis-alzate/zaettacapture/main/website/latest.json`
+- `TrayContext.cs` ahora muestra un mensaje mas claro cuando detecta `SocketError.AccessDenied`.
+
+Aprendizaje clave:
+
+- Que una URL abra en el navegador no garantiza que un `.exe` tenga permiso de red.
+- El navegador y Zaetta Capture son procesos distintos; Firewall/Bitdefender puede permitir uno y bloquear el otro.
+- Para un updater robusto conviene tener fallback y diagnosticos claros.
+
 ## 6. Como usar estos apuntes
 
 Si quieres pedir una feature nueva:

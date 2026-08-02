@@ -11,13 +11,18 @@ namespace ZaettaCaptureNative
 {
     internal static class UpdateService
     {
-        private const string ManifestUrl = "https://www.zaettasoftware.com/latest.json";
+        private static readonly string[] ManifestUrls = new[]
+        {
+            "https://www.zaettasoftware.com/latest.json",
+            "https://zaettacapture.vercel.app/latest.json",
+            "https://raw.githubusercontent.com/alexis-alzate/zaettacapture/main/website/latest.json"
+        };
 
         public static UpdateInfo CheckForUpdate()
         {
             ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
 
-            string json = DownloadStringFollowingRedirects(ManifestUrl);
+            string json = DownloadManifest();
             UpdateInfo info = ParseManifest(json);
 
             if (info == null || !info.IsValid)
@@ -29,6 +34,26 @@ namespace ZaettaCaptureNative
                 return null;
 
             return remote > current ? info : null;
+        }
+
+        private static string DownloadManifest()
+        {
+            Exception lastError = null;
+
+            foreach (string url in ManifestUrls)
+            {
+                try
+                {
+                    return DownloadStringFollowingRedirects(url);
+                }
+                catch (Exception ex)
+                {
+                    lastError = ex;
+                    StartupDiagnostics.Log(new WebException("Fallo consultando manifest de actualizacion: " + url, ex));
+                }
+            }
+
+            throw new WebException("No se pudo conectar a ningun servidor de actualizaciones.", lastError);
         }
 
         public static string GetInstallerDownloadPath(UpdateInfo info)
