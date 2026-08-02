@@ -7,7 +7,7 @@ namespace ZaettaCaptureNative
     internal static class Pixelation
     {
         public const int MinIntensity = 4;
-        public const int MaxIntensity = 32;
+        public const int MaxIntensity = 70;
         public const int DefaultIntensity = 12;
 
         public static int ClampIntensity(int value)

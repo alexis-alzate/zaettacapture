@@ -15,3 +15,6 @@ obj/
 *.spec
 *.user
 *.suo
+*:Zone.Identifier
+ChatGPT Image*.png
+ZAETTA_CAPTURE/ChatGPT Image*.png
