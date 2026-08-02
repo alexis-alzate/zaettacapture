@@ -967,6 +967,28 @@ Que representa:
 
 - La landing se acerca mas a la imagen de referencia: header, hero, mockup, footer y microdetalles.
 
+### 20:55 - Pixelador con maximo mas fuerte
+
+Commit:
+
+- `cf22147` - `Adjust pixelation intensity`
+
+Release:
+
+- `v1.0.21`
+
+Que representa:
+
+- `Pixelation.MaxIntensity` sube a `70`.
+- `Pixelation.DefaultIntensity` se mantiene en `12`.
+- La herramienta Pixelar sigue arrancando suave/normal, pero el usuario puede subir mucho mas la fuerza cuando necesita ocultar informacion sensible.
+
+Que se aprendio:
+
+- `MaxIntensity` es el techo maximo permitido.
+- `DefaultIntensity` es el valor inicial cuando se crea un pixelado nuevo.
+- Cambiar solo el maximo no altera el arranque; solo permite llegar mas lejos con `+`, scroll o ajuste sobre la anotacion.
+
 ## 6. Como usar estos apuntes
 
 Si quieres pedir una feature nueva:

@@ -1678,6 +1678,7 @@ Manifest esperado para publicar:
 - Se creo `v1.0.18` para reforzar el toast bonito cuando el update se detecta automaticamente, no solo al usar `Buscar actualizaciones`.
 - Se creo `v1.0.19` para agregar una ventana `Opciones...` desde la bandeja, estilo configuracion de app de captura.
 - Se creo `v1.0.20` para pulir el frente de `Opciones...`: se retiro el `TabControl` blanco nativo, se agrego navegacion lateral oscura/dorada y se simplifico el menu de bandeja para dejar solo acciones importantes.
+- Se preparo `v1.0.21` para ampliar el rango maximo del pixelador: `MaxIntensity = 70`, manteniendo `DefaultIntensity = 12` para que el pixelado no arranque exagerado.
 
 #### v1.0.20 - Opciones mas limpias y menu de bandeja menos cargado
 
@@ -1697,6 +1698,23 @@ Comportamiento esperado:
 - En `General` quedan las preferencias persistentes de area y candado.
 - En `Atajo` queda el shortcut actual, boton `Cambiar` y presets rapidos.
 - Guardar aplica las preferencias y vuelve a registrar el atajo igual que antes.
+
+#### v1.0.21 - Pixelador con maximo mas fuerte
+
+Fecha: 2026-08-01, hora aproximada 20:55 Colombia.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/Editing/Pixelation.cs`: `MaxIntensity` queda en `70`; `DefaultIntensity` queda en `12`.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`: version interna subida a `1.0.21`.
+- `website/latest.json`: manifest actualizado para que el updater descargue `v1.0.21`.
+- `.gitignore`: se agregaron patrones para ignorar archivos temporales `.swp` y referencias visuales/Zone.Identifier.
+
+Decision:
+
+- No se subio `DefaultIntensity` porque el usuario confirmo que esta bien arrancar en `12`.
+- Se subio el maximo para permitir un pixelado mas fuerte cuando sea necesario ocultar informacion sensible.
+- Aprendizaje clave: `MaxIntensity` controla el techo; `DefaultIntensity` controla el arranque.
 
 ### 2026-07-28
 

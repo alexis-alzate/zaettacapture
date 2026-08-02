@@ -1,9 +1,9 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.20/ZaettaCaptureSetup.exe",
-  "sha256": "2bcd3867634c29daa1855681d8b9dbae6d38c0b4109cd65f3d8038b2ecee55f4",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.21/ZaettaCaptureSetup.exe",
+  "sha256": "b736fc3080ef26c9b867492ec55b8aea37943c74aeddea6228f76e9abe683674",
   "fileSizeBytes": 1751552,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
@@ -30,6 +30,7 @@
     "El toast bonito de actualizacion tambien se muestra en detecciones automaticas, con mas tiempo visible.",
     "Nuevo menu Opciones desde la bandeja para configurar comportamiento y atajo de captura.",
     "Opciones redisenadas sin pestanas blancas: navegacion lateral oscura, paneles compactos y acciones doradas.",
-    "Menu de bandeja simplificado: las configuraciones secundarias viven dentro de Opciones."
+    "Menu de bandeja simplificado: las configuraciones secundarias viven dentro de Opciones.",
+    "Pixelador con rango maximo ampliado: mantiene intensidad inicial 12 y permite subir hasta 70 para ocultar mas fuerte."
   ]
 }
