@@ -1814,6 +1814,32 @@ Release:
 - SHA256: `be6a350fbf416f8261d818074e2a0ae04c6cc56b54d8de19bf7bf39ca981270c`.
 - Tamano: `1755136` bytes.
 
+#### v1.0.25 - Guardar captura cierra el overlay
+
+Fecha y hora: 2026-08-01, 10:35 PM Colombia (`America/Bogota`).
+
+Bug observado:
+
+- Al presionar `Guardar` en Zaetta Capture, el PNG se escribia correctamente, pero el overlay seguia abierto.
+- Esto se sentia inconsistente, porque `Copiar` ya cierra la captura.
+
+Archivo tocado:
+
+- `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.Commands.cs`.
+
+Cambio:
+
+- En `SaveImage()`, despues de `result.Save(...)`, se agrego `Close();`.
+- Si el usuario cancela el dialogo de guardar, el overlay no se cierra.
+- Si el archivo se guarda correctamente, el overlay se cierra.
+
+Release:
+
+- Version: `v1.0.25`.
+- Instalador: `https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.25/ZaettaCaptureSetup.exe`.
+- SHA256: `3ca592a03fc8629f71e71b4e836f4494be88874f344344287ccdc914c2e83efe`.
+- Tamano: `1755136` bytes.
+
 ### 2026-07-28
 
 - Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.

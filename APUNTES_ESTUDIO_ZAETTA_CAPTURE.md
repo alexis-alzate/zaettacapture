@@ -1084,6 +1084,36 @@ Release:
 - SHA256: `be6a350fbf416f8261d818074e2a0ae04c6cc56b54d8de19bf7bf39ca981270c`
 - Tamano: `1755136` bytes.
 
+### 10:35 PM aprox. - Guardar captura y cerrar overlay
+
+Bug:
+
+- `Guardar` escribia el PNG pero dejaba la captura abierta.
+- Eso confundia porque el usuario ya habia terminado esa accion.
+
+Archivo:
+
+- `CaptureOverlay.Commands.cs`
+
+Codigo clave:
+
+```c#
+using (Bitmap result = RenderCrop())
+    result.Save(dialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
+Close();
+```
+
+Decision:
+
+- Si el usuario guarda correctamente, se cierra el overlay.
+- Si cancela el dialogo de guardar, el overlay sigue abierto para continuar editando.
+
+Release:
+
+- `v1.0.25`
+- SHA256: `3ca592a03fc8629f71e71b4e836f4494be88874f344344287ccdc914c2e83efe`
+- Tamano: `1755136` bytes.
+
 ## 6. Como usar estos apuntes
 
 Si quieres pedir una feature nueva:

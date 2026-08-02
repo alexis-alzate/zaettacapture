@@ -32,6 +32,7 @@ namespace ZaettaCaptureNative
                 {
                     using (Bitmap result = RenderCrop())
                         result.Save(dialog.FileName, System.Drawing.Imaging.ImageFormat.Png);
+                    Close();
                 }
             }
         }
