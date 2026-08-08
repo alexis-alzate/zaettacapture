@@ -100,6 +100,10 @@ namespace ZaettaCaptureNative
 
         private void ShowColorMenu(Control anchor)
         {
+            DrawOp previewOp = CanChangeSelectedOpColor() ? selectedOp : null;
+            Color originalColor = previewOp != null ? previewOp.Color : color;
+            bool colorCommitted = false;
+
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.BackColor = Ui.Bg;
             menu.ForeColor = Color.FromArgb(238, 246, 250);
@@ -109,12 +113,26 @@ namespace ZaettaCaptureNative
             menu.Font = new Font("Segoe UI", 8, FontStyle.Bold);
             menu.Padding = new Padding(2, 3, 2, 3);
             menu.Renderer = new DarkMenuRenderer();
-            AddColorMenuItem(menu, "Zaetta", Ui.Accent2);
-            AddColorMenuItem(menu, "Rojo", Color.FromArgb(255, 59, 48));
-            AddColorMenuItem(menu, "Amarillo", Color.FromArgb(255, 204, 0));
-            AddColorMenuItem(menu, "Verde", Color.FromArgb(52, 199, 89));
-            AddColorMenuItem(menu, "Azul", Color.FromArgb(32, 196, 244));
-            AddColorMenuItem(menu, "Blanco", Color.White);
+            Action<Color> commitColor = delegate(Color selected)
+            {
+                colorCommitted = true;
+                ApplyColor(selected);
+            };
+            Func<bool> isColorCommitted = delegate { return colorCommitted; };
+            AddColorMenuItem(menu, "Zaetta", Ui.Accent2, previewOp, originalColor, commitColor, isColorCommitted);
+            AddColorMenuItem(menu, "Rojo", Color.FromArgb(255, 59, 48), previewOp, originalColor, commitColor, isColorCommitted);
+            AddColorMenuItem(menu, "Amarillo", Color.FromArgb(255, 204, 0), previewOp, originalColor, commitColor, isColorCommitted);
+            AddColorMenuItem(menu, "Verde", Color.FromArgb(52, 199, 89), previewOp, originalColor, commitColor, isColorCommitted);
+            AddColorMenuItem(menu, "Azul", Color.FromArgb(32, 196, 244), previewOp, originalColor, commitColor, isColorCommitted);
+            AddColorMenuItem(menu, "Blanco", Color.White, previewOp, originalColor, commitColor, isColorCommitted);
+            menu.Closed += delegate
+            {
+                if (previewOp != null && !colorCommitted)
+                {
+                    previewOp.Color = originalColor;
+                    Invalidate();
+                }
+            };
             menu.Show(anchor, new Point(0, anchor.Height + 4));
         }
 
@@ -138,16 +156,32 @@ namespace ZaettaCaptureNative
             Invalidate();
         }
 
-        private void AddColorMenuItem(ContextMenuStrip menu, string name, Color selected)
+        private void AddColorMenuItem(ContextMenuStrip menu, string name, Color selected, DrawOp previewOp, Color originalColor, Action<Color> commitColor, Func<bool> isColorCommitted)
         {
             string label = (ActiveColor().ToArgb() == selected.ToArgb() ? "> " : "  ") + name;
             ToolStripMenuItem item = new ToolStripMenuItem(label);
             item.Image = BuildColorIcon(selected);
             item.Padding = new Padding(4, 2, 10, 2);
             item.ToolTipText = CanChangeSelectedOpColor()
-                ? "Cambiar la anotacion seleccionada a color " + name + "."
+                ? "Vista previa " + name + ". Haz clic para conservar el color."
                 : "Usar color " + name + " en las anotaciones.";
-            item.Click += delegate { ApplyColor(selected); };
+            if (previewOp != null)
+            {
+                item.MouseEnter += delegate
+                {
+                    previewOp.Color = selected;
+                    Invalidate();
+                };
+                item.MouseLeave += delegate
+                {
+                    if (!isColorCommitted())
+                    {
+                        previewOp.Color = originalColor;
+                        Invalidate();
+                    }
+                };
+            }
+            item.Click += delegate { commitColor(selected); };
             menu.Items.Add(item);
         }
 
