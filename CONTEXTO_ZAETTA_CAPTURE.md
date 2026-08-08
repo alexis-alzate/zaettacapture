@@ -1904,6 +1904,32 @@ Aprendizaje de release:
 - Cada compilacion cambia el binario y su SHA256.
 - El orden correcto es: compilar por ultima vez, calcular hash/tamano, actualizar `latest.json` y no volver a compilar ese instalador.
 
+#### v1.0.28 - Novedades permanentes dentro de Opciones
+
+Fecha: 2026-08-07.
+
+Objetivo:
+
+- Agregar una tercera seccion `Novedades` en la ventana `Opciones`.
+- Mostrar la version instalada de Zaetta Capture.
+- Agregar `Ver cambios de esta version`, que abre el release correspondiente a `AppInfo.Version`.
+- Agregar `Historial`, que abre la lista oficial de releases.
+- Mantener `Ver todos los cambios` en el aviso de una nueva actualizacion.
+- Usar notas cortas y orientadas al cliente en el resumen del updater.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/App/SettingsForm.cs`: nueva navegacion y panel de novedades.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`: version interna `1.0.28`.
+- `website/latest.json`, `website/index.html` y `website/README.md`: metadatos de publicacion.
+
+Release:
+
+- Version: `v1.0.28`.
+- Instalador: `https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.28/ZaettaCaptureSetup.exe`.
+- SHA256: `1d73784ac59d41e824edea146d4774d53c0e0ad7fd352c5cfd26c0e6159956e2`.
+- Tamano: `1761280` bytes.
+
 ### 2026-07-28
 
 - Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.

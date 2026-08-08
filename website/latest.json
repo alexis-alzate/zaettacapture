@@ -1,16 +1,15 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.27",
+  "version": "1.0.28",
   "releasedAt": "2026-08-07",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.27/ZaettaCaptureSetup.exe",
-  "sha256": "b8e51f213e0d5d78e0e057ee3aa050b5dce7f2475fed3ce391a66451a373d11c",
-  "fileSizeBytes": 1759232,
-  "releaseNotesUrl": "https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0.27",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.28/ZaettaCaptureSetup.exe",
+  "sha256": "1d73784ac59d41e824edea146d4774d53c0e0ad7fd352c5cfd26c0e6159956e2",
+  "fileSizeBytes": 1761280,
+  "releaseNotesUrl": "https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0.28",
   "notes": [
-    "La ventana de actualizacion muestra un resumen con las tres novedades principales.",
-    "El nuevo boton Ver todos los cambios abre las notas completas sin salir de Zaetta Capture.",
-    "La lista completa tiene desplazamiento vertical para mostrar cualquier cantidad de mejoras y correcciones.",
-    "Desde las notas completas se puede volver al aviso o iniciar la actualizacion inmediatamente.",
-    "El boton Ver en la web abre el release publico de GitHub como referencia adicional."
+    "Nueva seccion Novedades dentro de Opciones.",
+    "Consulta los cambios de la version instalada.",
+    "Acceso directo al historial oficial de versiones.",
+    "Los textos del aviso de actualizacion ahora son mas cortos y claros para el cliente."
   ]
 }
