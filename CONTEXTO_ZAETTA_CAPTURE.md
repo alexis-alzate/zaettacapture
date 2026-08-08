@@ -1930,6 +1930,39 @@ Release:
 - SHA256: `1d73784ac59d41e824edea146d4774d53c0e0ad7fd352c5cfd26c0e6159956e2`.
 - Tamano: `1761280` bytes.
 
+#### v1.0.29 - Vista previa de color sobre anotaciones seleccionadas
+
+Fecha: 2026-08-07.
+
+Comportamiento:
+
+- Con una anotacion seleccionada, pasar el mouse por un color cambia temporalmente el objeto en tiempo real.
+- Salir del color restaura el tono original mientras no se haya confirmado.
+- Hacer clic confirma el color, lo deja permanente y lo usa para las proximas anotaciones.
+- Cerrar la paleta o hacer clic fuera sin elegir restaura el color original.
+- El pixelado queda excluido porque usa intensidad, no color.
+
+Implementacion:
+
+- `ShowColorMenu` conserva `previewOp`, `originalColor` y `colorCommitted` mientras la paleta esta abierta.
+- `MouseEnter` aplica la vista previa.
+- `MouseLeave` restaura el original.
+- `Click` llama a `ApplyColor` y marca el cambio como confirmado.
+- El evento `Closed` protege el color original si el menu se cancela.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.Tools.cs`.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`.
+- `website/latest.json`, `website/index.html` y `website/README.md`.
+
+Release:
+
+- Version: `v1.0.29`.
+- Instalador: `https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.29/ZaettaCaptureSetup.exe`.
+- SHA256: `7a9d6ded73757dd041bb6c57a6689ea3c709b398cc0b37ad61d058e17511a903`.
+- Tamano: `1762304` bytes.
+
 ### 2026-07-28
 
 - Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.

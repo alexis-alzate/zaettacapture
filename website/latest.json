@@ -1,15 +1,15 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.28",
+  "version": "1.0.29",
   "releasedAt": "2026-08-07",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.28/ZaettaCaptureSetup.exe",
-  "sha256": "1d73784ac59d41e824edea146d4774d53c0e0ad7fd352c5cfd26c0e6159956e2",
-  "fileSizeBytes": 1761280,
-  "releaseNotesUrl": "https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0.28",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.29/ZaettaCaptureSetup.exe",
+  "sha256": "7a9d6ded73757dd041bb6c57a6689ea3c709b398cc0b37ad61d058e17511a903",
+  "fileSizeBytes": 1762304,
+  "releaseNotesUrl": "https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0.29",
   "notes": [
-    "Nueva seccion Novedades dentro de Opciones.",
-    "Consulta los cambios de la version instalada.",
-    "Acceso directo al historial oficial de versiones.",
-    "Los textos del aviso de actualizacion ahora son mas cortos y claros para el cliente."
+    "Vista previa de colores al pasar el mouse.",
+    "El color se guarda solamente al hacer clic.",
+    "Cerrar la paleta restaura el color original.",
+    "Funciona con flechas, lineas, marcos, texto, numeros, lapiz y resaltador."
   ]
 }
