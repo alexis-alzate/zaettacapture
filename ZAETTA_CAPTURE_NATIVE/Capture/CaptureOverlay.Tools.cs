@@ -118,19 +118,36 @@ namespace ZaettaCaptureNative
             menu.Show(anchor, new Point(0, anchor.Height + 4));
         }
 
+        private bool CanChangeSelectedOpColor()
+        {
+            return selectedOp != null && selectedOp.Tool != Tool.Pixelate;
+        }
+
+        private Color ActiveColor()
+        {
+            return CanChangeSelectedOpColor() ? selectedOp.Color : color;
+        }
+
+        private void ApplyColor(Color selected)
+        {
+            color = selected;
+            if (CanChangeSelectedOpColor())
+                selectedOp.Color = selected;
+
+            ShowToolbars();
+            Invalidate();
+        }
+
         private void AddColorMenuItem(ContextMenuStrip menu, string name, Color selected)
         {
-            string label = (color.ToArgb() == selected.ToArgb() ? "> " : "  ") + name;
+            string label = (ActiveColor().ToArgb() == selected.ToArgb() ? "> " : "  ") + name;
             ToolStripMenuItem item = new ToolStripMenuItem(label);
             item.Image = BuildColorIcon(selected);
             item.Padding = new Padding(4, 2, 10, 2);
-            item.ToolTipText = "Usar color " + name + " en las anotaciones.";
-            item.Click += delegate
-            {
-                color = selected;
-                ShowToolbars();
-                Invalidate();
-            };
+            item.ToolTipText = CanChangeSelectedOpColor()
+                ? "Cambiar la anotacion seleccionada a color " + name + "."
+                : "Usar color " + name + " en las anotaciones.";
+            item.Click += delegate { ApplyColor(selected); };
             menu.Items.Add(item);
         }
 
@@ -243,9 +260,7 @@ namespace ZaettaCaptureNative
                     break;
                 }
             }
-            color = colors[(index + 1) % colors.Length];
-            ShowToolbars();
-            Invalidate();
+            ApplyColor(colors[(index + 1) % colors.Length]);
         }
 
         private void Thinner()

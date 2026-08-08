@@ -1,10 +1,10 @@
 {
   "product": "Zaetta Capture",
-  "version": "1.0.25",
-  "releasedAt": "2026-08-01",
-  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.25/ZaettaCaptureSetup.exe",
-  "sha256": "3ca592a03fc8629f71e71b4e836f4494be88874f344344287ccdc914c2e83efe",
-  "fileSizeBytes": 1755136,
+  "version": "1.0.26",
+  "releasedAt": "2026-08-07",
+  "downloadUrl": "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.26/ZaettaCaptureSetup.exe",
+  "sha256": "344a23c8914f058bfcafef0dafac1e7bd3719cb15a6c2d76ca6de9ffd1261cfb",
+  "fileSizeBytes": 1755648,
   "notes": [
     "Texto estilo Lightshot con caret translucido y borde tipo recorte.",
     "Reseleccion de area sin cerrar la captura.",
@@ -37,6 +37,9 @@
     "Log de diagnostico acumulado: startup-error.log conserva varios errores para ver todos los intentos de fallback.",
     "Pixelador con HUD de porcentaje: muestra Pixelado 0%-100% al dibujar o ajustar el efecto.",
     "Ajuste de pixelado mas claro: el valor se queda en minimo/maximo y no vuelve a cero al pasar el limite.",
-    "Guardar captura ahora cierra el overlay despues de escribir correctamente el PNG."
+    "Guardar captura ahora cierra el overlay despues de escribir correctamente el PNG.",
+    "Las anotaciones existentes ahora pueden cambiar de color despues de seleccionarlas con la herramienta Mover.",
+    "La paleta muestra el color de la anotacion seleccionada y conserva el color elegido para los proximos elementos.",
+    "El resaltador ahora respeta el color seleccionado manteniendo su transparencia."
   ]
 }

@@ -36,7 +36,7 @@ namespace ZaettaCaptureNative
 
         private void DrawOpOnOverlay(Graphics g, DrawOp op)
         {
-            Color opColor = op.Tool == Tool.Highlight ? Color.FromArgb(170, Color.Yellow) : op.Color;
+            Color opColor = op.Tool == Tool.Highlight ? Color.FromArgb(170, op.Color) : op.Color;
             int width = op.Tool == Tool.Highlight ? Math.Max(10, op.Width * 4) : op.Width;
             using (Pen pen = new Pen(opColor, width))
             {

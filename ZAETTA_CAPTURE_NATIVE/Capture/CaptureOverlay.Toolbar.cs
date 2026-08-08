@@ -39,7 +39,9 @@ namespace ZaettaCaptureNative
             toolButton.TextFill = Color.FromArgb(238, 246, 250);
             toolButton.Invalidate();
             ColorSwatchButton colorButton = AddColorButton(bottomToolbar, 116, 4, 28);
-            tips.SetToolTip(colorButton, "Cambiar color de flechas, marcos, texto y resaltador.");
+            tips.SetToolTip(colorButton, CanChangeSelectedOpColor()
+                ? "Cambiar el color de la anotacion seleccionada."
+                : "Cambiar color de flechas, marcos, texto y resaltador.");
             colorButton.Click += delegate { ShowColorMenu(colorButton); };
             AddToolButton(bottomToolbar, "-", 150, 4, 28, false, delegate { Thinner(); }, tool == Tool.Pixelate ? "Disminuir intensidad del pixelado." : "Disminuir grosor del trazo.");
             AddToolButton(bottomToolbar, "+", 184, 4, 28, false, delegate { Thicker(); }, tool == Tool.Pixelate ? "Aumentar intensidad del pixelado." : "Aumentar grosor del trazo.");
@@ -160,7 +162,7 @@ namespace ZaettaCaptureNative
             button.Top = y;
             button.Width = size;
             button.Height = 26;
-            button.Swatch = color;
+            button.Swatch = ActiveColor();
             button.MouseDown += delegate(object sender, MouseEventArgs e)
             {
                 if (e.Button == MouseButtons.Right)

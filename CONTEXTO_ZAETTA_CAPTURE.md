@@ -1840,6 +1840,34 @@ Release:
 - SHA256: `3ca592a03fc8629f71e71b4e836f4494be88874f344344287ccdc914c2e83efe`.
 - Tamano: `1755136` bytes.
 
+#### v1.0.26 - Cambiar color de anotaciones existentes
+
+Fecha y hora: 2026-08-07, 7:46 PM Colombia (`America/Bogota`).
+
+Funcionalidad:
+
+- Con la herramienta `Mover`, el usuario puede seleccionar una flecha, linea, marco, lapiz, resaltador, numero o texto existente.
+- Al elegir un color en la paleta, se actualiza `selectedOp.Color` y la anotacion cambia inmediatamente.
+- El color elegido tambien queda activo para las proximas anotaciones.
+- El boton de la paleta muestra el color del elemento seleccionado.
+- El resaltador ahora usa `op.Color` conservando transparencia; antes forzaba amarillo.
+- El pixelado queda excluido porque usa intensidad de mosaico, no color.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.Tools.cs`.
+- `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.Toolbar.cs`.
+- `ZAETTA_CAPTURE_NATIVE/Capture/CaptureOverlay.Rendering.cs`.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`.
+- `website/latest.json`, `website/index.html` y `website/README.md`.
+
+Release:
+
+- Version: `v1.0.26`.
+- Instalador: `https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.26/ZaettaCaptureSetup.exe`.
+- SHA256: `344a23c8914f058bfcafef0dafac1e7bd3719cb15a6c2d76ca6de9ffd1261cfb`.
+- Tamano: `1755648` bytes.
+
 ### 2026-07-28
 
 - Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.
