@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -11,8 +12,10 @@ namespace ZaettaCaptureNative
         private readonly Label hotkeyValue;
         private readonly Panel generalPanel;
         private readonly Panel hotkeyPanel;
+        private readonly Panel newsPanel;
         private readonly Button generalNav;
         private readonly Button hotkeyNav;
+        private readonly Button newsNav;
         private Keys selectedKey;
         private uint selectedModifiers;
 
@@ -60,7 +63,7 @@ namespace ZaettaCaptureNative
             title.SetBounds(28, 22, 220, 38);
 
             Label subtitle = new Label();
-            subtitle.Text = "Ajustes de captura, bandeja y atajo.";
+            subtitle.Text = "Ajustes de captura, atajo y novedades.";
             subtitle.ForeColor = Ui.Muted;
             subtitle.BackColor = Ui.Bg;
             subtitle.SetBounds(30, 58, 330, 22);
@@ -70,11 +73,14 @@ namespace ZaettaCaptureNative
             side.SetBounds(24, 98, 146, 202);
 
             generalNav = BuildNavButton("General", 10, 12);
-            generalNav.Click += delegate { ShowSection(true); };
+            generalNav.Click += delegate { ShowSection(0); };
             hotkeyNav = BuildNavButton("Atajo", 10, 58);
-            hotkeyNav.Click += delegate { ShowSection(false); };
+            hotkeyNav.Click += delegate { ShowSection(1); };
+            newsNav = BuildNavButton("Novedades", 10, 104);
+            newsNav.Click += delegate { ShowSection(2); };
             side.Controls.Add(generalNav);
             side.Controls.Add(hotkeyNav);
+            side.Controls.Add(newsNav);
 
             generalPanel = BuildContentPanel();
             keepSelection = BuildCheckBox("Mantener la ultima area", keepLastSelectionPosition, 24, 28);
@@ -115,6 +121,24 @@ namespace ZaettaCaptureNative
             hotkeyPanel.Controls.Add(ctrlShift);
             hotkeyPanel.Controls.Add(ctrlAlt);
 
+            newsPanel = BuildContentPanel();
+            Label newsTitle = BuildSectionTitle("Novedades", 24, 24);
+            Label installedVersion = BuildHotkeyValue("Version instalada: " + AppInfo.Version, 24, 58);
+            installedVersion.Size = new Size(362, 32);
+            Label newsText = BuildMutedLabel("Consulta los cambios de esta version o revisa el historial completo de Zaetta Capture.", 24, 104, 362, 38);
+            ZaettaButton currentRelease = new ZaettaButton("Ver cambios de esta version", true);
+            currentRelease.TextFill = Color.FromArgb(12, 12, 10);
+            currentRelease.SetBounds(24, 150, 210, 34);
+            currentRelease.Click += delegate { OpenReleasePage(CurrentReleaseUrl()); };
+            ZaettaButton releaseHistory = new ZaettaButton("Historial", false);
+            releaseHistory.SetBounds(246, 150, 140, 34);
+            releaseHistory.Click += delegate { OpenReleasePage("https://github.com/alexis-alzate/zaettacapture/releases"); };
+            newsPanel.Controls.Add(newsTitle);
+            newsPanel.Controls.Add(installedVersion);
+            newsPanel.Controls.Add(newsText);
+            newsPanel.Controls.Add(currentRelease);
+            newsPanel.Controls.Add(releaseHistory);
+
             ZaettaButton cancel = new ZaettaButton("Cancelar", false);
             cancel.SetBounds(330, 326, 120, 36);
             cancel.Click += delegate
@@ -137,11 +161,12 @@ namespace ZaettaCaptureNative
             Controls.Add(side);
             Controls.Add(generalPanel);
             Controls.Add(hotkeyPanel);
+            Controls.Add(newsPanel);
             Controls.Add(cancel);
             Controls.Add(save);
             AcceptButton = save;
             CancelButton = cancel;
-            ShowSection(true);
+            ShowSection(0);
         }
 
         private static Panel BuildContentPanel()
@@ -167,12 +192,36 @@ namespace ZaettaCaptureNative
             return button;
         }
 
-        private void ShowSection(bool general)
+        private void ShowSection(int section)
         {
-            generalPanel.Visible = general;
-            hotkeyPanel.Visible = !general;
-            SetNavState(generalNav, general);
-            SetNavState(hotkeyNav, !general);
+            generalPanel.Visible = section == 0;
+            hotkeyPanel.Visible = section == 1;
+            newsPanel.Visible = section == 2;
+            SetNavState(generalNav, section == 0);
+            SetNavState(hotkeyNav, section == 1);
+            SetNavState(newsNav, section == 2);
+        }
+
+        private static string CurrentReleaseUrl()
+        {
+            return "https://github.com/alexis-alzate/zaettacapture/releases/tag/v" + AppInfo.Version;
+        }
+
+        private static void OpenReleasePage(string url)
+        {
+            try
+            {
+                Process.Start(url);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "No se pudo abrir la pagina de novedades.\n\n" + ex.Message,
+                    AppInfo.Name,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+            }
         }
 
         private static void SetNavState(Button button, bool selected)
