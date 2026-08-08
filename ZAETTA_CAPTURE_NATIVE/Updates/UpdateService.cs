@@ -134,6 +134,7 @@ namespace ZaettaCaptureNative
             info.Sha256 = ExtractString(json, "sha256");
             info.FileSizeBytes = ExtractLong(json, "fileSizeBytes");
             info.Notes = ExtractStringArray(json, "notes");
+            info.ReleaseNotesUrl = ExtractString(json, "releaseNotesUrl");
             return info;
         }
 

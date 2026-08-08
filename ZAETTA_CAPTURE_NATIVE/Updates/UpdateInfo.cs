@@ -11,6 +11,7 @@ namespace ZaettaCaptureNative
         public string Sha256 { get; set; }
         public long FileSizeBytes { get; set; }
         public string[] Notes { get; set; }
+        public string ReleaseNotesUrl { get; set; }
 
         public bool IsValid
         {

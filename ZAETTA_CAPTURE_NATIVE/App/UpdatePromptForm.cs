@@ -15,7 +15,7 @@ namespace ZaettaCaptureNative
             MinimizeBox = false;
             ShowInTaskbar = true;
             TopMost = true;
-            ClientSize = new Size(440, 310);
+            ClientSize = new Size(440, 350);
             BackColor = Ui.Bg;
             ForeColor = Ui.Text;
             Font = new Font("Segoe UI", 9f);
@@ -47,10 +47,25 @@ namespace ZaettaCaptureNative
             notes.Location = new Point(30, 152);
             notes.Size = new Size(380, 82);
 
+            ZaettaButton viewAll = new ZaettaButton("Ver todos los cambios", false);
+            viewAll.Location = new Point(30, 294);
+            viewAll.Size = new Size(150, 36);
+            viewAll.Click += delegate
+            {
+                using (ReleaseNotesForm releaseNotes = new ReleaseNotesForm(info))
+                {
+                    if (releaseNotes.ShowDialog(this) == DialogResult.OK)
+                    {
+                        DialogResult = DialogResult.OK;
+                        Close();
+                    }
+                }
+            };
+
             ZaettaButton update = new ZaettaButton("Actualizar", true);
             update.TextFill = Color.FromArgb(12, 12, 10);
-            update.Location = new Point(268, 254);
-            update.Size = new Size(142, 36);
+            update.Location = new Point(300, 294);
+            update.Size = new Size(110, 36);
             update.Click += delegate
             {
                 DialogResult = DialogResult.OK;
@@ -58,8 +73,8 @@ namespace ZaettaCaptureNative
             };
 
             ZaettaButton later = new ZaettaButton("Mas tarde", false);
-            later.Location = new Point(112, 254);
-            later.Size = new Size(142, 36);
+            later.Location = new Point(190, 294);
+            later.Size = new Size(100, 36);
             later.Click += delegate
             {
                 DialogResult = DialogResult.Cancel;
@@ -70,6 +85,7 @@ namespace ZaettaCaptureNative
             Controls.Add(version);
             Controls.Add(body);
             Controls.Add(notes);
+            Controls.Add(viewAll);
             Controls.Add(later);
             Controls.Add(update);
             AcceptButton = update;

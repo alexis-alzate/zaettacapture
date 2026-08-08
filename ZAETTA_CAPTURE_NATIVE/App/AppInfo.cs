@@ -3,7 +3,7 @@ namespace ZaettaCaptureNative
     internal static class AppInfo
     {
         public const string Name = "Zaetta Capture";
-        public const string Version = "1.0.26";
+        public const string Version = "1.0.27";
         public const string Publisher = "Victor Alexis Alzate Cortes";
 
         public static string AboutText
