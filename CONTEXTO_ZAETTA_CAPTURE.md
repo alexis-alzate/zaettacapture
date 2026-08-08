@@ -1868,6 +1868,42 @@ Release:
 - SHA256: `344a23c8914f058bfcafef0dafac1e7bd3719cb15a6c2d76ca6de9ffd1261cfb`.
 - Tamano: `1755648` bytes.
 
+#### v1.0.27 - Notas completas de actualizacion dentro de la app
+
+Fecha: 2026-08-07.
+
+Objetivo:
+
+- Mostrar tres novedades principales en el aviso compacto de actualizacion.
+- Permitir que el cliente abra todas las notas sin salir de Zaetta Capture.
+- Soportar listas largas mediante scroll vertical.
+- Permitir actualizar directamente desde la ventana de novedades.
+- Ofrecer un enlace opcional al release publico de GitHub.
+
+Archivos tocados:
+
+- `ZAETTA_CAPTURE_NATIVE/App/UpdatePromptForm.cs`: boton `Ver todos los cambios` y nuevo layout.
+- `ZAETTA_CAPTURE_NATIVE/App/ReleaseNotesForm.cs`: ventana interna con lista completa desplazable.
+- `ZAETTA_CAPTURE_NATIVE/Updates/UpdateInfo.cs`: propiedad `ReleaseNotesUrl`.
+- `ZAETTA_CAPTURE_NATIVE/Updates/UpdateService.cs`: lectura de `releaseNotesUrl` desde el manifest.
+- `ZAETTA_CAPTURE_NATIVE/App/AppInfo.cs`: version interna `1.0.27`.
+- `website/latest.json`: solo conserva las notas de la version actual y agrega `releaseNotesUrl`.
+
+Build local preparado:
+
+- Version: `1.0.27`.
+- Instalador local: `INSTALADOR_ZAETTA_CAPTURE_FINAL.exe`.
+- SHA256: `b8e51f213e0d5d78e0e057ee3aa050b5dce7f2475fed3ce391a66451a373d11c`.
+- Tamano: `1759232` bytes.
+- Estado: compilado, validado y publicado en GitHub Releases.
+- Release: `https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0.27`.
+- Instalador: `https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.27/ZaettaCaptureSetup.exe`.
+
+Aprendizaje de release:
+
+- Cada compilacion cambia el binario y su SHA256.
+- El orden correcto es: compilar por ultima vez, calcular hash/tamano, actualizar `latest.json` y no volver a compilar ese instalador.
+
 ### 2026-07-28
 
 - Se refactorizo la app nativa para salir del monolito original `ZaettaCapture.cs`.
