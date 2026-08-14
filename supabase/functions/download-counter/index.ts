@@ -5,6 +5,7 @@ const ALLOWED_ORIGINS = new Set([
 ]);
 
 const COUNTER_KEY = "zaetta-capture";
+const INSTALLER_URL = "https://github.com/alexis-alzate/zaettacapture/releases/download/v1.0.29/ZaettaCaptureSetup.exe";
 
 function corsHeaders(origin: string) {
   return {
@@ -38,7 +39,62 @@ function getDatabaseKey() {
   return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 }
 
+async function runCounterRpc(rpcName: string) {
+  const projectUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const databaseKey = getDatabaseKey();
+
+  if (!projectUrl || !databaseKey) {
+    throw new Error("Counter service unavailable");
+  }
+
+  const headers: Record<string, string> = {
+    "apikey": databaseKey,
+    "Content-Type": "application/json",
+  };
+
+  if (!databaseKey.startsWith("sb_secret_")) {
+    headers.Authorization = `Bearer ${databaseKey}`;
+  }
+
+  const response = await fetch(`${projectUrl}/rest/v1/rpc/${rpcName}`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ p_key: COUNTER_KEY }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Counter RPC failed with ${response.status}: ${await response.text()}`);
+  }
+
+  const count = Number(await response.json());
+
+  if (!Number.isSafeInteger(count) || count < 0) {
+    throw new Error("Invalid counter value");
+  }
+
+  return count;
+}
+
 Deno.serve(async (request: Request) => {
+  const requestUrl = new URL(request.url);
+  const isDownloadRequest = request.method === "GET" && requestUrl.searchParams.get("download") === "1";
+
+  if (isDownloadRequest) {
+    try {
+      await runCounterRpc("increment_download_counter");
+    } catch (error) {
+      console.error("Download counter increment failed", error);
+    }
+
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": INSTALLER_URL,
+        "Cache-Control": "no-store, max-age=0",
+      },
+    });
+  }
+
   const origin = request.headers.get("Origin") ?? "";
 
   if (!ALLOWED_ORIGINS.has(origin)) {
@@ -53,43 +109,12 @@ Deno.serve(async (request: Request) => {
     return jsonResponse({ error: "Method not allowed" }, 405, origin);
   }
 
-  const projectUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const databaseKey = getDatabaseKey();
-
-  if (!projectUrl || !databaseKey) {
-    return jsonResponse({ error: "Counter service unavailable" }, 503, origin);
-  }
-
   const rpcName = request.method === "POST"
     ? "increment_download_counter"
     : "get_download_counter";
-  const headers: Record<string, string> = {
-    "apikey": databaseKey,
-    "Content-Type": "application/json",
-  };
-
-  if (!databaseKey.startsWith("sb_secret_")) {
-    headers.Authorization = `Bearer ${databaseKey}`;
-  }
 
   try {
-    const response = await fetch(`${projectUrl}/rest/v1/rpc/${rpcName}`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ p_key: COUNTER_KEY }),
-    });
-
-    if (!response.ok) {
-      console.error("Counter RPC failed", response.status, await response.text());
-      return jsonResponse({ error: "Counter service unavailable" }, 503, origin);
-    }
-
-    const count = Number(await response.json());
-
-    if (!Number.isSafeInteger(count) || count < 0) {
-      return jsonResponse({ error: "Invalid counter value" }, 503, origin);
-    }
-
+    const count = await runCounterRpc(rpcName);
     return jsonResponse({ count }, 200, origin);
   } catch (error) {
     console.error("Counter request failed", error);
