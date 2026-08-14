@@ -6,6 +6,9 @@
   var status = document.querySelector("[data-download-status]");
   var refreshButton = document.querySelector("[data-download-refresh]");
   var counterCard = document.querySelector(".download-counter");
+  var miniSignal = document.querySelector("[data-download-mini]");
+  var miniStatus = document.querySelector("[data-mini-status]");
+  var miniCounters = document.querySelectorAll("[data-download-count-mini]");
 
   if (!counter || !status || !refreshButton || !counterCard) {
     return;
@@ -21,6 +24,27 @@
   function setStatus(message, state) {
     status.textContent = message;
     counterCard.dataset.state = state;
+
+    if (miniSignal) {
+      miniSignal.dataset.state = state;
+    }
+
+    if (miniStatus) {
+      miniStatus.textContent = state === "loading" ? "Actualizando" : "Comunidad activa";
+    }
+  }
+
+  function renderCount(value) {
+    var formattedValue = numberFormatter.format(value);
+    counter.textContent = formattedValue;
+
+    miniCounters.forEach(function (miniCounter) {
+      miniCounter.textContent = formattedValue;
+    });
+
+    if (miniSignal) {
+      miniSignal.setAttribute("aria-label", formattedValue + " descargas verificadas. Actualizar contador.");
+    }
   }
 
   function animateCount(target) {
@@ -29,7 +53,7 @@
     }
 
     if (prefersReducedMotion) {
-      counter.textContent = numberFormatter.format(target);
+      renderCount(target);
       return;
     }
 
@@ -45,7 +69,7 @@
       var progress = Math.min((timestamp - startedAt) / duration, 1);
       var eased = 1 - Math.pow(1 - progress, 4);
       var current = Math.round(startValue + (target - startValue) * eased);
-      counter.textContent = numberFormatter.format(current);
+      renderCount(current);
 
       if (progress < 1) {
         animationFrame = window.requestAnimationFrame(update);
@@ -70,6 +94,9 @@
 
   async function refreshCount() {
     refreshButton.disabled = true;
+    if (miniSignal) {
+      miniSignal.disabled = true;
+    }
     setStatus("Actualizando desde GitHub...", "loading");
 
     try {
@@ -95,6 +122,9 @@
       setStatus("Mostrando la última cifra verificada", "fallback");
     } finally {
       refreshButton.disabled = false;
+      if (miniSignal) {
+        miniSignal.disabled = false;
+      }
     }
   }
 
@@ -110,6 +140,21 @@
   });
 
   refreshButton.addEventListener("click", refreshCount);
+
+  if (miniSignal) {
+    miniSignal.addEventListener("click", refreshCount);
+
+    miniSignal.addEventListener("pointermove", function (event) {
+      var bounds = miniSignal.getBoundingClientRect();
+      miniSignal.style.setProperty("--signal-x", event.clientX - bounds.left + "px");
+      miniSignal.style.setProperty("--signal-y", event.clientY - bounds.top + "px");
+    });
+
+    miniSignal.addEventListener("pointerleave", function () {
+      miniSignal.style.removeProperty("--signal-x");
+      miniSignal.style.removeProperty("--signal-y");
+    });
+  }
 
   if ("IntersectionObserver" in window) {
     var observer = new IntersectionObserver(function (entries) {

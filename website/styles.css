@@ -255,6 +255,195 @@ h1 span,
   min-height: 548px;
 }
 
+.hero-download-signal {
+  --signal-x: 68%;
+  --signal-y: 50%;
+  position: absolute;
+  top: 0;
+  right: clamp(20px, 5vw, 76px);
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 34px;
+  gap: 13px;
+  align-items: center;
+  width: min(320px, 44%);
+  min-width: 286px;
+  min-height: 76px;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 212, 71, 0.28);
+  border-radius: 14px;
+  color: var(--text);
+  background:
+    radial-gradient(circle 120px at var(--signal-x) var(--signal-y), rgba(255, 220, 92, 0.2), transparent 72%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.018)),
+    rgba(9, 9, 9, 0.92);
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.52),
+    0 0 32px rgba(224, 160, 20, 0.1),
+    inset 0 1px rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(18px);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transform: translateY(-102px);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.hero-download-signal::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 22%, rgba(255, 230, 130, 0.16) 48%, transparent 72%);
+  background-size: 240% 100%;
+  animation: signal-sheen 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hero-download-signal:hover,
+.hero-download-signal:focus-visible {
+  border-color: rgba(255, 212, 71, 0.68);
+  box-shadow:
+    0 30px 68px rgba(0, 0, 0, 0.6),
+    0 0 42px rgba(224, 160, 20, 0.2),
+    inset 0 1px rgba(255, 255, 255, 0.12);
+  transform: translateY(-107px) scale(1.025);
+}
+
+.hero-download-signal:focus-visible {
+  outline: 2px solid var(--gold-2);
+  outline-offset: 4px;
+}
+
+.hero-download-signal:disabled {
+  cursor: wait;
+}
+
+.signal-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255, 212, 71, 0.34);
+  border-radius: 11px;
+  background: linear-gradient(145deg, rgba(255, 212, 71, 0.18), rgba(224, 160, 20, 0.045));
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), 0 0 24px rgba(224, 160, 20, 0.12);
+}
+
+.signal-icon::before,
+.signal-icon::after,
+.signal-icon i {
+  content: "";
+  position: absolute;
+  display: block;
+}
+
+.signal-icon::before {
+  top: 10px;
+  left: 21px;
+  width: 3px;
+  height: 17px;
+  border-radius: 3px;
+  background: var(--gold-2);
+}
+
+.signal-icon::after {
+  top: 19px;
+  left: 16px;
+  width: 10px;
+  height: 10px;
+  border-right: 3px solid var(--gold-2);
+  border-bottom: 3px solid var(--gold-2);
+  transform: rotate(45deg);
+}
+
+.signal-icon i {
+  left: 12px;
+  right: 12px;
+  bottom: 9px;
+  height: 6px;
+  border-right: 2px solid var(--gold-2);
+  border-bottom: 2px solid var(--gold-2);
+  border-left: 2px solid var(--gold-2);
+  border-radius: 0 0 4px 4px;
+}
+
+.signal-copy {
+  min-width: 0;
+}
+
+.signal-copy small,
+.signal-copy strong {
+  display: block;
+}
+
+.signal-copy small {
+  overflow: hidden;
+  margin-bottom: 4px;
+  color: var(--gold-3);
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.13em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signal-copy strong {
+  color: #f8f8f4;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.signal-copy strong span {
+  color: var(--gold-2);
+  font-size: 1.18rem;
+}
+
+.signal-live {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 3px;
+  height: 24px;
+  padding: 5px 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.signal-live i {
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--gold-3), var(--gold));
+  box-shadow: 0 0 8px rgba(255, 212, 71, 0.48);
+  animation: signal-wave 1.5s ease-in-out infinite;
+}
+
+.signal-live i:nth-child(1) { height: 7px; animation-delay: -0.45s; }
+.signal-live i:nth-child(2) { height: 15px; animation-delay: -0.2s; }
+.signal-live i:nth-child(3) { height: 10px; animation-delay: -0.7s; }
+
+.hero-download-signal[data-state="loading"] .signal-icon {
+  animation: signal-breathe 900ms ease-in-out infinite;
+}
+
+@keyframes signal-sheen {
+  0%, 64%, 100% { background-position: 140% 0; }
+  82% { background-position: -80% 0; }
+}
+
+@keyframes signal-wave {
+  50% { height: 4px; opacity: 0.46; }
+}
+
+@keyframes signal-breathe {
+  50% { box-shadow: inset 0 1px rgba(255, 255, 255, 0.1), 0 0 30px rgba(255, 212, 71, 0.34); }
+}
+
 .app-window {
   overflow: hidden;
   border: 1px solid var(--gold-line);
@@ -1177,6 +1366,16 @@ cite span {
     min-height: 500px;
   }
 
+  .hero-download-signal {
+    right: 24px;
+    transform: translateY(-88px);
+  }
+
+  .hero-download-signal:hover,
+  .hero-download-signal:focus-visible {
+    transform: translateY(-93px) scale(1.02);
+  }
+
   .license {
     justify-items: start;
   }
@@ -1221,6 +1420,21 @@ cite span {
 
   .hero-visual {
     min-height: auto;
+  }
+
+  .hero-download-signal {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: min(100%, 320px);
+    min-width: 0;
+    margin: 0 0 16px auto;
+    transform: none;
+  }
+
+  .hero-download-signal:hover,
+  .hero-download-signal:focus-visible {
+    transform: translateY(-3px);
   }
 
   .capture-stage {
@@ -1341,7 +1555,10 @@ cite span {
 
   .counter-orbit-ring,
   .download-counter[data-state="loading"] .status-dot,
-  .counter-refresh:disabled span {
+  .counter-refresh:disabled span,
+  .hero-download-signal::before,
+  .signal-live i,
+  .hero-download-signal[data-state="loading"] .signal-icon {
     animation: none;
   }
 }
