@@ -20,6 +20,9 @@
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var numberFormatter = new Intl.NumberFormat("es-CO");
   var animationFrame = null;
+  var lastKnownValue = fallbackValue;
+  var refreshSerial = 0;
+  var activeController = null;
 
   function setStatus(message, state) {
     status.textContent = message;
@@ -52,14 +55,18 @@
       window.cancelAnimationFrame(animationFrame);
     }
 
+    var displayedValue = Number(counter.textContent.replace(/\D/g, "")) || 0;
+    var safeTarget = Math.max(Math.round(Number(target) || 0), displayedValue, lastKnownValue);
+    lastKnownValue = safeTarget;
+
     if (prefersReducedMotion) {
-      renderCount(target);
+      renderCount(safeTarget);
       return;
     }
 
-    var startValue = Number(counter.textContent.replace(/\D/g, "")) || 0;
+    var startValue = displayedValue;
     var startedAt = null;
-    var duration = 1200;
+    var duration = 700;
 
     function update(timestamp) {
       if (!startedAt) {
@@ -68,11 +75,13 @@
 
       var progress = Math.min((timestamp - startedAt) / duration, 1);
       var eased = 1 - Math.pow(1 - progress, 4);
-      var current = Math.round(startValue + (target - startValue) * eased);
+      var current = Math.round(startValue + (safeTarget - startValue) * eased);
       renderCount(current);
 
       if (progress < 1) {
         animationFrame = window.requestAnimationFrame(update);
+      } else {
+        animationFrame = null;
       }
     }
 
@@ -93,6 +102,13 @@
   }
 
   async function refreshCount() {
+    var requestId = ++refreshSerial;
+
+    if (activeController) {
+      activeController.abort();
+    }
+
+    activeController = "AbortController" in window ? new AbortController() : null;
     refreshButton.disabled = true;
     if (miniSignal) {
       miniSignal.disabled = true;
@@ -101,7 +117,8 @@
 
     try {
       var response = await fetch(apiUrl, {
-        headers: { Accept: "application/vnd.github+json" }
+        headers: { Accept: "application/vnd.github+json" },
+        signal: activeController ? activeController.signal : undefined
       });
 
       if (!response.ok) {
@@ -111,6 +128,10 @@
       var releases = await response.json();
       var total = getDownloadTotal(releases);
 
+      if (requestId !== refreshSerial) {
+        return;
+      }
+
       if (!total) {
         throw new Error("No installer downloads found");
       }
@@ -118,12 +139,19 @@
       animateCount(total);
       setStatus("Contador en vivo actualizado", "live");
     } catch (error) {
-      animateCount(fallbackValue);
+      if (requestId !== refreshSerial || error.name === "AbortError") {
+        return;
+      }
+
+      renderCount(lastKnownValue);
       setStatus("Mostrando la última cifra verificada", "fallback");
     } finally {
-      refreshButton.disabled = false;
-      if (miniSignal) {
-        miniSignal.disabled = false;
+      if (requestId === refreshSerial) {
+        activeController = null;
+        refreshButton.disabled = false;
+        if (miniSignal) {
+          miniSignal.disabled = false;
+        }
       }
     }
   }
