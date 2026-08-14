@@ -7,8 +7,8 @@
   <meta name="description" content="Zaetta Capture es un capturador de pantalla para Windows, rápido, local y pensado para trabajo operativo.">
   <link rel="icon" href="assets/logo_oficial.png">
   <link rel="stylesheet" href="styles.css?v=20260814-3">
-  <link rel="stylesheet" href="feedback.css?v=20260814-1">
-  <script src="script.js?v=20260814-3" defer></script>
+  <link rel="stylesheet" href="feedback.css?v=20260814-2">
+  <script src="script.js?v=20260814-4" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -20,7 +20,38 @@
       <a href="#funciones">Funciones</a>
       <a href="#licencia">Licencia</a>
       <a href="#descarga">Descargas</a>
-      <a href="#ideas">Ideas</a>
+      <div class="nav-ideas-menu" data-ideas-menu>
+        <button class="nav-ideas-trigger" type="button" aria-expanded="false" aria-controls="ideas-submenu">
+          <span>Ideas</span>
+          <small>Nuevo</small>
+          <i aria-hidden="true"></i>
+        </button>
+        <div class="ideas-submenu" id="ideas-submenu">
+          <div class="ideas-submenu-heading">
+            <span class="ideas-submenu-spark" aria-hidden="true">&#10022;</span>
+            <div>
+              <strong>Haz parte del producto</strong>
+              <small>Tu idea puede llegar a Zaetta</small>
+            </div>
+          </div>
+          <a href="#ideas" data-feedback-category="feature">
+            <span aria-hidden="true">+</span>
+            <div><strong>Proponer una función</strong><small>Algo nuevo que te gustaría usar</small></div>
+            <i aria-hidden="true">&#8594;</i>
+          </a>
+          <a href="#ideas" data-feedback-category="experience">
+            <span aria-hidden="true">&#10022;</span>
+            <div><strong>Mejorar la experiencia</strong><small>Haz Zaetta más simple o rápida</small></div>
+            <i aria-hidden="true">&#8594;</i>
+          </a>
+          <a href="#ideas" data-feedback-category="bug">
+            <span aria-hidden="true">!</span>
+            <div><strong>Reportar algo que falla</strong><small>Cuéntanos qué debería funcionar mejor</small></div>
+            <i aria-hidden="true">&#8594;</i>
+          </a>
+          <a class="ideas-submenu-cta" href="#ideas">Abrir buzón de ideas <span aria-hidden="true">&#8594;</span></a>
+        </div>
+      </div>
       <a href="#soporte">Soporte</a>
     </nav>
     <a class="download top-download" data-download-track href="https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter?download=1">
@@ -336,6 +367,15 @@
       </div>
     </section>
   </main>
+
+  <a class="feedback-launcher" data-feedback-launcher href="#ideas" aria-label="Abrir el buzón de ideas">
+    <span class="feedback-launcher-icon" aria-hidden="true">&#10022;</span>
+    <span class="feedback-launcher-copy">
+      <small>¿Tienes una idea?</small>
+      <strong>Cuéntanosla</strong>
+    </span>
+    <span class="feedback-launcher-arrow" aria-hidden="true">&#8594;</span>
+  </a>
 
   <footer id="descarga" class="footer">
     <div>

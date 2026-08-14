@@ -289,6 +289,76 @@
 (function () {
   "use strict";
 
+  var ideasMenu = document.querySelector("[data-ideas-menu]");
+  var ideasSection = document.querySelector("#ideas");
+  var launcher = document.querySelector("[data-feedback-launcher]");
+  var feedbackForm = document.querySelector("[data-feedback-form]");
+
+  if (!ideasMenu) {
+    return;
+  }
+
+  var menuTrigger = ideasMenu.querySelector(".nav-ideas-trigger");
+  var menuLinks = ideasMenu.querySelectorAll("a");
+  var categoryLinks = ideasMenu.querySelectorAll("[data-feedback-category]");
+  var categoryField = feedbackForm ? feedbackForm.querySelector('select[name="category"]') : null;
+  var messageField = feedbackForm ? feedbackForm.querySelector('textarea[name="message"]') : null;
+
+  function setMenuOpen(open) {
+    ideasMenu.dataset.open = open ? "true" : "false";
+    menuTrigger.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  menuTrigger.addEventListener("click", function () {
+    setMenuOpen(ideasMenu.dataset.open !== "true");
+  });
+
+  document.addEventListener("click", function (event) {
+    if (!ideasMenu.contains(event.target)) {
+      setMenuOpen(false);
+    }
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && ideasMenu.dataset.open === "true") {
+      setMenuOpen(false);
+      menuTrigger.focus();
+    }
+  });
+
+  menuLinks.forEach(function (link) {
+    link.addEventListener("click", function () {
+      setMenuOpen(false);
+    });
+  });
+
+  categoryLinks.forEach(function (link) {
+    link.addEventListener("click", function () {
+      if (!categoryField) {
+        return;
+      }
+
+      categoryField.value = link.dataset.feedbackCategory;
+      window.setTimeout(function () {
+        if (messageField) {
+          messageField.focus({ preventScroll: true });
+        }
+      }, 650);
+    });
+  });
+
+  if (launcher && ideasSection && "IntersectionObserver" in window) {
+    var launcherObserver = new IntersectionObserver(function (entries) {
+      launcher.classList.toggle("is-hidden", entries[0].isIntersecting);
+    }, { threshold: 0.12 });
+
+    launcherObserver.observe(ideasSection);
+  }
+}());
+
+(function () {
+  "use strict";
+
   var feedbackApiUrl = "https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/product-feedback";
   var form = document.querySelector("[data-feedback-form]");
 
