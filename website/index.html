@@ -7,6 +7,7 @@
   <meta name="description" content="Zaetta Capture es un capturador de pantalla para Windows, rápido, local y pensado para trabajo operativo.">
   <link rel="icon" href="assets/logo_oficial.png">
   <link rel="stylesheet" href="styles.css">
+  <script src="script.js" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -83,6 +84,35 @@
           <button>A pantalla</button>
           <button>Más</button>
         </div>
+      </div>
+    </section>
+
+    <section class="download-counter" aria-labelledby="download-counter-title">
+      <div class="counter-glow" aria-hidden="true"></div>
+      <div class="counter-orbit" aria-hidden="true">
+        <span class="counter-orbit-ring"></span>
+        <span class="counter-download-icon"><i></i></span>
+      </div>
+
+      <div class="counter-copy">
+        <p class="counter-kicker"><span></span> La comunidad sigue creciendo</p>
+        <h2 id="download-counter-title">
+          <span class="counter-number" data-download-count>96</span>
+          <span class="counter-label">descargas<br>y contando</span>
+        </h2>
+        <p class="counter-description">Cada descarga representa a alguien capturando, explicando y compartiendo con menos fricción.</p>
+      </div>
+
+      <div class="counter-meta">
+        <div class="counter-status" role="status">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span data-download-status>Última cifra verificada</span>
+        </div>
+        <button class="counter-refresh" type="button" data-download-refresh aria-label="Actualizar número de descargas">
+          <span aria-hidden="true">↻</span>
+          Actualizar
+        </button>
+        <p>Fuente: instaladores oficiales publicados en GitHub Releases.</p>
       </div>
     </section>
 
