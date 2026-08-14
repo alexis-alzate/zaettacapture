@@ -285,3 +285,81 @@
 
   refreshCount();
 }());
+
+(function () {
+  "use strict";
+
+  var feedbackApiUrl = "https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/product-feedback";
+  var form = document.querySelector("[data-feedback-form]");
+
+  if (!form) {
+    return;
+  }
+
+  var messageField = form.querySelector('textarea[name="message"]');
+  var characterCount = form.querySelector("[data-feedback-count]");
+  var submitButton = form.querySelector(".feedback-submit");
+  var buttonLabel = form.querySelector("[data-feedback-button-label]");
+  var feedbackStatus = form.querySelector("[data-feedback-status]");
+
+  function updateCharacterCount() {
+    characterCount.textContent = String(messageField.value.length);
+  }
+
+  function setFeedbackStatus(message, state) {
+    feedbackStatus.textContent = message;
+    feedbackStatus.dataset.state = state;
+  }
+
+  messageField.addEventListener("input", updateCharacterCount);
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    var formData = new FormData(form);
+    var payload = {
+      name: String(formData.get("name") || "").trim(),
+      email: String(formData.get("email") || "").trim(),
+      category: String(formData.get("category") || ""),
+      message: String(formData.get("message") || "").trim(),
+      website: String(formData.get("website") || "")
+    };
+
+    submitButton.disabled = true;
+    buttonLabel.textContent = "Enviando...";
+    setFeedbackStatus("Estamos guardando tu propuesta de forma segura.", "loading");
+
+    try {
+      var response = await fetch(feedbackApiUrl, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      var result = await response.json().catch(function () {
+        return {};
+      });
+
+      if (!response.ok) {
+        throw new Error(result.error || "No pudimos enviar tu propuesta.");
+      }
+
+      form.reset();
+      updateCharacterCount();
+      setFeedbackStatus("¡Idea recibida! Gracias por ayudarnos a construir una mejor Zaetta.", "success");
+    } catch (error) {
+      setFeedbackStatus(error.message || "No pudimos enviar tu propuesta. Inténtalo nuevamente.", "error");
+    } finally {
+      submitButton.disabled = false;
+      buttonLabel.textContent = "Enviar idea";
+    }
+  });
+}());

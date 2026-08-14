@@ -6,8 +6,8 @@
   <title>Zaetta Capture | Zaetta Software</title>
   <meta name="description" content="Zaetta Capture es un capturador de pantalla para Windows, rápido, local y pensado para trabajo operativo.">
   <link rel="icon" href="assets/logo_oficial.png">
-  <link rel="stylesheet" href="styles.css">
-  <script src="script.js?v=20260814-2" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20260814-3">
+  <script src="script.js?v=20260814-3" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -19,6 +19,7 @@
       <a href="#funciones">Funciones</a>
       <a href="#licencia">Licencia</a>
       <a href="#descarga">Descargas</a>
+      <a href="#ideas">Ideas</a>
       <a href="#soporte">Soporte</a>
     </nav>
     <a class="download top-download" data-download-track href="https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter?download=1">
@@ -252,6 +253,87 @@
         Comprar ahora
       </a>
     </section>
+
+    <section id="ideas" class="feedback-section" aria-labelledby="feedback-title">
+      <div class="feedback-glow" aria-hidden="true"></div>
+      <div class="feedback-copy">
+        <p class="feedback-eyebrow"><span></span> Construyamos Zaetta juntos</p>
+        <h2 id="feedback-title">Tu idea puede ser la próxima gran mejora.</h2>
+        <p>Cuéntanos qué te gustaría cambiar, simplificar o crear. Cada propuesta llega directamente al equipo de Zaetta.</p>
+
+        <div class="feedback-promises" aria-label="Qué hacemos con tu propuesta">
+          <div>
+            <strong>01</strong>
+            <span>Leemos cada idea</span>
+          </div>
+          <div>
+            <strong>02</strong>
+            <span>Evaluamos su impacto</span>
+          </div>
+          <div>
+            <strong>03</strong>
+            <span>Priorizamos lo que aporta valor</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="feedback-card">
+        <div class="feedback-card-heading">
+          <span class="feedback-card-icon" aria-hidden="true">✦</span>
+          <div>
+            <p>Buzón de ideas</p>
+            <h3>¿Qué debería hacer Zaetta después?</h3>
+          </div>
+        </div>
+
+        <form class="feedback-form" data-feedback-form novalidate>
+          <div class="feedback-fields-row">
+            <label class="feedback-field">
+              <span>Tu nombre <small>opcional</small></span>
+              <input type="text" name="name" maxlength="80" autocomplete="name" placeholder="¿Cómo te llamas?">
+            </label>
+
+            <label class="feedback-field">
+              <span>Tu correo <small>opcional</small></span>
+              <input type="email" name="email" maxlength="254" autocomplete="email" placeholder="Para responderte">
+            </label>
+          </div>
+
+          <label class="feedback-field">
+            <span>Tipo de propuesta</span>
+            <select name="category" required>
+              <option value="" selected disabled>Selecciona una categoría</option>
+              <option value="feature">Nueva función</option>
+              <option value="experience">Mejora de experiencia</option>
+              <option value="bug">Algo que debería funcionar mejor</option>
+              <option value="integration">Integración con otra herramienta</option>
+              <option value="other">Otra idea</option>
+            </select>
+          </label>
+
+          <label class="feedback-field feedback-message-field">
+            <span>Cuéntanos tu idea</span>
+            <textarea name="message" rows="6" minlength="20" maxlength="1200" required placeholder="¿Qué te gustaría mejorar y cómo te ayudaría en tu trabajo?"></textarea>
+            <small class="feedback-character-count"><span data-feedback-count>0</span>/1200</small>
+          </label>
+
+          <label class="feedback-honeypot" aria-hidden="true">
+            Sitio web
+            <input type="text" name="website" tabindex="-1" autocomplete="off">
+          </label>
+
+          <div class="feedback-form-footer">
+            <p>Tu correo solo se usará para responder a esta propuesta.</p>
+            <button class="feedback-submit" type="submit">
+              <span data-feedback-button-label>Enviar idea</span>
+              <i aria-hidden="true">→</i>
+            </button>
+          </div>
+
+          <p class="feedback-status" data-feedback-status role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
   </main>
 
   <footer id="descarga" class="footer">
@@ -273,6 +355,7 @@
       <a href="#funciones">Funciones</a>
       <a href="#licencia">Licencias</a>
       <a href="#descarga">Descargas</a>
+      <a href="#ideas">Enviar una idea</a>
       <a href="https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0.29">Novedades</a>
     </div>
     <div id="soporte">
