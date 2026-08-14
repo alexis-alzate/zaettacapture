@@ -10,7 +10,7 @@
   var miniSignal = document.querySelector("[data-download-mini]");
   var miniStatus = document.querySelector("[data-mini-status]");
   var miniCounters = document.querySelectorAll("[data-download-count-mini]");
-  var downloadLinks = document.querySelectorAll('a[href*="/ZaettaCaptureSetup.exe"]');
+  var downloadLinks = document.querySelectorAll("[data-download-track]");
 
   if (!counter || !status || !refreshButton || !counterCard) {
     return;
@@ -214,60 +214,15 @@
     }
   }
 
-  async function incrementDownloadCounter() {
-    var response = await fetch(counterApiUrl, {
-      method: "POST",
-      headers: { Accept: "application/json" },
-      cache: "no-store",
-      keepalive: true
-    });
-
-    if (!response.ok) {
-      throw new Error("Counter API responded with " + response.status);
-    }
-
-    var total = parseCounterResponse(await response.json());
-    animateCount(total);
-    setStatus("Descarga registrada · contador actualizado", "live");
-    return total;
-  }
-
-  function startTrackedDownload(downloadUrl) {
-    var downloadStarted = false;
-
-    function startDownload() {
-      if (downloadStarted) {
-        return;
-      }
-
-      downloadStarted = true;
-      window.location.assign(downloadUrl);
-    }
-
-    setStatus("Registrando descarga...", "loading");
-    var safetyTimer = window.setTimeout(startDownload, 900);
-
-    incrementDownloadCounter().catch(function () {
-      setStatus("La descarga continúa · reconectando contador", "fallback");
-    }).finally(function () {
-      window.clearTimeout(safetyTimer);
-      startDownload();
-    });
-  }
-
   downloadLinks.forEach(function (downloadLink) {
-    downloadLink.addEventListener("click", function (event) {
-      if (event.defaultPrevented || event.button !== 0) {
-        return;
-      }
+    downloadLink.addEventListener("click", function () {
+      setStatus("Registrando descarga en el servidor...", "loading");
 
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-        incrementDownloadCounter().catch(function () {});
-        return;
-      }
-
-      event.preventDefault();
-      startTrackedDownload(downloadLink.href);
+      [900, 2200, 5000].forEach(function (delay) {
+        window.setTimeout(function () {
+          refreshCount({ silent: true });
+        }, delay);
+      });
     });
   });
 
@@ -326,7 +281,7 @@
     if (!document.hidden) {
       refreshCount({ silent: true });
     }
-  }, 15000);
+  }, 5000);
 
   refreshCount();
 }());
