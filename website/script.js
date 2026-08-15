@@ -372,6 +372,7 @@
     var payload = {
       email: String(formData.get("email") || "").trim(),
       marketingConsent: formData.get("marketingConsent") === "on",
+      privacyAccepted: formData.get("privacyAccepted") === "on",
       website: String(formData.get("website") || "")
     };
 
@@ -547,6 +548,7 @@
       email: String(formData.get("email") || "").trim(),
       category: String(formData.get("category") || ""),
       message: String(formData.get("message") || "").trim(),
+      privacyAccepted: formData.get("privacyAccepted") === "on",
       website: String(formData.get("website") || "")
     };
 

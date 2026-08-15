@@ -301,6 +301,12 @@ Deno.serve(async (request: Request) => {
     return jsonResponse({ ok: true }, 201, origin);
   }
 
+  if (body.privacyAccepted !== true) {
+    return jsonResponse({
+      error: "Debes aceptar la política de privacidad para continuar.",
+    }, 400, origin);
+  }
+
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   if (email.length < 5 || email.length > 254 || !EMAIL_PATTERN.test(email)) {
     return jsonResponse({ error: "Ingresa un correo válido." }, 400, origin);

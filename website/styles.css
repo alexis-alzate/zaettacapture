@@ -1192,7 +1192,8 @@ h1 span,
   margin-top: 13px;
 }
 
-blockquote {
+blockquote,
+.product-status {
   margin: 0;
   padding: 28px;
   border: 1px solid var(--line);
@@ -1200,6 +1201,37 @@ blockquote {
   color: #f1f1ea;
   background: rgba(255, 255, 255, 0.035);
   line-height: 1.7;
+}
+
+.product-status .eyebrow {
+  display: inline-flex;
+  margin: 0 0 16px;
+}
+
+.product-status strong {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text);
+  font-size: 1.14rem;
+}
+
+.product-status p:not(.eyebrow) {
+  margin: 0 0 18px;
+  color: var(--muted);
+}
+
+.product-status a,
+.inline-legal-link {
+  color: var(--gold-2);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 212, 71, 0.45);
+  text-underline-offset: 3px;
+}
+
+.product-status a:hover,
+.inline-legal-link:hover {
+  color: #ffe98f;
 }
 
 .stars {
@@ -1234,6 +1266,132 @@ cite span {
   color: #ecece6;
   background: rgba(255, 255, 255, 0.035);
   font-weight: 800;
+}
+
+.founder-purpose {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  min-height: 570px;
+  margin-bottom: 34px;
+  padding: 64px;
+  overflow: hidden;
+  border: 1px solid var(--gold-line);
+  border-radius: 12px;
+  background: #050505;
+  box-shadow: var(--shadow);
+}
+
+.founder-purpose::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 35%;
+  z-index: -2;
+  background-image: url("assets/alexis-alzate-fundador.jpeg");
+  background-position: center 48%;
+  background-size: cover;
+  filter: saturate(0.94) contrast(1.03) brightness(0.9);
+  transform: scale(1.015);
+}
+
+.founder-purpose::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, #050505 0%, #050505 32%, rgba(5, 5, 5, 0.94) 44%, rgba(5, 5, 5, 0.38) 61%, rgba(5, 5, 5, 0.08) 79%, rgba(5, 5, 5, 0.02) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.18), transparent 46%, rgba(0, 0, 0, 0.7));
+}
+
+.founder-purpose-copy {
+  width: min(620px, 55%);
+}
+
+.founder-purpose-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  color: var(--gold-2);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.founder-purpose-kicker span {
+  width: 34px;
+  height: 2px;
+  background: var(--gold-2);
+  box-shadow: 0 0 14px rgba(255, 212, 71, 0.72);
+}
+
+.founder-purpose h2 {
+  max-width: 570px;
+  margin: 0 0 20px;
+  font-size: clamp(2.6rem, 5vw, 4.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+.founder-purpose-lead {
+  max-width: 590px;
+  margin: 0 0 26px;
+  color: #deded7;
+  font-size: 1.08rem;
+  line-height: 1.7;
+}
+
+.founder-purpose-commitment {
+  max-width: 590px;
+  padding: 20px 22px;
+  border: 1px solid var(--gold-line);
+  border-left: 3px solid var(--gold-2);
+  border-radius: 8px;
+  background: rgba(5, 5, 5, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.founder-purpose-commitment strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--gold-2);
+  font-size: 0.92rem;
+}
+
+.founder-purpose-commitment p,
+.founder-purpose-note,
+.founder-purpose-signature {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.62;
+}
+
+.founder-purpose-note {
+  max-width: 590px;
+  margin-top: 18px;
+  font-size: 0.84rem;
+}
+
+.founder-purpose-signature {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 22px;
+  color: var(--soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.founder-purpose-signature span {
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 900;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .license {
@@ -1275,10 +1433,6 @@ cite span {
 .license h2 {
   margin-bottom: 4px;
   font-size: clamp(2.7rem, 5vw, 4.2rem);
-}
-
-.license h2 span {
-  font-size: 1.6rem;
 }
 
 .buy {
@@ -1382,6 +1536,10 @@ cite span {
 
   .counter-meta {
     padding-top: 0;
+  }
+
+  .founder-purpose-copy {
+    width: min(650px, 65%);
   }
 }
 
@@ -1497,6 +1655,31 @@ cite span {
     padding: 28px 22px;
   }
 
+  .founder-purpose {
+    align-items: flex-start;
+    min-height: 900px;
+    padding: 40px 28px 410px;
+  }
+
+  .founder-purpose::before {
+    inset: auto 0 0;
+    height: 470px;
+    background-position: center 47%;
+  }
+
+  .founder-purpose::after {
+    background:
+      linear-gradient(180deg, #050505 0%, #050505 44%, rgba(5, 5, 5, 0.95) 53%, rgba(5, 5, 5, 0.18) 78%, rgba(0, 0, 0, 0.72) 100%);
+  }
+
+  .founder-purpose-copy {
+    width: 100%;
+  }
+
+  .founder-purpose h2 {
+    font-size: clamp(2.45rem, 10vw, 4rem);
+  }
+
   .shield {
     width: 132px;
     height: 132px;
@@ -1543,6 +1726,24 @@ cite span {
 
   .counter-description {
     margin-top: 24px;
+  }
+
+  .founder-purpose {
+    min-height: 940px;
+    padding: 34px 22px 390px;
+  }
+
+  .founder-purpose::before {
+    height: 430px;
+  }
+
+  .founder-purpose-lead {
+    font-size: 1rem;
+  }
+
+  .founder-purpose-signature {
+    display: grid;
+    gap: 4px;
   }
 }
 
@@ -1807,6 +2008,15 @@ cite span {
   font-size: 0.76rem;
   line-height: 1.5;
   text-align: center;
+}
+
+.download-privacy-consent {
+  align-items: flex-start;
+  padding-top: 2px;
+}
+
+.download-consent .inline-legal-link {
+  display: inline;
 }
 
 .download-gate-status {

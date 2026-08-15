@@ -82,6 +82,12 @@ Deno.serve(async (request: Request) => {
     return jsonResponse({ ok: true }, 201, origin);
   }
 
+  if (payload.privacyAccepted !== true) {
+    return jsonResponse({
+      error: "Debes aceptar la política de privacidad para enviar tu idea.",
+    }, 400, origin);
+  }
+
   const name = optionalText(payload.name, 80);
   const email = optionalText(payload.email, 254)?.toLowerCase() ?? null;
   const category = typeof payload.category === "string" ? payload.category : "";

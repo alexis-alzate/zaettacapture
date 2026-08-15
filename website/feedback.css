@@ -568,6 +568,31 @@
   line-height: 1.45;
 }
 
+.feedback-form-footer .inline-legal-link {
+  display: inline;
+}
+
+.feedback-privacy-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--soft);
+  font-size: 0.76rem;
+  line-height: 1.55;
+}
+
+.feedback-privacy-consent input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--gold);
+}
+
+.feedback-privacy-consent .inline-legal-link {
+  display: inline;
+}
+
 .feedback-submit {
   display: inline-flex;
   align-items: center;

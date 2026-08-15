@@ -7,6 +7,8 @@ Arquitectura actual: DreamHost conserva el dominio/DNS, Vercel aloja esta carpet
 ## Archivos
 
 - `index.html`: pagina principal de descarga.
+- `privacidad.html`: política pública de tratamiento de datos personales.
+- `legal.css`: estilos de las páginas legales.
 - `styles.css`: estilos visuales.
 - `assets/logo_oficial.png`: logo oficial usado en la pagina.
 - `latest.json`: manifiesto que lee el actualizador interno de Zaetta Capture.
@@ -33,12 +35,17 @@ actualizaciones automaticas de la aplicacion.
 Los botones publicos usan un flujo de descarga protegido:
 
 1. La persona escribe su correo en el formulario del sitio.
-2. La funcion `download-counter` guarda el registro privado en Supabase.
-3. La funcion entrega un enlace firmado que vence en 10 minutos.
-4. Ese enlace registra la descarga y redirige al instalador de GitHub Releases.
+2. La persona acepta la política de privacidad; las novedades siguen siendo opcionales.
+3. La funcion `download-counter` guarda el registro privado en Supabase.
+4. La funcion entrega un enlace firmado que vence en 10 minutos.
+5. Ese enlace registra la descarga y redirige al instalador de GitHub Releases.
 
 El consentimiento para recibir novedades es opcional y se guarda separado del
 registro necesario para gestionar la descarga y futuras licencias.
+
+La versión actual se ofrece como acceso anticipado gratuito. El sitio no debe
+presentar un botón de compra ni prometer una licencia de pago hasta que existan
+el cobro y la activación correspondientes.
 
 ## DNS
 
