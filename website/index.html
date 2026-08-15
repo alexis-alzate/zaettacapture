@@ -6,9 +6,9 @@
   <title>Zaetta Capture | Zaetta Software</title>
   <meta name="description" content="Zaetta Capture es un capturador de pantalla para Windows, rápido, local y pensado para trabajo operativo.">
   <link rel="icon" href="assets/logo_oficial.png">
-  <link rel="stylesheet" href="styles.css?v=20260814-3">
+  <link rel="stylesheet" href="styles.css?v=20260815-1">
   <link rel="stylesheet" href="feedback.css?v=20260814-2">
-  <script src="script.js?v=20260814-4" defer></script>
+  <script src="script.js?v=20260815-1" defer></script>
 </head>
 <body>
   <header class="topbar">
@@ -54,7 +54,7 @@
       </div>
       <a href="#soporte">Soporte</a>
     </nav>
-    <a class="download top-download" data-download-track href="https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter?download=1">
+    <a class="download top-download" data-download-track href="#descarga" aria-haspopup="dialog">
       <span class="windows-mark">⊞</span>
       Descargar para Windows
     </a>
@@ -67,7 +67,7 @@
         <h1>Captura todo.<br><span>Con precisión.</span></h1>
         <p class="subtitle">Zaetta Capture es la herramienta de captura de pantalla para Windows. Ligera, rápida y potente, diseñada para que te enfoques en lo que importa.</p>
         <div class="hero-actions">
-          <a class="download" data-download-track href="https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter?download=1">
+          <a class="download" data-download-track href="#descarga" aria-haspopup="dialog">
             <span class="windows-mark">⊞</span>
             Descargar para Windows
           </a>
@@ -243,7 +243,7 @@
         <ul>
           <li>Miles de profesionales confían en Zaetta Capture</li>
           <li>Diseñada para ahorrar tiempo y eliminar fricción</li>
-          <li>Privada, segura y sin recolección de datos</li>
+          <li>Privada y segura: tus capturas permanecen en tu equipo</li>
           <li>Soporte dedicado y actualizaciones constantes</li>
         </ul>
       </div>
@@ -280,7 +280,7 @@
         <li>Soporte prioritario</li>
         <li>Sin suscripciones, sin letras pequeñas</li>
       </ul>
-      <a class="download buy" data-download-track href="https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter?download=1">
+      <a class="download buy" data-download-track href="#descarga" aria-haspopup="dialog">
         <span class="windows-mark">⊞</span>
         Comprar ahora
       </a>
@@ -368,6 +368,48 @@
     </section>
   </main>
 
+  <dialog class="download-gate" data-download-gate aria-labelledby="download-gate-title">
+    <div class="download-gate-card">
+      <button class="download-gate-close" type="button" data-download-close aria-label="Cerrar ventana de descarga">×</button>
+      <div class="download-gate-mark" aria-hidden="true">
+        <img src="assets/logo_oficial.png" alt="">
+      </div>
+      <p class="download-gate-kicker"><span></span> Descarga privada</p>
+      <h2 id="download-gate-title">Tu descarga está a un paso.</h2>
+      <p class="download-gate-intro">Escribe tu correo y obtén Zaetta Capture inmediatamente. No necesitas crear una cuenta.</p>
+
+      <form class="download-gate-form" data-download-form novalidate>
+        <label class="download-email-field">
+          <span>Tu correo electrónico</span>
+          <div>
+            <span aria-hidden="true">✉</span>
+            <input type="email" name="email" maxlength="254" autocomplete="email" inputmode="email" required placeholder="nombre@correo.com">
+          </div>
+        </label>
+
+        <label class="download-honeypot" aria-hidden="true">
+          Sitio web
+          <input type="text" name="website" tabindex="-1" autocomplete="off">
+        </label>
+
+        <label class="download-consent">
+          <input type="checkbox" name="marketingConsent">
+          <span>Quiero recibir novedades importantes y conocer el impacto solidario de Zaetta Capture.</span>
+        </label>
+
+        <button class="download-gate-submit" type="submit">
+          <span class="windows-mark">⊞</span>
+          <span data-download-button-label>Obtener descarga</span>
+          <i aria-hidden="true">→</i>
+        </button>
+
+        <a class="download-fallback" data-download-fallback href="#" hidden>Descargar Zaetta Capture ahora</a>
+        <p class="download-gate-privacy">Usaremos tu correo para gestionar esta descarga y tus futuras licencias. Las novedades son opcionales.</p>
+        <p class="download-gate-status" data-download-form-status role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </dialog>
+
   <a class="feedback-launcher" data-feedback-launcher href="#ideas" aria-label="Abrir el buzón de ideas">
     <span class="feedback-launcher-icon" aria-hidden="true">&#10022;</span>
     <span class="feedback-launcher-copy">
@@ -409,7 +451,7 @@
     <div class="footer-download">
       <h2>Descarga Zaetta Capture</h2>
       <p>La última versión para Windows 10/11</p>
-      <a class="download" data-download-track href="https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter?download=1">
+      <a class="download" data-download-track href="#descarga" aria-haspopup="dialog">
         <span class="windows-mark">⊞</span>
         Descargar para Windows
       </a>

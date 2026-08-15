@@ -27,7 +27,18 @@ https://zaettasoftware.com/
 https://zaettasoftware.com/latest.json
 ```
 
-El boton de descarga y `latest.json` apuntan al asset versionado en GitHub Releases.
+`latest.json` apunta al asset versionado en GitHub Releases para conservar las
+actualizaciones automaticas de la aplicacion.
+
+Los botones publicos usan un flujo de descarga protegido:
+
+1. La persona escribe su correo en el formulario del sitio.
+2. La funcion `download-counter` guarda el registro privado en Supabase.
+3. La funcion entrega un enlace firmado que vence en 10 minutos.
+4. Ese enlace registra la descarga y redirige al instalador de GitHub Releases.
+
+El consentimiento para recibir novedades es opcional y se guarda separado del
+registro necesario para gestionar la descarga y futuras licencias.
 
 ## DNS
 
