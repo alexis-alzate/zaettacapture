@@ -1562,3 +1562,313 @@ cite span {
     animation: none;
   }
 }
+
+.download-gate {
+  width: min(94vw, 580px);
+  max-height: min(92vh, 760px);
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  color: var(--text);
+  background: transparent;
+}
+
+.download-gate::backdrop {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(224, 160, 20, 0.12), transparent 28rem),
+    rgba(0, 0, 0, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.download-gate-card {
+  position: relative;
+  max-height: min(92vh, 760px);
+  padding: 42px;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 212, 71, 0.32);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 78% 4%, rgba(255, 212, 71, 0.14), transparent 16rem),
+    linear-gradient(145deg, rgba(20, 20, 18, 0.99), rgba(5, 5, 5, 0.99));
+  box-shadow:
+    0 36px 120px rgba(0, 0, 0, 0.78),
+    0 0 70px rgba(224, 160, 20, 0.1);
+}
+
+.download-gate-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.045), transparent 34%);
+}
+
+.download-gate-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: #d9d9d3;
+  background: rgba(255, 255, 255, 0.045);
+  font-size: 1.65rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.download-gate-close:hover,
+.download-gate-close:focus-visible {
+  border-color: var(--gold-line);
+  color: var(--gold-2);
+}
+
+.download-gate-mark {
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 212, 71, 0.32);
+  border-radius: 20px;
+  background: rgba(224, 160, 20, 0.08);
+  box-shadow: 0 0 36px rgba(224, 160, 20, 0.16);
+}
+
+.download-gate-mark img {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.download-gate-kicker {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  color: var(--gold-2);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.download-gate-kicker span {
+  width: 22px;
+  height: 1px;
+  background: var(--gold);
+  box-shadow: 0 0 12px var(--gold);
+}
+
+.download-gate h2 {
+  max-width: 470px;
+  margin-bottom: 14px;
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+}
+
+.download-gate-intro {
+  max-width: 470px;
+  margin-bottom: 28px;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.download-gate-form {
+  display: grid;
+  gap: 17px;
+}
+
+.download-email-field {
+  display: grid;
+  gap: 9px;
+}
+
+.download-email-field > span {
+  color: #ecece6;
+  font-size: 0.87rem;
+  font-weight: 800;
+}
+
+.download-email-field > div {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  min-height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.38);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.download-email-field > div:focus-within {
+  border-color: rgba(255, 212, 71, 0.72);
+  box-shadow: 0 0 0 4px rgba(224, 160, 20, 0.1);
+}
+
+.download-email-field > div > span {
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border-right: 1px solid var(--line);
+  color: var(--gold-2);
+}
+
+.download-email-field input {
+  min-width: 0;
+  height: 56px;
+  padding: 0 16px;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+}
+
+.download-email-field input::placeholder {
+  color: #777770;
+}
+
+.download-consent {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  color: #bdbdb6;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.download-consent input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--gold);
+}
+
+.download-gate-submit {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 58px;
+  padding: 0 20px;
+  border: 1px solid rgba(255, 229, 108, 0.76);
+  border-radius: 11px;
+  color: #080808;
+  background: linear-gradient(180deg, #ffe267, var(--gold));
+  box-shadow: 0 18px 38px rgba(224, 160, 20, 0.22);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.download-gate-submit:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+
+.download-gate-submit:disabled {
+  cursor: wait;
+  filter: saturate(0.5);
+  opacity: 0.72;
+  transform: none;
+}
+
+.download-gate-submit i {
+  font-size: 1.25rem;
+  font-style: normal;
+}
+
+.download-fallback {
+  display: inline-flex;
+  justify-self: center;
+  color: var(--gold-2);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.download-fallback[hidden] {
+  display: none;
+}
+
+.download-gate-privacy {
+  margin: 0;
+  color: #85857f;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.download-gate-status {
+  min-height: 20px;
+  margin: -5px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.download-gate-status[data-state="success"] {
+  color: #83e6ad;
+}
+
+.download-gate-status[data-state="error"] {
+  color: #ff9d95;
+}
+
+.download-gate-status[data-state="loading"] {
+  color: var(--gold-2);
+}
+
+.download-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+@media (max-width: 620px) {
+  .download-gate {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .download-gate-card {
+    max-height: calc(100vh - 24px);
+    padding: 32px 22px 26px;
+    border-radius: 19px;
+  }
+
+  .download-gate-close {
+    top: 13px;
+    right: 13px;
+  }
+
+  .download-gate-mark {
+    width: 64px;
+    height: 64px;
+  }
+
+  .download-gate-mark img {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .download-gate-submit,
+  .download-email-field > div {
+    transition: none;
+  }
+}

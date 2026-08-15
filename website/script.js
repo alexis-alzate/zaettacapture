@@ -10,7 +10,6 @@
   var miniSignal = document.querySelector("[data-download-mini]");
   var miniStatus = document.querySelector("[data-mini-status]");
   var miniCounters = document.querySelectorAll("[data-download-count-mini]");
-  var downloadLinks = document.querySelectorAll("[data-download-track]");
 
   if (!counter || !status || !refreshButton || !counterCard) {
     return;
@@ -214,15 +213,13 @@
     }
   }
 
-  downloadLinks.forEach(function (downloadLink) {
-    downloadLink.addEventListener("click", function () {
-      setStatus("Registrando descarga en el servidor...", "loading");
+  document.addEventListener("zaetta:download-started", function () {
+    setStatus("Registrando descarga en el servidor...", "loading");
 
-      [900, 2200, 5000].forEach(function (delay) {
-        window.setTimeout(function () {
-          refreshCount({ silent: true });
-        }, delay);
-      });
+    [900, 2200, 5000].forEach(function (delay) {
+      window.setTimeout(function () {
+        refreshCount({ silent: true });
+      }, delay);
     });
   });
 
@@ -284,6 +281,159 @@
   }, 5000);
 
   refreshCount();
+}());
+
+(function () {
+  "use strict";
+
+  var downloadApiUrl = "https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter";
+  var gate = document.querySelector("[data-download-gate]");
+  var form = document.querySelector("[data-download-form]");
+  var downloadLinks = document.querySelectorAll("[data-download-track]");
+
+  if (!gate || !form || !downloadLinks.length) {
+    return;
+  }
+
+  var closeButton = gate.querySelector("[data-download-close]");
+  var emailField = form.querySelector('input[name="email"]');
+  var submitButton = form.querySelector(".download-gate-submit");
+  var buttonLabel = form.querySelector("[data-download-button-label]");
+  var formStatus = form.querySelector("[data-download-form-status]");
+  var fallbackLink = form.querySelector("[data-download-fallback]");
+
+  function setFormStatus(message, state) {
+    formStatus.textContent = message;
+    formStatus.dataset.state = state;
+  }
+
+  function showGate() {
+    fallbackLink.hidden = true;
+    fallbackLink.removeAttribute("href");
+    setFormStatus("", "");
+
+    if (typeof gate.showModal === "function") {
+      if (!gate.open) gate.showModal();
+    } else {
+      gate.setAttribute("open", "");
+    }
+
+    window.setTimeout(function () {
+      emailField.focus();
+    }, 80);
+  }
+
+  function closeGate() {
+    if (typeof gate.close === "function") {
+      gate.close();
+    } else {
+      gate.removeAttribute("open");
+    }
+  }
+
+  function safeDownloadUrl(value) {
+    try {
+      var url = new URL(String(value || ""));
+      var expectedPath = "/functions/v1/download-counter";
+      var valid = url.protocol === "https:" &&
+        url.hostname === "ocnoiraaqosfmbluccba.supabase.co" &&
+        url.pathname === expectedPath &&
+        Boolean(url.searchParams.get("token"));
+      return valid ? url.toString() : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  downloadLinks.forEach(function (downloadLink) {
+    downloadLink.addEventListener("click", function (event) {
+      event.preventDefault();
+      showGate();
+    });
+  });
+
+  closeButton.addEventListener("click", closeGate);
+
+  gate.addEventListener("click", function (event) {
+    if (event.target === gate) {
+      closeGate();
+    }
+  });
+
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    var formData = new FormData(form);
+    var payload = {
+      email: String(formData.get("email") || "").trim(),
+      marketingConsent: formData.get("marketingConsent") === "on",
+      website: String(formData.get("website") || "")
+    };
+
+    submitButton.disabled = true;
+    buttonLabel.textContent = "Preparando...";
+    fallbackLink.hidden = true;
+    setFormStatus("Guardando tu correo de forma segura.", "loading");
+
+    var controller = new AbortController();
+    var requestTimeout = window.setTimeout(function () {
+      controller.abort();
+    }, 15000);
+
+    try {
+      var response = await fetch(downloadApiUrl, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      var result = await response.json().catch(function () {
+        return {};
+      });
+
+      if (!response.ok) {
+        throw new Error(result.error || "No pudimos preparar tu descarga.");
+      }
+
+      var downloadUrl = safeDownloadUrl(result.downloadUrl);
+      if (!downloadUrl) {
+        throw new Error("No pudimos generar un enlace de descarga válido.");
+      }
+
+      fallbackLink.href = downloadUrl;
+      fallbackLink.hidden = false;
+      setFormStatus("¡Listo! La descarga comenzará automáticamente.", "success");
+      document.dispatchEvent(new CustomEvent("zaetta:download-started"));
+
+      window.setTimeout(function () {
+        window.location.assign(downloadUrl);
+      }, 350);
+    } catch (error) {
+      var message = error && error.name === "AbortError"
+        ? "La conexión tardó demasiado. Inténtalo nuevamente."
+        : (error && error.message) || "No pudimos preparar tu descarga. Inténtalo nuevamente.";
+      setFormStatus(message, "error");
+    } finally {
+      window.clearTimeout(requestTimeout);
+      submitButton.disabled = false;
+      buttonLabel.textContent = "Obtener descarga";
+    }
+  });
+
+  var pageUrl = new URL(window.location.href);
+  if (pageUrl.searchParams.get("descargar") === "1") {
+    pageUrl.searchParams.delete("descargar");
+    window.history.replaceState({}, "", pageUrl.pathname + pageUrl.search + pageUrl.hash);
+    window.setTimeout(showGate, 120);
+  }
 }());
 
 (function () {
