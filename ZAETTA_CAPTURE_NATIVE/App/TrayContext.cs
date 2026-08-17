@@ -68,6 +68,7 @@ namespace ZaettaCaptureNative
                 repeatLastAreaItem.Enabled = hasLastSelection;
 
             ScheduleUpdateChecks();
+            ScheduleLicenseCheck();
         }
 
         private static Icon LoadTrayIcon()
@@ -333,6 +334,56 @@ namespace ZaettaCaptureNative
             };
             updateTimer.Start();
             PostToUi(delegate { BeginUpdateCheck(false); });
+        }
+
+        private void ScheduleLicenseCheck()
+        {
+            ThreadPool.QueueUserWorkItem(delegate { BeginLicenseCheck(); });
+        }
+
+        private void BeginLicenseCheck()
+        {
+            string licenseKey = LicenseStore.LoadLicenseKey();
+            if (!string.IsNullOrEmpty(licenseKey))
+            {
+                // La activacion y revalidacion de licencias se conecta en un paso siguiente.
+                return;
+            }
+
+            string cachedEmail = LicenseStore.LoadEmail();
+            if (!string.IsNullOrEmpty(cachedEmail))
+            {
+                RunTrialStart(cachedEmail);
+                return;
+            }
+
+            PostToUi(delegate { PromptForTrialEmail(); });
+        }
+
+        private void PromptForTrialEmail()
+        {
+            using (TrialStartForm form = new TrialStartForm())
+            {
+                if (form.ShowDialog() != DialogResult.OK)
+                    return;
+
+                string email = form.Email;
+                ThreadPool.QueueUserWorkItem(delegate { RunTrialStart(email); });
+            }
+        }
+
+        private void RunTrialStart(string email)
+        {
+            try
+            {
+                (string fingerprint, string source) = DeviceFingerprint.Compute();
+                TrialStartResult result = LicenseApiClient.StartTrial(fingerprint, source, email);
+                LicenseStore.SaveTrial(email, result.StartedAtUtc, result.ExpiresAtUtc);
+            }
+            catch (Exception ex)
+            {
+                StartupDiagnostics.Log(ex);
+            }
         }
 
         private void BeginUpdateCheck(bool manual)
