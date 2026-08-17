@@ -12,3 +12,9 @@ verify_jwt = false
 
 [functions.mercadopago-webhook]
 verify_jwt = false
+
+[functions.trial-start]
+verify_jwt = false
+
+[functions.license-activate]
+verify_jwt = false

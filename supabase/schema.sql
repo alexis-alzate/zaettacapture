@@ -813,3 +813,289 @@ grant execute on function public.record_license_payment_state(uuid, text, text, 
 grant execute on function public.claim_license_email(uuid) to service_role;
 grant execute on function public.complete_license_email(uuid, boolean, text) to service_role;
 grant execute on function public.get_license_order_status(uuid, uuid) to service_role;
+
+-- Prueba gratuita y activacion por dispositivo de Zaetta Capture.
+-- El "device_fingerprint" se calcula en la app nativa a partir de
+-- identificadores de hardware (serial de BIOS/placa base + disco fisico)
+-- cuando estan disponibles, porque esos sobreviven una reinstalacion de
+-- Windows. Si el equipo no expone esos valores, se usa el MachineGuid de
+-- Windows como respaldo, y "fingerprint_source" registra cual se uso.
+create table if not exists public.trial_registrations (
+  id uuid primary key default gen_random_uuid(),
+  product text not null default 'zaetta-capture',
+  device_fingerprint text not null,
+  fingerprint_source text not null default 'hardware',
+  email text not null,
+  started_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now(),
+  constraint trial_registrations_product_allowed check (product = 'zaetta-capture'),
+  constraint trial_registrations_fingerprint_length check (char_length(device_fingerprint) between 32 and 128),
+  constraint trial_registrations_fingerprint_source_allowed check (fingerprint_source in ('hardware', 'machine_guid_fallback')),
+  constraint trial_registrations_email_length check (char_length(email) between 5 and 254),
+  constraint trial_registrations_email_normalized check (email = lower(btrim(email))),
+  constraint trial_registrations_email_format check (email ~ '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+$'),
+  constraint trial_registrations_expires_after_start check (expires_at > started_at),
+  constraint trial_registrations_device_unique unique (product, device_fingerprint)
+);
+
+create index if not exists trial_registrations_email_idx
+on public.trial_registrations (email, started_at desc);
+
+create table if not exists public.license_devices (
+  id uuid primary key default gen_random_uuid(),
+  license_id uuid not null references public.licenses(id) on delete cascade,
+  device_fingerprint text not null,
+  fingerprint_source text not null default 'hardware',
+  device_name text,
+  activated_at timestamptz not null default now(),
+  deactivated_at timestamptz,
+  last_seen_at timestamptz not null default now(),
+  constraint license_devices_fingerprint_length check (char_length(device_fingerprint) between 32 and 128),
+  constraint license_devices_fingerprint_source_allowed check (fingerprint_source in ('hardware', 'machine_guid_fallback')),
+  constraint license_devices_device_name_length check (device_name is null or char_length(device_name) <= 80),
+  constraint license_devices_license_fingerprint_unique unique (license_id, device_fingerprint)
+);
+
+create index if not exists license_devices_license_active_idx
+on public.license_devices (license_id)
+where deactivated_at is null;
+
+alter table public.trial_registrations enable row level security;
+alter table public.license_devices enable row level security;
+
+do $$
+declare
+  protected_table text;
+  policy_name text;
+begin
+  foreach protected_table in array array[
+    'trial_registrations',
+    'license_devices'
+  ] loop
+    policy_name := 'Deny public access to ' || protected_table;
+    if not exists (
+      select 1
+      from pg_catalog.pg_policies
+      where schemaname = 'public'
+        and tablename = protected_table
+        and policyname = policy_name
+    ) then
+      execute format(
+        'create policy %I on public.%I for all to anon, authenticated using (false) with check (false)',
+        policy_name,
+        protected_table
+      );
+    end if;
+  end loop;
+end;
+$$;
+
+revoke all on table public.trial_registrations from public, anon, authenticated;
+revoke all on table public.license_devices from public, anon, authenticated;
+
+grant select, insert on table public.trial_registrations to service_role;
+grant select, insert, update on table public.license_devices to service_role;
+
+create or replace function public.register_trial_device(
+  p_device_fingerprint text,
+  p_fingerprint_source text,
+  p_email text
+)
+returns table (started_at timestamptz, expires_at timestamptz)
+language plpgsql
+volatile
+security invoker
+set search_path = ''
+as $$
+declare
+  normalized_email text := lower(btrim(p_email));
+  normalized_fingerprint text := btrim(p_device_fingerprint);
+begin
+  if normalized_fingerprint is null
+     or char_length(normalized_fingerprint) not between 32 and 128 then
+    raise exception 'Invalid device fingerprint';
+  end if;
+
+  if p_fingerprint_source not in ('hardware', 'machine_guid_fallback') then
+    raise exception 'Invalid fingerprint source';
+  end if;
+
+  if normalized_email is null
+     or char_length(normalized_email) < 5
+     or char_length(normalized_email) > 254
+     or normalized_email !~ '^[^[:space:]@]+@[^[:space:]@]+[.][^[:space:]@]+$' then
+    raise exception 'Invalid email';
+  end if;
+
+  insert into public.trial_registrations (
+    device_fingerprint,
+    fingerprint_source,
+    email,
+    expires_at
+  )
+  values (
+    normalized_fingerprint,
+    p_fingerprint_source,
+    normalized_email,
+    now() + interval '30 days'
+  )
+  on conflict (product, device_fingerprint) do nothing;
+
+  return query
+  select t.started_at, t.expires_at
+  from public.trial_registrations t
+  where t.product = 'zaetta-capture'
+    and t.device_fingerprint = normalized_fingerprint;
+end;
+$$;
+
+create or replace function public.activate_license_device(
+  p_license_key text,
+  p_device_fingerprint text,
+  p_fingerprint_source text,
+  p_device_name text default null
+)
+returns table (
+  activated boolean,
+  license_status text,
+  max_devices integer,
+  active_device_count integer
+)
+language plpgsql
+volatile
+security invoker
+set search_path = ''
+as $$
+declare
+  locked_license public.licenses%rowtype;
+  normalized_fingerprint text := btrim(p_device_fingerprint);
+  normalized_name text := left(nullif(btrim(coalesce(p_device_name, '')), ''), 80);
+  current_count integer;
+  is_active boolean;
+begin
+  if normalized_fingerprint is null
+     or char_length(normalized_fingerprint) not between 32 and 128 then
+    raise exception 'Invalid device fingerprint';
+  end if;
+
+  if p_fingerprint_source not in ('hardware', 'machine_guid_fallback') then
+    raise exception 'Invalid fingerprint source';
+  end if;
+
+  select *
+  into locked_license
+  from public.licenses
+  where license_key = btrim(p_license_key)
+  for update;
+
+  if not found then
+    raise exception 'License not found';
+  end if;
+
+  select exists (
+    select 1
+    from public.license_devices
+    where license_id = locked_license.id
+      and device_fingerprint = normalized_fingerprint
+      and deactivated_at is null
+  )
+  into is_active;
+
+  if is_active then
+    update public.license_devices
+    set last_seen_at = now(),
+        device_name = coalesce(normalized_name, device_name)
+    where license_id = locked_license.id
+      and device_fingerprint = normalized_fingerprint
+      and deactivated_at is null;
+  elsif locked_license.status = 'active' then
+    select count(*)
+    into current_count
+    from public.license_devices
+    where license_id = locked_license.id
+      and deactivated_at is null;
+
+    if current_count < locked_license.max_devices then
+      insert into public.license_devices (
+        license_id,
+        device_fingerprint,
+        fingerprint_source,
+        device_name
+      )
+      values (
+        locked_license.id,
+        normalized_fingerprint,
+        p_fingerprint_source,
+        normalized_name
+      )
+      on conflict (license_id, device_fingerprint) do update
+      set deactivated_at = null,
+          last_seen_at = now(),
+          device_name = coalesce(normalized_name, public.license_devices.device_name);
+      is_active := true;
+    end if;
+  end if;
+
+  select count(*)
+  into current_count
+  from public.license_devices
+  where license_id = locked_license.id
+    and deactivated_at is null;
+
+  return query
+  select is_active, locked_license.status, locked_license.max_devices, current_count;
+end;
+$$;
+
+create or replace function public.list_license_devices(p_license_key text)
+returns table (
+  device_id uuid,
+  device_name text,
+  activated_at timestamptz
+)
+language sql
+stable
+security invoker
+set search_path = ''
+as $$
+  select d.id, d.device_name, d.activated_at
+  from public.license_devices d
+  join public.licenses l on l.id = d.license_id
+  where l.license_key = btrim(p_license_key)
+    and d.deactivated_at is null
+  order by d.activated_at asc;
+$$;
+
+create or replace function public.deactivate_license_device(
+  p_license_key text,
+  p_device_id uuid
+)
+returns boolean
+language plpgsql
+volatile
+security invoker
+set search_path = ''
+as $$
+begin
+  update public.license_devices d
+  set deactivated_at = now()
+  from public.licenses l
+  where d.license_id = l.id
+    and l.license_key = btrim(p_license_key)
+    and d.id = p_device_id
+    and d.deactivated_at is null;
+
+  return found;
+end;
+$$;
+
+revoke all on function public.register_trial_device(text, text, text) from public, anon, authenticated;
+revoke all on function public.activate_license_device(text, text, text, text) from public, anon, authenticated;
+revoke all on function public.list_license_devices(text) from public, anon, authenticated;
+revoke all on function public.deactivate_license_device(text, uuid) from public, anon, authenticated;
+
+grant execute on function public.register_trial_device(text, text, text) to service_role;
+grant execute on function public.activate_license_device(text, text, text, text) to service_role;
+grant execute on function public.list_license_devices(text) to service_role;
+grant execute on function public.deactivate_license_device(text, uuid) to service_role;

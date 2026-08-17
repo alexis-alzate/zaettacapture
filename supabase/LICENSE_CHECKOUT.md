@@ -71,6 +71,34 @@ credenciales productivas de la aplicación Zaetta Capture.
   revisión por reembolso.
 - `license_payment_events`: conserva un registro mínimo de procesamiento sin
   almacenar el cuerpo completo del Webhook.
+- `trial_registrations`: fija la fecha de inicio de los 30 días de prueba por
+  equipo (`device_fingerprint`), para que reinstalar la app no la reinicie.
+- `license_devices`: dispositivos activados por licencia, con tope de
+  `max_devices`. Permite desactivar un equipo para liberar cupo en otro.
+- `trial-start`: la llama la app de Windows al primer uso. Registra o
+  devuelve la fecha de inicio/fin de la prueba de 30 días para ese equipo.
+- `license-activate`: la llama la app de Windows para activar una clave en
+  el equipo, o para desactivar un equipo y liberar cupo (`action: "activate"`
+  o `action: "deactivate"`). Se llama también en cada arranque para
+  revalidar el estado (si se revoca o reembolsa una licencia, esto la
+  vuelve a bloquear).
+
+## Huella de equipo (`device_fingerprint`)
+
+La app de Windows identifica el equipo con prioridad de fuentes, para que
+reinstalar el sistema operativo no reinicie la prueba gratuita ni libere
+cupos de licencia:
+
+1. Serial de BIOS/placa base + disco físico (`fingerprint_source = hardware`).
+   Sobrevive una reinstalación de Windows porque vive en el firmware.
+2. Si el equipo no expone esos valores (comunes en equipos económicos o
+   máquinas virtuales), se usa el `MachineGuid` de Windows como respaldo
+   (`fingerprint_source = machine_guid_fallback`). Ese sí se regenera al
+   reinstalar Windows, por lo que la protección es menor en ese caso.
+
+Ninguna huella de software es infalible: alguien técnico con una máquina
+virtual podría falsificar estos valores. La huella cierra el caso común
+(reinstalar Windows para resetear el contador), no el caso adversarial.
 
 ## Lista obligatoria antes del lanzamiento
 
@@ -79,9 +107,12 @@ credenciales productivas de la aplicación Zaetta Capture.
 2. Convertir `terminos-licencia.html` de borrador a versión vigente y actualizar
    `terms_version` en `schema.sql` antes de recibir aceptaciones reales.
 3. Verificar `licencias@zaettasoftware.com` en Resend.
-4. Aplicar `schema.sql` y ejecutar los asesores de seguridad de Supabase.
-5. Desplegar las tres Edge Functions y confirmar que `verify_jwt = false` solo
-   aplica a estos endpoints públicos controlados.
+4. ~~Aplicar `schema.sql` y ejecutar los asesores de seguridad de Supabase.~~
+   Hecho el 2026-08-16 (migración `zaetta_capture_full_schema`).
+5. Desplegar `license-checkout`, `license-status` y `mercadopago-webhook`
+   (`trial-start` y `license-activate` ya están desplegadas y probadas desde
+   el 2026-08-16) y confirmar que `verify_jwt = false` solo aplica a estos
+   endpoints públicos controlados.
 6. Probar una compra completa con credenciales y usuarios de prueba.
 7. Simular reintentos del mismo Webhook y comprobar que existe una sola licencia.
 8. Probar pago rechazado, pendiente, reembolsado y contracargo.

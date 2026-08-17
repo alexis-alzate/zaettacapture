@@ -21,6 +21,7 @@ obj/
 .env.*
 !.env.example
 !**/.env.example
+.mcp.json
 *:Zone.Identifier
 ChatGPT Image*.png
 ZAETTA_CAPTURE/ChatGPT Image*.png
