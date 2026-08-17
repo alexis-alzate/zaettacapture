@@ -108,10 +108,10 @@ virtual podría falsificar estos valores. La huella cierra el caso común
    `terms_version` en `schema.sql` antes de recibir aceptaciones reales.
 3. Verificar `licencias@zaettasoftware.com` en Resend.
 4. ~~Aplicar `schema.sql` y ejecutar los asesores de seguridad de Supabase.~~
-   Hecho el 2026-08-16 (migración `zaetta_capture_full_schema`).
+   Hecho el 2026-08-17 (migración `zaetta_capture_full_schema`).
 5. Desplegar `license-checkout`, `license-status` y `mercadopago-webhook`
    (`trial-start` y `license-activate` ya están desplegadas y probadas desde
-   el 2026-08-16) y confirmar que `verify_jwt = false` solo aplica a estos
+   el 2026-08-17) y confirmar que `verify_jwt = false` solo aplica a estos
    endpoints públicos controlados.
 6. Probar una compra completa con credenciales y usuarios de prueba.
 7. Simular reintentos del mismo Webhook y comprobar que existe una sola licencia.
