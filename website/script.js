@@ -286,6 +286,302 @@
 (function () {
   "use strict";
 
+  var checkoutEnabled = document.body.dataset.licenseCheckoutEnabled === "true";
+  var checkoutApiUrl = "https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/license-checkout";
+  var statusApiUrl = "https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/license-status";
+  var checkoutGate = document.querySelector("[data-license-checkout-gate]");
+  var checkoutForm = document.querySelector("[data-license-checkout-form]");
+  var openButtons = document.querySelectorAll("[data-license-checkout-open]");
+  var resultGate = document.querySelector("[data-license-result-gate]");
+
+  if (!checkoutGate || !checkoutForm || !openButtons.length || !resultGate) {
+    return;
+  }
+
+  var checkoutClose = checkoutGate.querySelector("[data-license-checkout-close]");
+  var checkoutEmail = checkoutForm.querySelector('input[name="email"]');
+  var checkoutSubmit = checkoutForm.querySelector(".download-gate-submit");
+  var checkoutButtonLabel = checkoutForm.querySelector("[data-license-checkout-button-label]");
+  var checkoutStatus = checkoutForm.querySelector("[data-license-checkout-status]");
+  var resultClose = resultGate.querySelector("[data-license-result-close]");
+  var resultTitle = resultGate.querySelector("[data-license-result-title]");
+  var resultCopy = resultGate.querySelector("[data-license-result-copy]");
+  var resultKeyBox = resultGate.querySelector("[data-license-result-key]");
+  var resultKey = resultGate.querySelector("[data-license-key]");
+  var resultKeyCopy = resultGate.querySelector("[data-license-key-copy]");
+  var resultRefresh = resultGate.querySelector("[data-license-result-refresh]");
+  var resultStatus = resultGate.querySelector("[data-license-result-status]");
+  var activeOrderId = "";
+  var activeCheckoutToken = "";
+  var statusAttempts = 0;
+
+  function setStatus(element, message, state) {
+    element.textContent = message;
+    element.dataset.state = state || "";
+  }
+
+  function showDialog(dialog) {
+    if (typeof dialog.showModal === "function") {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      dialog.setAttribute("open", "");
+    }
+  }
+
+  function closeDialog(dialog) {
+    if (typeof dialog.close === "function") {
+      dialog.close();
+    } else {
+      dialog.removeAttribute("open");
+    }
+  }
+
+  function validUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  }
+
+  function safeMercadoPagoUrl(value) {
+    try {
+      var url = new URL(String(value || ""));
+      var host = url.hostname.toLowerCase();
+      var validHost = host === "mercadopago.com" || host.endsWith(".mercadopago.com") ||
+        host === "mercadopago.com.co" || host.endsWith(".mercadopago.com.co");
+      return url.protocol === "https:" && validHost ? url.toString() : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function storageKey(orderId) {
+    return "zaetta:license-checkout:" + orderId;
+  }
+
+  function saveCheckoutToken(orderId, token) {
+    try {
+      window.sessionStorage.setItem(storageKey(orderId), token);
+    } catch (error) {
+      console.warn("No se pudo guardar temporalmente el estado de la compra.", error);
+    }
+  }
+
+  function readCheckoutToken(orderId) {
+    try {
+      return window.sessionStorage.getItem(storageKey(orderId)) || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function openCheckout() {
+    setStatus(checkoutStatus, checkoutEnabled ? "" : "El flujo está listo para revisión, pero el cobro aún no está activo.", checkoutEnabled ? "" : "loading");
+    showDialog(checkoutGate);
+    window.setTimeout(function () {
+      checkoutEmail.focus();
+    }, 80);
+  }
+
+  openButtons.forEach(function (button) {
+    button.addEventListener("click", openCheckout);
+  });
+
+  checkoutClose.addEventListener("click", function () {
+    closeDialog(checkoutGate);
+  });
+  checkoutGate.addEventListener("click", function (event) {
+    if (event.target === checkoutGate) closeDialog(checkoutGate);
+  });
+
+  checkoutForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    if (!checkoutForm.checkValidity()) {
+      checkoutForm.reportValidity();
+      return;
+    }
+    if (!checkoutEnabled) {
+      setStatus(checkoutStatus, "Todavía no realizaremos ningún cobro. Estamos terminando la configuración segura de Mercado Pago.", "loading");
+      return;
+    }
+
+    var formData = new FormData(checkoutForm);
+    var payload = {
+      email: String(formData.get("email") || "").trim(),
+      privacyAccepted: formData.get("privacyAccepted") === "on",
+      termsAccepted: formData.get("termsAccepted") === "on",
+      website: String(formData.get("website") || "")
+    };
+
+    checkoutSubmit.disabled = true;
+    checkoutButtonLabel.textContent = "Creando orden segura...";
+    setStatus(checkoutStatus, "Te llevaremos a Mercado Pago para completar el pago.", "loading");
+
+    var controller = new AbortController();
+    var timeout = window.setTimeout(function () {
+      controller.abort();
+    }, 15000);
+
+    try {
+      var response = await fetch(checkoutApiUrl, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      var result = await response.json().catch(function () {
+        return {};
+      });
+
+      if (!response.ok) {
+        throw new Error(result.error || "No pudimos iniciar el pago.");
+      }
+
+      var orderId = String(result.orderId || "");
+      var checkoutToken = String(result.checkoutToken || "");
+      var initPoint = safeMercadoPagoUrl(result.initPoint);
+      if (!validUuid(orderId) || !validUuid(checkoutToken) || !initPoint) {
+        throw new Error("El servidor devolvió una orden no válida.");
+      }
+
+      saveCheckoutToken(orderId, checkoutToken);
+      setStatus(checkoutStatus, "Orden creada. Abriendo Mercado Pago...", "success");
+      window.setTimeout(function () {
+        window.location.assign(initPoint);
+      }, 250);
+    } catch (error) {
+      var message = error && error.name === "AbortError"
+        ? "La conexión tardó demasiado. Inténtalo nuevamente."
+        : (error && error.message) || "No pudimos iniciar el pago.";
+      setStatus(checkoutStatus, message, "error");
+    } finally {
+      window.clearTimeout(timeout);
+      checkoutSubmit.disabled = false;
+      checkoutButtonLabel.textContent = "Continuar con Mercado Pago";
+    }
+  });
+
+  function renderLicenseStatus(order) {
+    resultKeyBox.hidden = true;
+    setStatus(resultStatus, "", "");
+
+    if (order.status === "approved" && order.licenseKey) {
+      resultTitle.textContent = "Tu licencia está activa.";
+      resultCopy.textContent = "$10.000 COP quedaron reservados para el compromiso solidario. También enviamos la licencia a " + (order.buyerEmail || "tu correo") + ".";
+      resultKey.textContent = order.licenseKey;
+      resultKeyBox.hidden = false;
+      setStatus(resultStatus, "Pago confirmado de forma segura con Mercado Pago.", "success");
+      return false;
+    }
+
+    if (order.status === "refunded" || order.status === "charged_back") {
+      resultTitle.textContent = "La licencia no está activa.";
+      resultCopy.textContent = "El pago figura como reembolsado o desconocido. Escríbenos si necesitas revisar el caso.";
+      setStatus(resultStatus, "Contacta a soporte@zaettasoftware.com.", "error");
+      return false;
+    }
+
+    if (order.status === "rejected" || order.status === "checkout_error") {
+      resultTitle.textContent = "El pago no se completó.";
+      resultCopy.textContent = "No generamos ninguna licencia ni registramos el valor como reservado.";
+      setStatus(resultStatus, "Puedes volver a intentarlo desde la sección de licencia.", "error");
+      return false;
+    }
+
+    resultTitle.textContent = "Estamos confirmando tu pago.";
+    resultCopy.textContent = "Mercado Pago puede tardar unos segundos en notificarnos. No cierres esta ventana todavía.";
+    setStatus(resultStatus, "Consultando estado seguro...", "loading");
+    return true;
+  }
+
+  async function refreshLicenseStatus() {
+    if (!validUuid(activeOrderId) || !validUuid(activeCheckoutToken)) {
+      resultTitle.textContent = "Revisa tu correo.";
+      resultCopy.textContent = "Por seguridad, esta pestaña no conserva el identificador necesario para mostrar la licencia. Si el pago fue aprobado, la recibirás por correo.";
+      setStatus(resultStatus, "También puedes escribir a soporte@zaettasoftware.com.", "loading");
+      return;
+    }
+
+    resultRefresh.disabled = true;
+    try {
+      var response = await fetch(statusApiUrl, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          orderId: activeOrderId,
+          checkoutToken: activeCheckoutToken
+        })
+      });
+      var order = await response.json().catch(function () {
+        return {};
+      });
+      if (!response.ok) throw new Error(order.error || "No pudimos consultar la compra.");
+
+      var keepPolling = renderLicenseStatus(order);
+      statusAttempts += 1;
+      if (keepPolling && statusAttempts < 12) {
+        window.setTimeout(refreshLicenseStatus, 5000);
+      }
+    } catch (error) {
+      setStatus(resultStatus, (error && error.message) || "No pudimos consultar la compra.", "error");
+    } finally {
+      resultRefresh.disabled = false;
+    }
+  }
+
+  resultClose.addEventListener("click", function () {
+    closeDialog(resultGate);
+  });
+  resultGate.addEventListener("click", function (event) {
+    if (event.target === resultGate) closeDialog(resultGate);
+  });
+  resultRefresh.addEventListener("click", function () {
+    statusAttempts = 0;
+    refreshLicenseStatus();
+  });
+  resultKeyCopy.addEventListener("click", async function () {
+    var key = resultKey.textContent || "";
+    if (!key) return;
+    try {
+      await navigator.clipboard.writeText(key);
+      resultKeyCopy.textContent = "Licencia copiada";
+    } catch (error) {
+      resultKeyCopy.textContent = "Selecciona y copia la clave";
+    }
+  });
+
+  var returnUrl = new URL(window.location.href);
+  var returnedOrderId = returnUrl.searchParams.get("order") || "";
+  if (returnUrl.searchParams.get("licencia") === "resultado" && validUuid(returnedOrderId)) {
+    activeOrderId = returnedOrderId;
+    activeCheckoutToken = readCheckoutToken(activeOrderId);
+    returnUrl.searchParams.delete("licencia");
+    returnUrl.searchParams.delete("order");
+    returnUrl.searchParams.delete("resultado");
+    returnUrl.searchParams.delete("collection_id");
+    returnUrl.searchParams.delete("collection_status");
+    returnUrl.searchParams.delete("payment_id");
+    returnUrl.searchParams.delete("status");
+    returnUrl.searchParams.delete("external_reference");
+    returnUrl.searchParams.delete("payment_type");
+    returnUrl.searchParams.delete("merchant_order_id");
+    returnUrl.searchParams.delete("preference_id");
+    returnUrl.searchParams.delete("site_id");
+    returnUrl.searchParams.delete("processing_mode");
+    returnUrl.searchParams.delete("merchant_account_id");
+    window.history.replaceState({}, "", returnUrl.pathname + returnUrl.search + returnUrl.hash);
+    showDialog(resultGate);
+    refreshLicenseStatus();
+  }
+}());
+
+(function () {
+  "use strict";
+
   var downloadApiUrl = "https://ocnoiraaqosfmbluccba.supabase.co/functions/v1/download-counter";
   var gate = document.querySelector("[data-download-gate]");
   var form = document.querySelector("[data-download-form]");

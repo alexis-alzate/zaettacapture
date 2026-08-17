@@ -47,6 +47,24 @@ La versión actual se ofrece como acceso anticipado gratuito. El sitio no debe
 presentar un botón de compra ni prometer una licencia de pago hasta que existan
 el cobro y la activación correspondientes.
 
+## Licencia solidaria en preparación
+
+La rama `feature/licencia-solidaria` contiene la interfaz y el backend inicial
+para una licencia personal de pago único por `10.000 COP`, procesada con Mercado
+Pago. El checkout está deliberadamente desactivado en `index.html` mediante:
+
+```html
+<body data-license-checkout-enabled="false">
+```
+
+La interfaz puede revisarse sin realizar cobros. No se debe cambiar a `true` ni
+publicar como venta activa hasta desplegar y probar las funciones, configurar
+los secretos, verificar el correo transaccional y terminar la activación dentro
+de la aplicación de Windows.
+
+La guía técnica y la lista de lanzamiento están en
+`../supabase/LICENSE_CHECKOUT.md`.
+
 ## DNS
 
 Si DreamHost tambien administra el hosting, normalmente basta con apuntar el dominio al hosting desde el panel de DreamHost.

@@ -1,0 +1,14 @@
+[functions.download-counter]
+verify_jwt = false
+
+[functions.product-feedback]
+verify_jwt = false
+
+[functions.license-checkout]
+verify_jwt = false
+
+[functions.license-status]
+verify_jwt = false
+
+[functions.mercadopago-webhook]
+verify_jwt = false

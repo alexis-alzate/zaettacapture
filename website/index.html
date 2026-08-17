@@ -16,11 +16,11 @@
   <meta name="twitter:title" content="Zaetta Capture | Captura y anota en Windows">
   <meta name="twitter:description" content="Captura, anota y comparte desde una aplicación rápida y local para Windows.">
   <link rel="icon" href="assets/logo_oficial.png">
-  <link rel="stylesheet" href="styles.css?v=20260815-3">
+  <link rel="stylesheet" href="styles.css?v=20260815-4">
   <link rel="stylesheet" href="feedback.css?v=20260815-1">
-  <script src="script.js?v=20260815-2" defer></script>
+  <script src="script.js?v=20260815-3" defer></script>
 </head>
-<body>
+<body data-license-checkout-enabled="false">
   <header class="topbar">
     <a class="brandmark" href="#inicio" aria-label="Zaetta Capture">
       <img src="assets/logo_oficial.png" alt="" class="brandmark-logo">
@@ -297,21 +297,29 @@
       <div class="shield">Z</div>
       <div>
         <p class="eyebrow">Acceso anticipado</p>
-        <h2>Gratis</h2>
-        <p>Durante esta etapa, descarga la versión actual sin pago.</p>
-        <small>Windows 10/11 · Sin suscripción activa</small>
+        <h2>Gratis por ahora</h2>
+        <p>La versión pública actual continúa disponible sin pago mientras preparamos la activación.</p>
+        <small>Windows 10/11 · Sin suscripción</small>
       </div>
       <ul>
         <li>Herramientas actuales de captura y anotación</li>
         <li>Actualizaciones disponibles desde la aplicación</li>
         <li>Capturas procesadas localmente en tu equipo</li>
-        <li>Canal abierto para soporte e ideas</li>
-        <li>Las licencias de pago se anunciarán antes de activarse</li>
+        <li>30 días de prueba cuando se active el sistema de licencias</li>
+        <li>Pago único: no habrá cobros mensuales automáticos</li>
       </ul>
-      <a class="download buy" data-download-track href="#descarga" aria-haspopup="dialog">
-        <span class="windows-mark">⊞</span>
-        Descargar gratis
-      </a>
+      <div class="license-actions">
+        <a class="download buy" data-download-track href="#descarga" aria-haspopup="dialog">
+          <span class="windows-mark">⊞</span>
+          Descargar gratis
+        </a>
+        <button class="license-solidarity-button" type="button" data-license-checkout-open aria-haspopup="dialog">
+          <span>Licencia solidaria</span>
+          <strong>$10.000 COP</strong>
+          <small>Conocer el flujo</small>
+        </button>
+        <p class="license-checkout-note">El cobro todavía no está activo. Puedes revisar cómo funcionará antes de su lanzamiento.</p>
+      </div>
     </section>
 
     <section id="ideas" class="feedback-section" aria-labelledby="feedback-title">
@@ -448,6 +456,85 @@
     </div>
   </dialog>
 
+  <dialog class="download-gate license-checkout-gate" data-license-checkout-gate aria-labelledby="license-checkout-title">
+    <div class="download-gate-card">
+      <button class="download-gate-close" type="button" data-license-checkout-close aria-label="Cerrar ventana de licencia">×</button>
+      <div class="download-gate-mark" aria-hidden="true">
+        <img src="assets/logo_oficial.png" alt="">
+      </div>
+      <p class="download-gate-kicker"><span></span> Licencia solidaria</p>
+      <h2 id="license-checkout-title">Zaetta Capture por $10.000 COP.</h2>
+      <p class="download-gate-intro">Un pago único, sin suscripción. El 100 % del valor de la licencia será reservado para el compromiso solidario de Zaetta.</p>
+
+      <div class="license-price-summary" aria-label="Resumen de compra">
+        <div>
+          <span>Licencia personal</span>
+          <small>Hasta 2 dispositivos · Windows 10/11</small>
+        </div>
+        <strong>$10.000</strong>
+      </div>
+
+      <form class="download-gate-form" data-license-checkout-form novalidate>
+        <label class="download-email-field">
+          <span>Correo donde recibirás la licencia</span>
+          <div>
+            <span aria-hidden="true">✉</span>
+            <input type="email" name="email" maxlength="254" autocomplete="email" inputmode="email" required placeholder="nombre@correo.com">
+          </div>
+        </label>
+
+        <label class="download-honeypot" aria-hidden="true">
+          Sitio web
+          <input type="text" name="website" tabindex="-1" autocomplete="off">
+        </label>
+
+        <label class="download-consent download-privacy-consent">
+          <input type="checkbox" name="privacyAccepted" required>
+          <span>Acepto el tratamiento necesario de mis datos según la <a class="inline-legal-link" href="privacidad.html" target="_blank" rel="noopener">Política de privacidad</a>.</span>
+        </label>
+
+        <label class="download-consent download-privacy-consent">
+          <input type="checkbox" name="termsAccepted" required>
+          <span>Acepto los <a class="inline-legal-link" href="terminos-licencia.html" target="_blank" rel="noopener">términos de la licencia y de la compra</a>.</span>
+        </label>
+
+        <button class="download-gate-submit" type="submit">
+          <span aria-hidden="true">$</span>
+          <span data-license-checkout-button-label>Continuar con Mercado Pago</span>
+          <i aria-hidden="true">→</i>
+        </button>
+
+        <div class="license-impact-summary">
+          <strong>¿Qué sucede con los $10.000?</strong>
+          <p>Al aprobarse el pago quedarán registrados como valor reservado. Cuando se entregue la ayuda, publicaremos la causa y el comprobante. Zaetta asumirá las comisiones de pago.</p>
+        </div>
+        <p class="download-gate-status" data-license-checkout-status role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="download-gate license-result-gate" data-license-result-gate aria-labelledby="license-result-title">
+    <div class="download-gate-card">
+      <button class="download-gate-close" type="button" data-license-result-close aria-label="Cerrar estado de compra">×</button>
+      <div class="download-gate-mark" aria-hidden="true">
+        <img src="assets/logo_oficial.png" alt="">
+      </div>
+      <p class="download-gate-kicker"><span></span> Estado de tu licencia</p>
+      <h2 id="license-result-title" data-license-result-title>Estamos confirmando tu pago.</h2>
+      <p class="download-gate-intro" data-license-result-copy>Mercado Pago puede tardar unos segundos en notificarnos.</p>
+      <div class="license-result-key" data-license-result-key hidden>
+        <span>Tu clave de licencia</span>
+        <strong data-license-key></strong>
+        <button type="button" data-license-key-copy>Copiar licencia</button>
+      </div>
+      <div class="license-result-actions">
+        <a class="download" data-download-track href="#descarga" aria-haspopup="dialog">Descargar Zaetta Capture</a>
+        <button class="ghost-button" type="button" data-license-result-refresh>Consultar nuevamente</button>
+      </div>
+      <p class="download-gate-status" data-license-result-status role="status" aria-live="polite"></p>
+    </div>
+  </dialog>
+
   <a class="feedback-launcher" data-feedback-launcher href="#ideas" aria-label="Abrir el buzón de ideas">
     <span class="feedback-launcher-icon" aria-hidden="true">&#10022;</span>
     <span class="feedback-launcher-copy">
@@ -479,6 +566,7 @@
       <a href="#ideas">Enviar una idea</a>
       <a href="https://github.com/alexis-alzate/zaettacapture/releases/tag/v1.0.29">Novedades</a>
       <a href="privacidad.html">Privacidad</a>
+      <a href="terminos-licencia.html">Términos de licencia</a>
     </div>
     <div id="soporte">
       <h2>Soporte</h2>

@@ -17,6 +17,10 @@ obj/
 *.suo
 *.swp
 .*.swp
+.env
+.env.*
+!.env.example
+!**/.env.example
 *:Zone.Identifier
 ChatGPT Image*.png
 ZAETTA_CAPTURE/ChatGPT Image*.png
